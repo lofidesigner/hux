@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [0.22.2] - 2025-12-07
+
+### Fixed
+- **HuxTabs**: Tab content now properly takes full available height
+  - Wrapped content in `Flexible(fit: FlexFit.loose, ...)` for better layout flexibility
+  - Fixes content clipping issues when tabs are used in constrained layouts
+  - Contributed by @Trung15010802 in PR #15
+
 ## [0.22.1] - 2025-11-16
 
 ### Changed

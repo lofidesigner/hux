@@ -3,7 +3,7 @@
 A modern Flutter UI package with beautiful, customizable components designed for clean and consistent user interfaces.
 
 [![Flutter support](https://img.shields.io/badge/Flutter-3.16%2B-white?style=flat&labelColor=black&logo=flutter&logoColor=WHITE)](https://flutter.dev/)
-[![Figma](https://img.shields.io/badge/Figma%20users-31-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
+[![Figma](https://img.shields.io/badge/Figma%20users-42-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsor-Hux%20UI-white?style=flat&labelColor=black&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/lofidesigner)
 
 [![pub package](https://img.shields.io/pub/v/hux?style=flat&color=white&labelColor=black)](https://pub.dev/packages/hux)
@@ -14,9 +14,16 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Version: 0.22.0
+## Latest Version: 0.22.2
 
-- **HuxOtpInput**: New One-Time Password input component
+- **HuxTabs**: Fixed tab content to properly take full available height
+  - Better layout flexibility in constrained layouts
+  - Contributed by @Trung15010802 in PR #15
+
+### Previous Updates
+
+**0.22.0 - HuxOtpInput Component**
+- New One-Time Password input component
   - Customizable digit length (default: 6)
   - Automatic focus management with sequential input enforcement
   - Paste support that fills all fields
