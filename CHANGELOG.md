@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [0.23.0] - 2025-11-18
+## [0.23.0] - 2025-12-14
 
 ### Added
 - **HuxProgress**: New linear progress indicator component
@@ -13,6 +13,19 @@
   - Theme-aware styling with automatic light/dark mode adaptation
   - Custom min/max value support (defaults to 0.0-1.0)
   - Smooth animated transitions when value changes
+
+## [0.22.2] - 2025-12-07
+
+### Fixed
+- **HuxTabs**: Tab content now properly takes full available height
+  - Wrapped content in `Flexible(fit: FlexFit.loose, ...)` for better layout flexibility
+  - Fixes content clipping issues when tabs are used in constrained layouts
+  - Contributed by @Trung15010802 in PR #15
+
+## [0.22.1] - 2025-11-16
+
+### Changed
+- Code formatting: Applied `dart format` to `HuxOtpInput` component and example code
 
 ## [0.22.0] - 2025-11-15
 

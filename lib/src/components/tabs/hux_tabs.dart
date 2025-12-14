@@ -153,7 +153,7 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
       children: [
         _buildTabBar(context),
         const SizedBox(height: 16),
-        _buildTabContent(context),
+        Flexible(fit: FlexFit.loose, child: _buildTabContent(context)),
       ],
     );
   }
