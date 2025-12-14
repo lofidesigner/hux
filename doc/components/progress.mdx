@@ -1,0 +1,224 @@
+---
+title: 'Progress'
+description: 'Linear progress indicator for task completion and status tracking'
+---
+
+## Overview
+
+HuxProgress is a customizable linear progress indicator that displays the completion status of a task or process. It provides smooth animations, consistent styling, and automatic theme adaptation, making it perfect for showing upload progress, download status, or any task completion percentage.
+
+## Basic Usage
+
+### Basic Progress
+
+```dart
+HuxProgress(
+  value: 0.5,
+)
+```
+
+### Progress with Label
+
+```dart
+HuxProgress(
+  value: 0.75,
+  label: 'Uploading',
+)
+```
+
+### Progress with Value Display
+
+```dart
+HuxProgress(
+  value: 0.6,
+  label: 'Storage Used',
+  showValue: true,
+)
+```
+
+## Variants
+
+HuxProgress supports three visual variants to indicate different states:
+
+### Primary Variant
+
+```dart
+HuxProgress(
+  value: 0.6,
+  label: 'Progress',
+  variant: HuxProgressVariant.primary,
+  showValue: true,
+)
+```
+
+### Success Variant
+
+```dart
+HuxProgress(
+  value: 0.8,
+  label: 'Upload Complete',
+  variant: HuxProgressVariant.success,
+  showValue: true,
+)
+```
+
+### Destructive Variant
+
+```dart
+HuxProgress(
+  value: 0.3,
+  label: 'Error',
+  variant: HuxProgressVariant.destructive,
+  showValue: true,
+)
+```
+
+## Sizes
+
+HuxProgress comes in three size variants:
+
+### Small
+
+```dart
+HuxProgress(
+  value: 0.5,
+  size: HuxProgressSize.small,
+  label: 'Small Progress',
+)
+```
+
+### Medium (Default)
+
+```dart
+HuxProgress(
+  value: 0.5,
+  size: HuxProgressSize.medium,
+  label: 'Medium Progress',
+)
+```
+
+### Large
+
+```dart
+HuxProgress(
+  value: 0.5,
+  size: HuxProgressSize.large,
+  label: 'Large Progress',
+)
+```
+
+## Custom Values
+
+By default, HuxProgress uses values between 0.0 and 1.0. You can customize the range:
+
+```dart
+HuxProgress(
+  value: 75.0,
+  min: 0.0,
+  max: 100.0,
+  label: 'Storage Used',
+  showValue: true,
+)
+```
+
+When using custom min/max values, the displayed value will show as a number instead of a percentage.
+
+## Custom Colors
+
+You can customize both the progress fill color and background color:
+
+```dart
+HuxProgress(
+  value: 0.7,
+  label: 'Custom Progress',
+  color: Colors.blue,
+  backgroundColor: Colors.grey[200],
+)
+```
+
+## Custom Border Radius
+
+```dart
+HuxProgress(
+  value: 0.6,
+  label: 'Rounded Progress',
+  borderRadius: 8.0,
+)
+```
+
+## Animated Progress
+
+HuxProgress automatically animates when the value changes:
+
+```dart
+class MyWidget extends StatefulWidget {
+  @override
+  _MyWidgetState createState() => _MyWidgetState();
+}
+
+class _MyWidgetState extends State<MyWidget> {
+  double _progress = 0.0;
+
+  void _startUpload() {
+    // Simulate upload progress
+    Timer.periodic(Duration(milliseconds: 100), (timer) {
+      setState(() {
+        _progress += 0.01;
+        if (_progress >= 1.0) {
+          _progress = 1.0;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return HuxProgress(
+      value: _progress,
+      label: 'Uploading file...',
+      showValue: true,
+      variant: HuxProgressVariant.success,
+    );
+  }
+}
+```
+
+## API Reference
+
+### HuxProgress
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `value` | `double` | **required** | The current progress value (between min and max) |
+| `min` | `double` | `0.0` | Minimum value for the progress |
+| `max` | `double` | `1.0` | Maximum value for the progress |
+| `label` | `String?` | `null` | Optional label displayed above the progress bar |
+| `showValue` | `bool` | `false` | Whether to show the current value as a percentage or number |
+| `size` | `HuxProgressSize` | `HuxProgressSize.medium` | Size variant of the progress bar |
+| `variant` | `HuxProgressVariant` | `HuxProgressVariant.primary` | Visual variant of the progress bar |
+| `backgroundColor` | `Color?` | `null` | Custom background color for the progress track |
+| `color` | `Color?` | `null` | Custom color for the progress fill |
+| `borderRadius` | `double?` | `null` | Border radius for the progress bar |
+
+### HuxProgressSize
+
+- `small` - Small progress bar (4px height)
+- `medium` - Medium progress bar (6px height)
+- `large` - Large progress bar (8px height)
+
+### HuxProgressVariant
+
+- `primary` - Primary progress using theme primary color
+- `success` - Success progress using green color
+- `destructive` - Destructive progress using red color
+
+## Best Practices
+
+- Use progress indicators for operations that take more than a few seconds
+- Show labels to provide context about what is loading
+- Use the success variant for completed operations
+- Use the destructive variant for errors or failed operations
+- Consider using `showValue: true` when precise progress information is important
+- For uploads/downloads, update the progress value frequently for smooth animation
+
