@@ -14,13 +14,12 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Version: 0.22.2
+## Latest Version: 0.22.3
 
-- **HuxTabs**: Fixed tab content to properly take full available height
-  - Better layout flexibility in constrained layouts
-  - Contributed by @Trung15010802 in PR #15
-
-### Previous Updates
+- **HuxTabs**: Fixed unbounded height constraint issue and added flexible layout control
+  - New `expandContent` parameter to optionally fill available vertical space
+  - Resolves app freezing and rendering failures in unbounded layouts
+  - Improved backward compatibility with sensible defaults
 
 **0.22.0 - HuxOtpInput Component**
 - New One-Time Password input component
