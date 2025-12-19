@@ -87,6 +87,7 @@ class HuxTabs extends StatefulWidget {
     this.onTabChanged,
     this.isScrollable = false,
     this.alignment = TabAlignment.start,
+    this.expandContent = false,
   });
 
   /// List of tab items to display
@@ -109,6 +110,13 @@ class HuxTabs extends StatefulWidget {
 
   /// Alignment of tabs within the available space
   final TabAlignment alignment;
+
+  /// Whether the content should expand to fill available vertical space
+  ///
+  /// When true, wraps content in Flexible to fill available height.
+  /// When false, content takes only the space it needs.
+  /// Defaults to false for better compatibility with unbounded constraints.
+  final bool expandContent;
 
   @override
   State<HuxTabs> createState() => _HuxTabsState();
@@ -148,12 +156,18 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final content = _buildTabContent(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildTabBar(context),
         const SizedBox(height: 16),
-        Flexible(fit: FlexFit.loose, child: _buildTabContent(context)),
+        if (widget.expandContent)
+          Flexible(fit: FlexFit.loose, child: content)
+        else
+          content,
       ],
     );
   }
@@ -280,6 +294,7 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
   Widget _buildTabContent(BuildContext context) {
     return IndexedStack(
       index: _activeIndex,
+      sizing: StackFit.loose,
       children: widget.tabs.map((tab) => tab.content).toList(),
     );
   }

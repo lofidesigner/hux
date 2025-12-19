@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [0.23.0] - 2025-12-14
+## [0.23.0] - 2025-12-22
 
 ### Added
 - **HuxProgress**: New linear progress indicator component
@@ -13,6 +13,21 @@
   - Theme-aware styling with automatic light/dark mode adaptation
   - Custom min/max value support (defaults to 0.0-1.0)
   - Smooth animated transitions when value changes
+
+## [0.22.3] - 2025-12-19
+
+### Added
+- **HuxTabs**: New `expandContent` parameter for flexible layout control
+  - Set `expandContent: true` to fill available vertical space
+  - Defaults to `false` for better compatibility with unbounded constraints
+  - Prevents layout rendering failures in unbounded Columns
+
+### Fixed
+- **HuxTabs**: Resolved unbounded height constraint issue that caused app freezing
+  - Added `mainAxisSize: MainAxisSize.min` to Column for better sizing
+  - Added `sizing: StackFit.loose` to IndexedStack for improved layout behavior
+  - Fixes rendering failures and blank content when used inside unbounded layouts
+  - Maintains backward compatibility with optional `expandContent` parameter
 
 ## [0.22.2] - 2025-12-07
 

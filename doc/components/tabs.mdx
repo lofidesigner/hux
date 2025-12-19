@@ -218,6 +218,37 @@ HuxTabs(
 )
 ```
 
+## Expanding Content
+
+By default, tab content takes only the space it needs. Use `expandContent` to fill available vertical space.
+
+```dart
+// Content fills available height
+HuxTabs(
+  expandContent: true,
+  tabs: [
+    HuxTabItem(
+      label: 'Overview',
+      content: Container(
+        color: Colors.blue.shade100,
+        child: Center(child: Text('Fills available space')),
+      ),
+    ),
+    HuxTabItem(
+      label: 'Settings',
+      content: Container(
+        color: Colors.green.shade100,
+        child: Center(child: Text('Also fills available space')),
+      ),
+    ),
+  ],
+)
+```
+
+<Callout type="tip">
+Set `expandContent: true` when tabs are in a bounded container (like an Expanded widget) and you want the content to fill available space. Leave it `false` (default) for better compatibility with unbounded layouts.
+</Callout>
+
 ## Controlled Tabs
 
 Control the active tab programmatically.
@@ -276,6 +307,7 @@ class _MyWidgetState extends State<MyWidget> {
 | `onTabChanged` | `ValueChanged<int>?` | `null` | Callback when the active tab changes |
 | `isScrollable` | `bool` | `false` | Whether tabs should be scrollable horizontally |
 | `alignment` | `TabAlignment` | `TabAlignment.start` | Alignment of tabs within the available space |
+| `expandContent` | `bool` | `false` | Whether content should expand to fill available vertical space |
 
 ### HuxTabItem
 
