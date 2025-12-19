@@ -112,7 +112,7 @@ class HuxTabs extends StatefulWidget {
   final TabAlignment alignment;
 
   /// Whether the content should expand to fill available vertical space
-  /// 
+  ///
   /// When true, wraps content in Flexible to fill available height.
   /// When false, content takes only the space it needs.
   /// Defaults to false for better compatibility with unbounded constraints.
@@ -157,7 +157,7 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final content = _buildTabContent(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
