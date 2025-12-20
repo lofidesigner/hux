@@ -1,7 +1,7 @@
 # Changelog
 
 
-## [0.23.0] - 2025-12-22
+## [0.23.0] - 2025-12-20
 
 ### Added
 - **HuxProgress**: New linear progress indicator component
