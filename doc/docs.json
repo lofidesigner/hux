@@ -3,7 +3,7 @@
   "theme": "almond",
   "name": "Hux UI",
   "icons": {
-    "library": "lucide"
+    "library": "fontawesome"
   },
   "colors": {
     "primary": "#333333",
@@ -22,7 +22,8 @@
               "index",
               "installation",
               "quickstart",
-              "theming"
+              "theming",
+              "components/index"
             ]
           },
           {
@@ -84,6 +85,11 @@
     ],
     "global": {
       "anchors": [
+        {
+          "anchor": "Live Demo",
+          "href": "https://ui.thehuxdesign.com",
+          "icon": "play"
+        },
         {
           "anchor": "Package",
           "href": "https://pub.dev/packages/hux",
