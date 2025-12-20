@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hux/hux.dart';
 
@@ -11,6 +13,7 @@ class ProgressSection extends StatefulWidget {
 class _ProgressSectionState extends State<ProgressSection> {
   double _progressValue = 0.0;
   bool _isAnimating = false;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -18,32 +21,42 @@ class _ProgressSectionState extends State<ProgressSection> {
     _startProgress();
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   void _startProgress() {
+    _timer?.cancel();
     if (_isAnimating) return;
     setState(() {
       _isAnimating = true;
       _progressValue = 0.0;
     });
 
-    _animateProgress();
+    _scheduleNextTick();
   }
 
-  void _animateProgress() {
-    Future.delayed(const Duration(milliseconds: 50), () {
+  void _scheduleNextTick() {
+    _timer = Timer(const Duration(milliseconds: 50), () {
       if (!mounted) return;
+      final newValue = _progressValue + 0.01;
+      final completed = newValue >= 1.0;
       setState(() {
-        _progressValue += 0.01;
-        if (_progressValue >= 1.0) {
-          _progressValue = 1.0;
+        _progressValue = completed ? 1.0 : newValue;
+        if (completed) {
           _isAnimating = false;
-        } else {
-          _animateProgress();
         }
       });
+      if (!completed) {
+        _scheduleNextTick();
+      }
     });
   }
 
   void _resetProgress() {
+    _timer?.cancel();
     setState(() {
       _progressValue = 0.0;
       _isAnimating = false;
@@ -60,12 +73,19 @@ class _ProgressSectionState extends State<ProgressSection> {
       title: 'Progress',
       subtitle:
           'Linear progress indicators for task completion and status tracking',
-      action: HuxButton(
-        onPressed: _resetProgress,
-        variant: HuxButtonVariant.ghost,
-        size: HuxButtonSize.small,
-        icon: LucideIcons.refreshCw,
-        child: const SizedBox.shrink(),
+      action: HuxTooltip(
+        message: 'Reset progress',
+        child: Semantics(
+          label: 'Reset progress',
+          button: true,
+          child: HuxButton(
+            onPressed: _resetProgress,
+            variant: HuxButtonVariant.ghost,
+            size: HuxButtonSize.small,
+            icon: LucideIcons.refreshCw,
+            child: const SizedBox.shrink(),
+          ),
+        ),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
