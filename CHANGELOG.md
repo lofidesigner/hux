@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [0.23.0] - 2025-12-22
+
+### Added
+- **HuxProgress**: New linear progress indicator component
+  - Displays task completion and status tracking with smooth animations
+  - Support for labels and value display (percentage or custom format)
+  - Multiple size variants (small, medium, large)
+  - Visual variants (primary, success, destructive)
+  - Customizable colors and background
+  - Theme-aware styling with automatic light/dark mode adaptation
+  - Custom min/max value support (defaults to 0.0-1.0)
+  - Smooth animated transitions when value changes
+
 ## [0.22.3] - 2025-12-19
 
 ### Added

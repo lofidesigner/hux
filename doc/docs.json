@@ -45,6 +45,7 @@
               "components/textarea",
               "components/loading",
               "components/pagination",
+              "components/progress",
               "components/radio",
               "components/sidebar",
               "components/slider",

@@ -6,6 +6,7 @@ import 'package:hux/hux.dart';
 import 'breadcrumbs.dart';
 import 'tabs.dart';
 import 'components/otp_section.dart';
+import 'components/progress_section.dart';
 
 void main() {
   runApp(const MyApp());
@@ -255,6 +256,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _radioButtonsKey = GlobalKey();
   final _toggleSwitchesKey = GlobalKey();
   final _sliderKey = GlobalKey();
+  final _progressKey = GlobalKey();
   final _toggleButtonsKey = GlobalKey();
   final _badgesKey = GlobalKey();
   final _indicatorsKey = GlobalKey();
@@ -329,6 +331,11 @@ class _MyHomePageState extends State<MyHomePage> {
         id: 'slider',
         label: 'Slider',
         icon: LucideIcons.slidersHorizontal,
+      ),
+      const HuxSidebarItemData(
+        id: 'progress',
+        label: 'Progress',
+        icon: LucideIcons.activity,
       ),
       const HuxSidebarItemData(
         id: 'toggle',
@@ -435,6 +442,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'radio-buttons': _radioButtonsKey,
       'switch': _toggleSwitchesKey,
       'slider': _sliderKey,
+      'progress': _progressKey,
       'toggle': _toggleButtonsKey,
       'badges': _badgesKey,
       'snackbar': _indicatorsKey,
@@ -1592,6 +1600,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           SectionWithDocumentation(
                             componentName: 'slider',
                             child: SliderSection(key: _sliderKey),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Progress Section
+                          SectionWithDocumentation(
+                            componentName: 'progress',
+                            child: ProgressSection(key: _progressKey),
                           ),
 
                           const SizedBox(height: 32),

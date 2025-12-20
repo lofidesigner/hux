@@ -14,21 +14,14 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Version: 0.22.3
+## Latest Version: 0.23.0
 
-- **HuxTabs**: Fixed unbounded height constraint issue and added flexible layout control
-  - New `expandContent` parameter to optionally fill available vertical space
-  - Resolves app freezing and rendering failures in unbounded layouts
-  - Improved backward compatibility with sensible defaults
-
-**0.22.0 - HuxOtpInput Component**
-- New One-Time Password input component
-  - Customizable digit length (default: 6)
-  - Automatic focus management with sequential input enforcement
-  - Paste support that fills all fields
-  - Arrow key navigation and backspace handling
-  - Visual divider for 6-digit OTPs
-  - Theme-aware styling with validation support
+- **HuxProgress**: New linear progress indicator component
+  - Displays task completion and status tracking with smooth animations
+  - Support for labels and value display (percentage or custom format)
+  - Multiple size variants (small, medium, large)
+  - Visual variants (primary, success, destructive)
+  - Theme-aware styling with automatic light/dark mode adaptation
 
 [![Changelog](https://img.shields.io/badge/Changelog-View-black?style=for-the-badge&labelColor=white&logo=github&logoColor=black)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/Docs-Browse-black?style=for-the-badge&labelColor=white&logo=readthedocs&logoColor=black)](https://docs.thehuxdesign.com)
@@ -133,6 +126,12 @@ flutter pub add hux
 - `HuxSlider` - Interactive slider control for selecting numeric values within a range
 - Support for labels, value display, and discrete divisions
 - Multiple size variants and theme-aware styling
+
+### Progress
+- `HuxProgress` - Linear progress indicator for task completion and status tracking
+- Support for labels and value display (percentage or custom format)
+- Multiple size variants (small, medium, large) and visual variants (primary, success, destructive)
+- Smooth animated transitions and theme-aware styling
 
 ### Tooltip
 - `HuxTooltip` - Contextual help and information with optional icon support
