@@ -190,7 +190,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.23.0"
+    version: "0.23.1"
   image:
     dependency: transitive
     description:

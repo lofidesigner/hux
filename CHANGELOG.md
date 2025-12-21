@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [0.23.1] - 2025-12-21
+
+### Documentation
+- Added `HuxDropdown`, `HuxToggle`, and `HuxBreadcrumbs` to README components list
+- Added usage examples for Dropdown, Toggle, and Breadcrumbs components
+- Added Live Demo section with link to interactive components at ui.thehuxdesign.com
+
 ## [0.23.0] - 2025-12-20
 
 ### Added

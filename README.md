@@ -3,7 +3,7 @@
 A modern Flutter UI package with beautiful, customizable components designed for clean and consistent user interfaces.
 
 [![Flutter support](https://img.shields.io/badge/Flutter-3.16%2B-white?style=flat&labelColor=black&logo=flutter&logoColor=WHITE)](https://flutter.dev/)
-[![Figma](https://img.shields.io/badge/Figma%20users-42-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
+[![Figma](https://img.shields.io/badge/Figma%20users-51-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsor-Hux%20UI-white?style=flat&labelColor=black&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/lofidesigner)
 
 [![pub package](https://img.shields.io/pub/v/hux?style=flat&color=white&labelColor=black)](https://pub.dev/packages/hux)
@@ -14,9 +14,9 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Version: 0.23.0
+## Latest Release: 0.23.0
 
-- **HuxProgress**: New linear progress indicator component
+**HuxProgress**: New linear progress indicator component
   - Displays task completion and status tracking with smooth animations
   - Support for labels and value display (percentage or custom format)
   - Multiple size variants (small, medium, large)
@@ -25,6 +25,14 @@ A modern Flutter UI package with beautiful, customizable components designed for
 
 [![Changelog](https://img.shields.io/badge/Changelog-View-black?style=for-the-badge&labelColor=white&logo=github&logoColor=black)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/Docs-Browse-black?style=for-the-badge&labelColor=white&logo=readthedocs&logoColor=black)](https://docs.thehuxdesign.com)
+
+## 🎮 Live Demo
+
+**Try all components in your browser!** Explore the full Hux UI component library with our interactive demo:
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Interactive%20Components-black?style=for-the-badge&labelColor=white&logo=flutter&logoColor=black)](https://ui.thehuxdesign.com)
+
+👉 **[ui.thehuxdesign.com](https://ui.thehuxdesign.com)** - Test buttons, inputs, dialogs, charts, and more in real-time with dark mode support.
 
 ## Installation
 
@@ -36,7 +44,7 @@ flutter pub add hux
 
 - **Modern Design** - Clean, minimal design language
 - **Dark Mode Support** - Built-in light and dark theme support
-- **Data Visualization** - Beautiful animated charts for data presentation
+- **Data Visualization** - Animated charts for data presentation
 - **Responsive** - Components adapt to different screen sizes
 - **Customizable** - Extensive customization options
 - **Easy to Use** - Simple, intuitive API
@@ -45,23 +53,16 @@ flutter pub add hux
 
 ### Buttons
 - `HuxButton` - Customizable button with multiple variants (primary, secondary, outline, ghost)
-- Multiple sizes (small, medium, large)
-- Loading states and icon support
 
 ![HuxButton Variants](screenshots/hux-buttons.png)
 
 ### Cards
 - `HuxCard` - Flexible card component with optional header, title, and actions
-- Customizable padding, margin, and border radius
-- Tap handling support
 
 ![HuxCard Examples](screenshots/hux-cards.png)
 
 ### Tabs
 - `HuxTabs` - Organize content into multiple panels with tab navigation
-- Three variants: Default (underline), Pill (background), Minimal (no indicator)
-- Support for icons, badges, and custom content
-- Multiple sizes and theme integration
 
 ### Inputs
 - `HuxInput` - Enhanced text input with consistent styling (renamed from HuxTextField)
@@ -72,30 +73,21 @@ flutter pub add hux
 ![HuxInput Component](screenshots/hux-input.png)
 
 - `HuxCheckbox` - Interactive checkbox with custom styling and labels  
-- Label, helper text, and error state support
-- Multiple sizes and validation
 
 ![HuxCheckbox Component](screenshots/hux-checkbox.png)
 
 - `HuxRadio` - Radio button controls for single selection from groups
-- Support for different value types
-- Consistent sizing and theme adaptation
 
 ![HuxRadio Component](screenshots/hux-radio.png)
 
 ### Dialogs
 - `HuxDialog` - General-purpose dialog with modern design and multiple size variants
-- Built-in close button with ghost styling and precise positioning
-- Support for title, subtitle, content, and action buttons
-- Consistent Hux design system integration
 
 ![HuxDialog Component](screenshots/hux-dialog.png)
 
 ### Date & Time Pickers
 - `showHuxDatePickerDialog` - Modern date picker with month/year selection
 - `showHuxTimePickerDialog` - Clean time picker with hour/minute dropdowns
-- Theme-aware styling with Hux design tokens
-- Responsive calendar grid and smart navigation
 
 ### Widgets
 - `HuxLoading` - Customizable loading indicators
@@ -111,7 +103,6 @@ flutter pub add hux
 - `HuxContextMenu` - Right-click context menus with smart positioning
 - `HuxContextMenuItem` - Individual menu items with icons and states  
 - `HuxContextMenuDivider` - Visual separators for menu groups
-- Cross-platform support with proper web context menu handling
 
 ![HuxContextMenu Component](screenshots/hux-context-menu.png)
 
@@ -122,22 +113,20 @@ flutter pub add hux
 
 ![HuxSwitch Component](screenshots/hux-switch.png)
 
+### Dropdown
+- `HuxDropdown` - Dropdown select component with overlay-based options list
+- `HuxDropdownItem` - Individual dropdown items with custom content support
+
 ### Slider
 - `HuxSlider` - Interactive slider control for selecting numeric values within a range
-- Support for labels, value display, and discrete divisions
-- Multiple size variants and theme-aware styling
 
+### Toggle
+- `HuxToggle` - Two-state button toggle for binary controls
 ### Progress
 - `HuxProgress` - Linear progress indicator for task completion and status tracking
-- Support for labels and value display (percentage or custom format)
-- Multiple size variants (small, medium, large) and visual variants (primary, success, destructive)
-- Smooth animated transitions and theme-aware styling
 
 ### Tooltip
 - `HuxTooltip` - Contextual help and information with optional icon support
-- Automatic light/dark theme adaptation
-- Customizable positioning, colors, and timing
-- Support for any icon library (Material Icons, Lucide, Feather, etc.)
 
 ![HuxTooltip Component](screenshots/hux-tooltip.png)
 
@@ -158,28 +147,19 @@ flutter pub add hux
 
 ### Pagination
 - `HuxPagination` - Navigate through pages with intelligent ellipsis handling (originally contributed by @Kingsley-EZE)
-- Previous/next arrow buttons with proper disabled states
-- Configurable maximum pages to show
-- Theme-aware styling with HuxTokens
-- WCAG AA compliant contrast ratios
-- Compact button design with proper spacing
 
 ![HuxPagination Component](screenshots/hux-pagination.png)
 
 ### Sidebar
 - `HuxSidebar` - Complete navigation sidebar component for app-wide navigation
 - `HuxSidebarItem` - Individual navigation items with automatic selection state
-- Optional header and footer sections
-- Customizable width and padding
-- Theme-aware styling with hover states
-- Perfect for dashboard and multi-page applications
+
+### Breadcrumbs
+- `HuxBreadcrumbs` - Navigation breadcrumbs showing page hierarchy
+- `HuxBreadcrumbItem` - Individual breadcrumb with label, icon, and tap handler
 
 ### Command
 - `HuxCommand` - Powerful command palette for quick access to actions and navigation
-- Keyboard shortcuts support (CMD+K on Mac, Ctrl+K on Windows/Linux)
-- Real-time search and filtering as you type
-- Keyboard navigation with arrow keys and Enter to execute
-- Customizable commands with icons, shortcuts, and categories
 - Global keyboard shortcuts integration with `HuxCommandShortcuts.wrapper`
 
 ### Theme
@@ -423,6 +403,69 @@ HuxContextMenu(
 ```
 
 
+
+#### Dropdown
+
+```dart
+HuxDropdown<String>(
+  value: selectedValue,
+  placeholder: 'Select an option',
+  items: [
+    HuxDropdownItem(value: 'option1', child: Text('Option 1')),
+    HuxDropdownItem(value: 'option2', child: Text('Option 2')),
+    HuxDropdownItem(value: 'option3', child: Text('Option 3')),
+  ],
+  onChanged: (value) => setState(() => selectedValue = value),
+  variant: HuxButtonVariant.outline,
+  size: HuxButtonSize.medium,
+)
+```
+
+#### Toggle
+
+```dart
+// Icon-only toggle (e.g., for formatting controls)
+HuxToggle(
+  value: isBold,
+  onChanged: (value) => setState(() => isBold = value),
+  icon: Icons.format_bold,
+  size: HuxToggleSize.medium,
+)
+
+// Toggle with label
+HuxToggle(
+  value: isEnabled,
+  onChanged: (value) => setState(() => isEnabled = value),
+  icon: Icons.notifications,
+  label: 'Notifications',
+  variant: HuxButtonVariant.outline,
+)
+```
+
+#### Breadcrumbs
+
+```dart
+HuxBreadcrumbs(
+  items: [
+    HuxBreadcrumbItem(
+      label: 'Home',
+      onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
+      icon: Icons.home,
+    ),
+    HuxBreadcrumbItem(
+      label: 'Products',
+      onTap: () => Navigator.pushNamed(context, '/products'),
+    ),
+    HuxBreadcrumbItem(
+      label: 'Details',
+      onTap: () {},
+      isActive: true,
+    ),
+  ],
+  variant: HuxBreadcrumbVariant.icon,
+  size: HuxBreadcrumbSize.medium,
+)
+```
 
 #### Avatar & Avatar Group
 
