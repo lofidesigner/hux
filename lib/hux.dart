@@ -86,6 +86,7 @@ export 'src/components/navigation/hux_sidebar.dart';
 export 'src/components/navigation/hux_sidebar_item.dart';
 export 'src/components/navigation/hux_breadcrumbs.dart';
 export 'src/components/progress/hux_progress.dart';
+export 'src/components/bottom_sheet/hux_bottom_sheet.dart';
 
 // Export external dependencies
 /// LucideIcons - Beautiful icon set for Flutter applications
