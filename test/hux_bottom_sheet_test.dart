@@ -259,7 +259,8 @@ void main() {
   });
 
   group('showHuxActionSheet', () {
-    testWidgets('shows action sheet with actions', (WidgetTester tester) async {
+    testWidgets('shows action sheet with actions',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
