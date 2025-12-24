@@ -10,6 +10,7 @@
 /// - Customizable slider component with smooth animations
 /// - Customizable loading indicators with theme awareness
 /// - Progress indicators for task completion and status tracking
+/// - Mobile-first bottom sheets and action sheets
 /// - Beautiful data visualization charts with cristalyse integration
 /// - Right-click context menus with smart positioning
 /// - Pre-configured light and dark themes
@@ -86,6 +87,7 @@ export 'src/components/navigation/hux_sidebar.dart';
 export 'src/components/navigation/hux_sidebar_item.dart';
 export 'src/components/navigation/hux_breadcrumbs.dart';
 export 'src/components/progress/hux_progress.dart';
+export 'src/components/bottom_sheet/hux_bottom_sheet.dart';
 
 // Export external dependencies
 /// LucideIcons - Beautiful icon set for Flutter applications

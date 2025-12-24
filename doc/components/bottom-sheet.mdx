@@ -1,0 +1,170 @@
+---
+title: 'Bottom Sheet'
+description: 'Mobile-first modal component for menus, forms, and general content'
+---
+
+## Overview
+
+`HuxBottomSheet` is a mobile-first modal component that slides up from the bottom of the screen. It is designed to be thumb-friendly and support drag gestures, making it the standard way to present options, forms, and content on mobile devices.
+
+The package also includes `HuxActionSheet`, a specialized version of the bottom sheet for presenting a list of actionable items, similar to iOS-style action sheets.
+
+## Basic Usage
+
+### Standard Bottom Sheet
+
+```dart
+showHuxBottomSheet(
+  context: context,
+  title: 'Information',
+  child: Text('This is a bottom sheet with some content.'),
+);
+```
+
+### Action Sheet
+
+```dart
+showHuxActionSheet(
+  context: context,
+  title: 'Share Options',
+  actions: [
+    HuxActionSheetItem(
+      label: 'Email',
+      icon: LucideIcons.mail,
+      onTap: () => shareViaEmail(),
+    ),
+    HuxActionSheetItem(
+      label: 'Copy Link',
+      icon: LucideIcons.link,
+      onTap: () => copyLink(),
+    ),
+  ],
+);
+```
+
+## HuxBottomSheet
+
+### Sizes
+
+Control the height of the bottom sheet using fixed variants:
+
+- `HuxBottomSheetSize.small` - Takes ~25-30% of screen height
+- `HuxBottomSheetSize.medium` - Takes ~50% of screen height (Default)
+- `HuxBottomSheetSize.large` - Takes ~85% of screen height
+- `HuxBottomSheetSize.fullscreen` - Takes the full screen height
+
+```dart
+showHuxBottomSheet(
+  context: context,
+  title: 'Large Sheet',
+  size: HuxBottomSheetSize.large,
+  child: MyComplexForm(),
+);
+```
+
+### Header Options
+
+You can customize the header with a title, subtitle, and control buttons:
+
+- `title`: Main heading text
+- `subtitle`: Supporting text below the title
+- `showDragHandle`: Whether to show the top drag indicator (Default: true)
+- `showCloseButton`: Whether to show a close action in the header (Default: false)
+
+```dart
+showHuxBottomSheet(
+  context: context,
+  title: 'Settings',
+  subtitle: 'Configure your app experience',
+  showCloseButton: true,
+  child: SettingsList(),
+);
+```
+
+### Action Buttons
+
+Bottom sheets can include a row of action buttons at the bottom:
+
+```dart
+showHuxBottomSheet(
+  context: context,
+  title: 'Confirm Delete',
+  child: Text('Are you sure you want to delete this item?'),
+  actions: [
+    HuxButton(
+      onPressed: () => Navigator.pop(context),
+      variant: HuxButtonVariant.secondary,
+      child: Text('Cancel'),
+    ),
+    HuxButton(
+      onPressed: () => deleteItem(),
+      child: Text('Delete'),
+    ),
+  ],
+);
+```
+
+## HuxActionSheet
+
+`showHuxActionSheet` is optimized for lists of actions. Each item is represented by a `HuxActionSheetItem`.
+
+### Destructive Actions
+
+Mark actions as destructive to style them with the theme's destructive color:
+
+```dart
+HuxActionSheetItem(
+  label: 'Delete Record',
+  icon: LucideIcons.trash2,
+  isDestructive: true,
+  onTap: () => deleteRecord(),
+)
+```
+
+### Disabled Actions
+
+Actions can be disabled if they are currently unavailable:
+
+```dart
+HuxActionSheetItem(
+  label: 'Share (Login required)',
+  icon: LucideIcons.share2,
+  isDisabled: true,
+  onTap: () {},
+)
+```
+
+## API Reference
+
+### showHuxBottomSheet Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `context` | `BuildContext` | **required** | The current build context |
+| `title` | `String?` | `null` | Optional header title |
+| `subtitle` | `String?` | `null` | Optional header subtitle |
+| `child` | `Widget?` | `null` | Main content widget |
+| `actions` | `List<Widget>?` | `null` | Action buttons at the bottom |
+| `size` | `HuxBottomSheetSize` | `medium` | Height variant of the sheet |
+| `showDragHandle` | `bool` | `true` | Whether to show the top handle |
+| `showCloseButton` | `bool` | `false` | Whether to show close button |
+| `isDismissible` | `bool` | `true` | Whether tapping outside dismisses |
+| `enableDrag` | `bool` | `true` | Whether drag gestures are enabled |
+
+### showHuxActionSheet Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `context` | `BuildContext` | **required** | The current build context |
+| `actions` | `List<HuxActionSheetItem>` | **required** | List of action items |
+| `title` | `String?` | `null` | Optional header title |
+| `subtitle` | `String?` | `null` | Optional header subtitle |
+| `cancelLabel` | `String` | `'Cancel'` | Label for the cancel button |
+| `showCancel` | `bool` | `true` | Whether to show cancel button |
+
+## Accessibility
+
+- **Focus Management**: The bottom sheet handles focus trapping and restoration.
+- **Gestures**: Drag handle provides a visual hint for dismissible content.
+- **Contrast**: All text and icons follow theme-aware contrast rules.
+- **Semantic Roles**: Action items use proper list and button semantics.

@@ -231,6 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = false;
   DateTime? _selectedDateInline;
+
   // Time picker temporarily disabled
   // TimeOfDay? _selectedTime;
 
@@ -264,6 +265,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _datePickerNavKey = GlobalKey();
   final _tooltipKey = GlobalKey();
   final _dialogKey = GlobalKey();
+  final _bottomSheetKey = GlobalKey();
   final _dropdownKey = GlobalKey();
   final _paginationKey = GlobalKey();
   final _tabsKey = GlobalKey();
@@ -378,6 +380,11 @@ class _MyHomePageState extends State<MyHomePage> {
         icon: LucideIcons.messageSquare,
       ),
       const HuxSidebarItemData(
+        id: 'bottom-sheet',
+        label: 'Bottom Sheet',
+        icon: LucideIcons.panelBottom,
+      ),
+      const HuxSidebarItemData(
         id: 'dropdown',
         label: 'Dropdown',
         icon: LucideIcons.chevronDown,
@@ -451,6 +458,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'date-picker': _datePickerNavKey,
       'tooltip': _tooltipKey,
       'dialog': _dialogKey,
+      'bottom-sheet': _bottomSheetKey,
       'dropdown': _dropdownKey,
       'pagination': _paginationKey,
       'tabs': _tabsKey,
@@ -1811,6 +1819,79 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           const SizedBox(height: 32),
                           Container(
+                            key: _bottomSheetKey,
+                            child: SectionWithDocumentation(
+                              componentName: 'bottom-sheet',
+                              child: HuxCard(
+                                size: HuxCardSize.large,
+                                backgroundColor: HuxColors.white5,
+                                borderColor: HuxTokens.borderSecondary(context),
+                                title: 'Bottom Sheet',
+                                subtitle:
+                                    'Mobile-first modal component for options and content',
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 32),
+                                    Wrap(
+                                      spacing: 16,
+                                      runSpacing: 16,
+                                      alignment: WrapAlignment.center,
+                                      children: [
+                                        HuxButton(
+                                          onPressed: () =>
+                                              _showSettingsBottomSheet(context),
+                                          variant: HuxButtonVariant.outline,
+                                          child:
+                                              const Text('Show Bottom Sheet'),
+                                        ),
+                                        HuxButton(
+                                          onPressed: () => showHuxActionSheet(
+                                            context: context,
+                                            title: 'Share Photo',
+                                            subtitle:
+                                                'Choose how to share this photo',
+                                            actions: [
+                                              HuxActionSheetItem(
+                                                label: 'Save to Gallery',
+                                                icon: LucideIcons.download,
+                                                onTap: () => _showSnackBar(
+                                                    'Saved to gallery'),
+                                              ),
+                                              HuxActionSheetItem(
+                                                label: 'Copy Link',
+                                                icon: LucideIcons.link,
+                                                onTap: () => _showSnackBar(
+                                                    'Link copied'),
+                                              ),
+                                              HuxActionSheetItem(
+                                                label: 'Share',
+                                                icon: LucideIcons.share2,
+                                                onTap: () =>
+                                                    _showSnackBar('Shared!'),
+                                              ),
+                                              HuxActionSheetItem(
+                                                label: 'Delete',
+                                                icon: LucideIcons.trash2,
+                                                isDestructive: true,
+                                                onTap: () =>
+                                                    _showSnackBar('Deleted!'),
+                                              ),
+                                            ],
+                                          ),
+                                          variant: HuxButtonVariant.outline,
+                                          child:
+                                              const Text('Show Action Sheet'),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 32),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          Container(
                             key: _dropdownKey,
                             child: SectionWithDocumentation(
                               componentName: 'dropdown',
@@ -1901,6 +1982,118 @@ class _MyHomePageState extends State<MyHomePage> {
     context.showHuxSnackbar(
       message: message,
       variant: HuxSnackbarVariant.info,
+    );
+  }
+
+  void _showSettingsBottomSheet(BuildContext context) {
+    bool notifications = true;
+    bool darkMode = false;
+    bool privacy = false;
+
+    showHuxBottomSheet(
+      context: context,
+      title: 'Settings',
+      subtitle: 'Customize your preferences',
+      size: HuxBottomSheetSize.medium,
+      child: StatefulBuilder(
+        builder: (context, setModalState) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSettingsOptionStateful(
+                context,
+                'Notifications',
+                'Receive push notifications',
+                LucideIcons.bell,
+                notifications,
+                (v) => setModalState(() => notifications = v),
+              ),
+              _buildSettingsOptionStateful(
+                context,
+                'Dark Mode',
+                'Use dark theme',
+                LucideIcons.moon,
+                darkMode,
+                (v) => setModalState(() => darkMode = v),
+              ),
+              _buildSettingsOptionStateful(
+                context,
+                'Privacy',
+                'Manage your privacy settings',
+                LucideIcons.shield,
+                privacy,
+                (v) => setModalState(() => privacy = v),
+              ),
+            ],
+          );
+        },
+      ),
+      actions: [
+        HuxButton(
+          onPressed: () => Navigator.pop(context),
+          variant: HuxButtonVariant.secondary,
+          child: const Text('Cancel'),
+        ),
+        HuxButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _showSnackBar('Settings saved!');
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsOptionStateful(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: HuxTokens.surfaceSecondary(context),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 20, color: HuxTokens.iconPrimary(context)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: HuxTokens.textPrimary(context),
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: HuxTokens.textSecondary(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          HuxSwitch(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
     );
   }
 
