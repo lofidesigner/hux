@@ -14,14 +14,14 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Release: 0.23.0
+## Latest Release: 0.24.0
 
-**HuxProgress**: New linear progress indicator component
-  - Displays task completion and status tracking with smooth animations
-  - Support for labels and value display (percentage or custom format)
-  - Multiple size variants (small, medium, large)
-  - Visual variants (primary, success, destructive)
-  - Theme-aware styling with automatic light/dark mode adaptation
+**HuxBottomSheet**: Mobile-first modal component for menus and content
+  - Support for multiple sizes (small, medium, large, fullscreen)
+  - Optional title, subtitle, and action buttons
+  - Customizable drag handle and close button
+  - Responsive layout with smooth slide-up animations
+  - Theme-aware design with HuxTokens integration
 
 [![Changelog](https://img.shields.io/badge/Changelog-View-black?style=for-the-badge&labelColor=white&logo=github&logoColor=black)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/Docs-Browse-black?style=for-the-badge&labelColor=white&logo=readthedocs&logoColor=black)](https://docs.thehuxdesign.com)
@@ -161,6 +161,10 @@ flutter pub add hux
 ### Command
 - `HuxCommand` - Powerful command palette for quick access to actions and navigation
 - Global keyboard shortcuts integration with `HuxCommandShortcuts.wrapper`
+
+### Bottom Sheet
+- `HuxBottomSheet` - Mobile-first modal component for menus and content
+- `HuxActionSheet` - Semantic alternative to context menus for mobile
 
 ### Theme
 - `HuxTheme` - Pre-configured light and dark themes with Material 3 seed color support
@@ -580,6 +584,61 @@ HuxCommandShortcuts.wrapper(
     home: MyHomePage(),
   ),
 )
+```
+
+#### Bottom Sheet
+
+```dart
+showHuxBottomSheet(
+  context: context,
+  title: 'Settings',
+  subtitle: 'Customize your preferences',
+  size: HuxBottomSheetSize.medium,
+  child: Column(
+    children: [
+      ListTile(title: Text('Notifications')),
+      ListTile(title: Text('Privacy')),
+    ],
+  ),
+  actions: [
+    HuxButton(
+      onPressed: () => Navigator.pop(context),
+      variant: HuxButtonVariant.secondary,
+      child: Text('Cancel'),
+    ),
+    HuxButton(
+      onPressed: () => Navigator.pop(context),
+      child: Text('Save'),
+    ),
+  ],
+);
+```
+
+#### Action Sheet
+
+```dart
+showHuxActionSheet(
+  context: context,
+  title: 'Share Photo',
+  actions: [
+    HuxActionSheetItem(
+      label: 'Save to Gallery',
+      icon: LucideIcons.download,
+      onTap: () => print('Saved'),
+    ),
+    HuxActionSheetItem(
+      label: 'Share',
+      icon: LucideIcons.share2,
+      onTap: () => print('Shared'),
+    ),
+    HuxActionSheetItem(
+      label: 'Delete',
+      icon: LucideIcons.trash2,
+      isDestructive: true,
+      onTap: () => print('Deleted'),
+    ),
+  ],
+);
 ```
 
 ## Customization

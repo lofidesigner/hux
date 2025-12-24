@@ -1,6 +1,21 @@
 # Changelog
 
 
+## [0.24.0] - 2025-12-24
+
+### Added
+- **HuxBottomSheet**: Mobile-first modal component for menus and content
+  - Support for multiple sizes (small, medium, large, fullscreen)
+  - Optional title, subtitle, and action buttons
+  - Customizable drag handle and close button
+  - Responsive layout with smooth slide-up animations
+  - Theme-aware design with HuxTokens integration
+- **HuxActionSheet**: Semantic alternative to context menus for mobile
+  - iOS-style action list with labels and icons
+  - Support for destructive and disabled actions
+  - Built-in cancel button support
+  - Flexible item model with `HuxActionSheetItem`
+
 ## [0.23.1] - 2025-12-21
 
 ### Documentation

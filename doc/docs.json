@@ -33,6 +33,7 @@
               "components/avatar",
               "components/badge",
               "components/breadcrumbs",
+              "components/bottom-sheet",
               "components/buttons",
               "components/cards",
               "components/charts",
