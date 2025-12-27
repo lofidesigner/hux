@@ -7,6 +7,7 @@ import 'breadcrumbs.dart';
 import 'tabs.dart';
 import 'components/otp_section.dart';
 import 'components/progress_section.dart';
+import 'components/bottom_sheet_section.dart';
 
 void main() {
   runApp(const MyApp());
@@ -96,7 +97,46 @@ class _MyAppState extends State<MyApp> {
           );
         },
       ),
+      HuxCommandItem(
+        id: 'show-bottom-sheet',
+        label: 'Show Bottom Sheet',
+        description: 'Open example settings bottom sheet',
+        icon: LucideIcons.panelBottom,
+        category: 'Components',
+        onExecute: () => _showSettingsInContext(context),
+      ),
+      HuxCommandItem(
+        id: 'show-action-sheet',
+        label: 'Show Action Sheet',
+        description: 'Open example share action sheet',
+        icon: LucideIcons.share2,
+        category: 'Components',
+        onExecute: () => _showActionSheetInContext(context),
+      ),
     ];
+  }
+
+  void _showSettingsInContext(BuildContext context) {
+    // We need a helper because the section logic is now encapsulated
+    const BottomSheetSection(onShowSnackBar: _dummySnackBar)
+        .showSettingsBottomSheet(context);
+  }
+
+  static void _dummySnackBar(String message) {
+    // Dummy for command execution if needed, though they usually just pop
+  }
+
+  void _showActionSheetInContext(BuildContext context) {
+    showHuxActionSheet(
+      context: context,
+      title: 'Action Sheet',
+      actions: [
+        HuxActionSheetItem(
+            label: 'Action 1', onTap: () => Navigator.pop(context)),
+        HuxActionSheetItem(
+            label: 'Action 2', onTap: () => Navigator.pop(context)),
+      ],
+    );
   }
 }
 
@@ -1822,71 +1862,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             key: _bottomSheetKey,
                             child: SectionWithDocumentation(
                               componentName: 'bottom-sheet',
-                              child: HuxCard(
-                                size: HuxCardSize.large,
-                                backgroundColor: HuxColors.white5,
-                                borderColor: HuxTokens.borderSecondary(context),
-                                title: 'Bottom Sheet',
-                                subtitle:
-                                    'Mobile-first modal component for options and content',
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 32),
-                                    Wrap(
-                                      spacing: 16,
-                                      runSpacing: 16,
-                                      alignment: WrapAlignment.center,
-                                      children: [
-                                        HuxButton(
-                                          onPressed: () =>
-                                              _showSettingsBottomSheet(context),
-                                          variant: HuxButtonVariant.outline,
-                                          child:
-                                              const Text('Show Bottom Sheet'),
-                                        ),
-                                        HuxButton(
-                                          onPressed: () => showHuxActionSheet(
-                                            context: context,
-                                            title: 'Share Photo',
-                                            subtitle:
-                                                'Choose how to share this photo',
-                                            actions: [
-                                              HuxActionSheetItem(
-                                                label: 'Save to Gallery',
-                                                icon: LucideIcons.download,
-                                                onTap: () => _showSnackBar(
-                                                    'Saved to gallery'),
-                                              ),
-                                              HuxActionSheetItem(
-                                                label: 'Copy Link',
-                                                icon: LucideIcons.link,
-                                                onTap: () => _showSnackBar(
-                                                    'Link copied'),
-                                              ),
-                                              HuxActionSheetItem(
-                                                label: 'Share',
-                                                icon: LucideIcons.share2,
-                                                onTap: () =>
-                                                    _showSnackBar('Shared!'),
-                                              ),
-                                              HuxActionSheetItem(
-                                                label: 'Delete',
-                                                icon: LucideIcons.trash2,
-                                                isDestructive: true,
-                                                onTap: () =>
-                                                    _showSnackBar('Deleted!'),
-                                              ),
-                                            ],
-                                          ),
-                                          variant: HuxButtonVariant.outline,
-                                          child:
-                                              const Text('Show Action Sheet'),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 32),
-                                  ],
-                                ),
+                              child: BottomSheetSection(
+                                onShowSnackBar: _showSnackBar,
                               ),
                             ),
                           ),
@@ -1982,118 +1959,6 @@ class _MyHomePageState extends State<MyHomePage> {
     context.showHuxSnackbar(
       message: message,
       variant: HuxSnackbarVariant.info,
-    );
-  }
-
-  void _showSettingsBottomSheet(BuildContext context) {
-    bool notifications = true;
-    bool darkMode = false;
-    bool privacy = false;
-
-    showHuxBottomSheet(
-      context: context,
-      title: 'Settings',
-      subtitle: 'Customize your preferences',
-      size: HuxBottomSheetSize.medium,
-      child: StatefulBuilder(
-        builder: (context, setModalState) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSettingsOptionStateful(
-                context,
-                'Notifications',
-                'Receive push notifications',
-                LucideIcons.bell,
-                notifications,
-                (v) => setModalState(() => notifications = v),
-              ),
-              _buildSettingsOptionStateful(
-                context,
-                'Dark Mode',
-                'Use dark theme',
-                LucideIcons.moon,
-                darkMode,
-                (v) => setModalState(() => darkMode = v),
-              ),
-              _buildSettingsOptionStateful(
-                context,
-                'Privacy',
-                'Manage your privacy settings',
-                LucideIcons.shield,
-                privacy,
-                (v) => setModalState(() => privacy = v),
-              ),
-            ],
-          );
-        },
-      ),
-      actions: [
-        HuxButton(
-          onPressed: () => Navigator.pop(context),
-          variant: HuxButtonVariant.secondary,
-          child: const Text('Cancel'),
-        ),
-        HuxButton(
-          onPressed: () {
-            Navigator.pop(context);
-            _showSnackBar('Settings saved!');
-          },
-          child: const Text('Save'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsOptionStateful(
-    BuildContext context,
-    String title,
-    String subtitle,
-    IconData icon,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: HuxTokens.surfaceSecondary(context),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 20, color: HuxTokens.iconPrimary(context)),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: HuxTokens.textPrimary(context),
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: HuxTokens.textSecondary(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          HuxSwitch(
-            value: value,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
     );
   }
 
