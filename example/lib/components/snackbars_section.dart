@@ -24,7 +24,7 @@ class SnackbarsSection extends StatelessWidget {
               child: HuxAlert(
                 variant: HuxAlertVariant.info,
                 title: 'Information',
-                message: 'This is a informational message.',
+                message: 'This is an informational message.',
                 showIcon: true,
                 onDismiss: () {
                   context.showHuxSnackbar(

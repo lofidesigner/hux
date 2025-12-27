@@ -98,8 +98,7 @@ class _ButtonsSectionState extends State<ButtonsSection> {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 16),
-            const SizedBox(height: 20),
+            const SizedBox(height: 36),
 
             // Button Variants - Responsive Height Container
             LayoutBuilder(
