@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hux/hux.dart';
 
+import 'section_with_documentation.dart';
+
 class ProgressSection extends StatefulWidget {
   const ProgressSection({super.key});
 
@@ -49,6 +51,7 @@ class _ProgressSectionState extends State<ProgressSection> {
           _isAnimating = false;
         }
       });
+
       if (!completed) {
         _scheduleNextTick();
       }
@@ -66,56 +69,54 @@ class _ProgressSectionState extends State<ProgressSection> {
 
   @override
   Widget build(BuildContext context) {
-    return HuxCard(
-      size: HuxCardSize.large,
-      backgroundColor: HuxColors.white5,
-      borderColor: HuxTokens.borderSecondary(context),
-      title: 'Progress',
-      subtitle:
-          'Linear progress indicators for task completion and status tracking',
-      action: HuxTooltip(
-        message: 'Reset progress',
-        child: Semantics(
-          label: 'Reset progress',
-          button: true,
-          child: HuxButton(
-            onPressed: _resetProgress,
-            variant: HuxButtonVariant.ghost,
-            size: HuxButtonSize.small,
-            icon: LucideIcons.refreshCw,
-            child: const SizedBox.shrink(),
+    return SectionWithDocumentation(
+      componentName: 'progress',
+      child: HuxCard(
+        size: HuxCardSize.large,
+        backgroundColor: HuxColors.white5,
+        borderColor: HuxTokens.borderSecondary(context),
+        title: 'Progress',
+        subtitle:
+            'Linear progress indicators for task completion and status tracking',
+        action: HuxTooltip(
+          message: 'Reset progress',
+          child: Semantics(
+            label: 'Reset progress',
+            button: true,
+            child: HuxButton(
+              onPressed: _resetProgress,
+              variant: HuxButtonVariant.ghost,
+              size: HuxButtonSize.small,
+              icon: LucideIcons.refreshCw,
+              child: const SizedBox.shrink(),
+            ),
           ),
         ),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final screenWidth = MediaQuery.of(context).size.width;
-          final isMobileScreen = screenWidth < 768;
-          final isTabletScreen = screenWidth >= 768 && screenWidth < 1024;
-          final progressWidth = isMobileScreen
-              ? constraints.maxWidth
-              : isTabletScreen
-                  ? constraints.maxWidth * 0.7
-                  : 400.0;
-          return Column(
-            children: [
-              const SizedBox(height: 16),
-              Center(
-                child: SizedBox(
-                  width: progressWidth,
-                  child: HuxProgress(
-                    value: _progressValue,
-                    label: 'Loading Progress',
-                    showValue: true,
-                    variant: HuxProgressVariant.primary,
-                    size: HuxProgressSize.medium,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmallScreen = constraints.maxWidth < 600;
+            final progressWidth = isSmallScreen ? 200.0 : 300.0;
+
+            return Column(
+              children: [
+                const SizedBox(height: 16),
+                Center(
+                  child: SizedBox(
+                    width: progressWidth,
+                    child: HuxProgress(
+                      value: _progressValue,
+                      label: 'Loading Progress',
+                      showValue: true,
+                      variant: HuxProgressVariant.primary,
+                      size: HuxProgressSize.medium,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
-            ],
-          );
-        },
+                const SizedBox(height: 32),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
