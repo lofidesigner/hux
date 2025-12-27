@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hux/hux.dart';
+import 'section_with_documentation.dart';
 
 class BottomSheetSection extends StatelessWidget {
   const BottomSheetSection({
@@ -11,66 +12,46 @@ class BottomSheetSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HuxCard(
-      size: HuxCardSize.large,
-      backgroundColor: HuxColors.white5,
-      borderColor: HuxTokens.borderSecondary(context),
-      title: 'Bottom Sheet',
-      subtitle: 'Mobile-first modal component for options and content',
-      child: Column(
-        children: [
-          const SizedBox(height: 32),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: [
-              HuxButton(
-                onPressed: () => showSettingsBottomSheet(context),
-                variant: HuxButtonVariant.outline,
-                child: const Text('Show Bottom Sheet'),
-              ),
-              HuxButton(
-                onPressed: () => showHuxActionSheet(
-                  context: context,
-                  title: 'Share Photo',
-                  subtitle: 'Choose how to share this photo',
-                  actions: [
-                    HuxActionSheetItem(
-                      label: 'Save to Gallery',
-                      icon: LucideIcons.download,
-                      onTap: () => onShowSnackBar('Saved to gallery'),
-                    ),
-                    HuxActionSheetItem(
-                      label: 'Copy Link',
-                      icon: LucideIcons.link,
-                      onTap: () => onShowSnackBar('Link copied'),
-                    ),
-                    HuxActionSheetItem(
-                      label: 'Share',
-                      icon: LucideIcons.share2,
-                      onTap: () => onShowSnackBar('Shared!'),
-                    ),
-                    HuxActionSheetItem(
-                      label: 'Delete',
-                      icon: LucideIcons.trash2,
-                      isDestructive: true,
-                      onTap: () => onShowSnackBar('Deleted!'),
-                    ),
-                  ],
+    return SectionWithDocumentation(
+      componentName: 'bottom-sheet',
+      child: HuxCard(
+        size: HuxCardSize.large,
+        backgroundColor: HuxColors.white5,
+        borderColor: HuxTokens.borderSecondary(context),
+        title: 'Bottom Sheet',
+        subtitle: 'Mobile-first modal component for options and content',
+        child: Column(
+          children: [
+            const SizedBox(height: 32),
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              alignment: WrapAlignment.center,
+              children: [
+                HuxButton(
+                  onPressed: () =>
+                      showSettingsBottomSheet(context, onShowSnackBar),
+                  variant: HuxButtonVariant.outline,
+                  child: const Text('Show Bottom Sheet'),
                 ),
-                variant: HuxButtonVariant.outline,
-                child: const Text('Show Action Sheet'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-        ],
+                HuxButton(
+                  onPressed: () => showActionSheet(context, onShowSnackBar),
+                  variant: HuxButtonVariant.outline,
+                  child: const Text('Show Action Sheet'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 
-  void showSettingsBottomSheet(BuildContext context) {
+  static void showSettingsBottomSheet(
+    BuildContext context,
+    void Function(String) onShowSnackBar,
+  ) {
     bool notifications = true;
     bool darkMode = false;
     bool privacy = false;
@@ -130,7 +111,53 @@ class BottomSheetSection extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsOptionStateful(
+  static void showActionSheet(
+    BuildContext context,
+    void Function(String) onShowSnackBar,
+  ) {
+    showHuxActionSheet(
+      context: context,
+      title: 'Share Photo',
+      subtitle: 'Choose how to share this photo',
+      actions: [
+        HuxActionSheetItem(
+          label: 'Save to Gallery',
+          icon: LucideIcons.download,
+          onTap: () {
+            Navigator.pop(context);
+            onShowSnackBar('Saved to gallery');
+          },
+        ),
+        HuxActionSheetItem(
+          label: 'Copy Link',
+          icon: LucideIcons.link,
+          onTap: () {
+            Navigator.pop(context);
+            onShowSnackBar('Link copied');
+          },
+        ),
+        HuxActionSheetItem(
+          label: 'Share',
+          icon: LucideIcons.share2,
+          onTap: () {
+            Navigator.pop(context);
+            onShowSnackBar('Shared!');
+          },
+        ),
+        HuxActionSheetItem(
+          label: 'Delete',
+          icon: LucideIcons.trash2,
+          isDestructive: true,
+          onTap: () {
+            Navigator.pop(context);
+            onShowSnackBar('Deleted!');
+          },
+        ),
+      ],
+    );
+  }
+
+  static Widget _buildSettingsOptionStateful(
     BuildContext context,
     String title,
     String subtitle,
