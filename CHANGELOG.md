@@ -1,6 +1,20 @@
 # Changelog
 
 
+## [0.24.1] - 2025-12-28
+
+### Enhanced
+- **Example App**: Major refactoring and code organization improvements
+  - Modularized all component sections into separate files in `components/` directory
+  - Extracted navigation items configuration to `config/navigation_items.dart`
+  - Extracted global commands to `config/global_commands.dart`
+  - Extracted sidebar header to reusable `widgets/sidebar_header.dart` widget
+  - Updated all components to include `SectionWithDocumentation` internally
+  - Removed duplicate code and outdated comments
+  - Fixed indentation inconsistencies throughout
+  - Reduced `main.dart` from 867 to 493 lines (43% reduction)
+  - Improved maintainability, reusability, and code organization
+
 ## [0.24.0] - 2025-12-24
 
 ### Added

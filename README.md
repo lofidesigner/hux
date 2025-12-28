@@ -14,7 +14,7 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Release: 0.24.0
+## Latest Big Release: 0.24.0
 
 **HuxBottomSheet**: Mobile-first modal component for menus and content
   - Support for multiple sizes (small, medium, large, fullscreen)
