@@ -80,6 +80,10 @@ void main() {
                   label: 'Medium',
                   size: HuxBadgeSize.medium,
                 ),
+                HuxBadge(
+                  label: 'Large',
+                  size: HuxBadgeSize.large,
+                ),
               ],
             ),
           ),
@@ -88,7 +92,8 @@ void main() {
 
       expect(find.text('Small'), findsOneWidget);
       expect(find.text('Medium'), findsOneWidget);
-      expect(find.byType(HuxBadge), findsNWidgets(2));
+      expect(find.text('Large'), findsOneWidget);
+      expect(find.byType(HuxBadge), findsNWidgets(3));
     });
 
     testWidgets('renders with custom color', (WidgetTester tester) async {
