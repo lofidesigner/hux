@@ -1,6 +1,28 @@
 # Changelog
 
 
+## [0.24.2] - 2026-01-03
+
+### Enhanced
+- **Documentation**: Comprehensive advanced customization and theming guides
+  - Added complete documentation for `doc/advanced/customization.mdx` with component wrapping, composition patterns, and custom variants
+  - Added complete documentation for `doc/advanced/theming.mdx` with Material 3 seed colors, theme extensions, and brand-specific themes
+  - Both guides include practical code examples and best practices
+
+### Added
+- **Test Coverage**: Expanded test coverage for commonly used components
+  - Added comprehensive tests for `HuxCheckbox` (9 tests covering rendering, states, interactions, disabled state)
+  - Added comprehensive tests for `HuxSwitch` (8 tests covering rendering, on/off states, interactions, disabled state)
+  - Added comprehensive tests for `HuxBadge` (6 tests covering rendering, all variants, sizes including large, custom colors)
+  - All 23 new tests passing with no linting errors
+
+### Documentation
+- **README Improvements**: Enhanced component examples and discoverability
+  - Added `HuxProgress` usage examples with basic, labeled, and success variant demonstrations
+  - Added `HuxSnackbar` extension method examples showing `context.showHuxSnackbar()` usage
+  - Updated section title from "Badges & Alerts" to "Badges & Snackbars" to reflect recommended approach
+  - Improved discoverability of newer components and extension methods
+
 ## [0.24.1] - 2025-12-28
 
 ### Enhanced
