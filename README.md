@@ -499,6 +499,29 @@ HuxAvatarGroup(
 )
 ```
 
+#### Progress
+
+```dart
+// Basic progress indicator
+HuxProgress(value: 0.5)
+
+// Progress with label and value display
+HuxProgress(
+  value: 0.75,
+  label: 'Uploading files',
+  showValue: true,
+  variant: HuxProgressVariant.primary,
+)
+
+// Success variant for completed tasks
+HuxProgress(
+  value: 1.0,
+  label: 'Complete',
+  variant: HuxProgressVariant.success,
+  showValue: true,
+)
+```
+
 #### Tooltip
 
 ```dart
@@ -522,7 +545,7 @@ HuxTooltip(
 )
 ```
 
-#### Badges & Alerts
+#### Badges & Snackbars
 
 ```dart
 // Badge variants
@@ -532,7 +555,21 @@ HuxBadge(
   size: HuxBadgeSize.small,
 )
 
-// Alert with dismissal
+// Snackbar using extension method (recommended)
+context.showHuxSnackbar(
+  message: 'Operation completed successfully',
+  variant: HuxSnackbarVariant.success,
+  title: 'Success!',
+)
+
+// Snackbar with custom duration
+context.showHuxSnackbar(
+  message: 'File saved',
+  variant: HuxSnackbarVariant.info,
+  duration: Duration(seconds: 2),
+)
+
+// Alert with dismissal (deprecated, use Snackbar instead)
 HuxAlert(
   variant: HuxAlertVariant.success,
   title: 'Success!',
