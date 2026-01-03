@@ -5,8 +5,426 @@ description: 'Advanced customization techniques for Hux UI components'
 
 ## Overview
 
-Learn advanced customization techniques for modifying Hux UI components beyond the standard theming system.
+Learn advanced customization techniques for modifying Hux UI components beyond the standard theming system. This guide covers component wrapping, style overrides, composition patterns, and creating custom variants.
 
-<Note>
-  Advanced customization documentation is coming soon.
-</Note>
+## Component Wrapping
+
+### Wrapping with Decorators
+
+Wrap Hux components with additional styling or behavior:
+
+```dart
+// Add custom shadow and border
+Container(
+  decoration: BoxDecoration(
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.1),
+        blurRadius: 10,
+        offset: Offset(0, 4),
+      ),
+    ],
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: HuxButton(
+    onPressed: () {},
+    child: Text('Wrapped Button'),
+  ),
+)
+```
+
+### Custom Padding and Margins
+
+Add custom spacing around components:
+
+```dart
+Padding(
+  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+  child: HuxInput(
+    label: 'Email',
+    hint: 'Enter your email',
+  ),
+)
+```
+
+## Style Overrides
+
+### Using Theme Extensions
+
+Override component styles through theme extensions:
+
+```dart
+final customTheme = HuxTheme.lightTheme.copyWith(
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  ),
+);
+```
+
+### Custom Color Overrides
+
+Override colors on individual components:
+
+```dart
+HuxButton(
+  onPressed: () {},
+  primaryColor: Colors.deepPurple,
+  child: Text('Custom Color'),
+)
+
+HuxBadge(
+  label: 'New',
+  variant: HuxBadgeVariant.primary,
+  // Custom styling through theme tokens
+)
+```
+
+## Composition Patterns
+
+### Building Custom Components
+
+Create reusable components by composing Hux UI components:
+
+```dart
+class CustomActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+  final bool isDestructive;
+
+  const CustomActionButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    this.isDestructive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return HuxButton(
+      onPressed: onPressed,
+      variant: isDestructive 
+          ? HuxButtonVariant.outline 
+          : HuxButtonVariant.primary,
+      icon: icon,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18),
+          SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### Custom Form Fields
+
+Create specialized input components:
+
+```dart
+class EmailInput extends StatelessWidget {
+  final String? label;
+  final String? hint;
+  final ValueChanged<String>? onChanged;
+  final String? Function(String?)? validator;
+
+  const EmailInput({
+    this.label,
+    this.hint,
+    this.onChanged,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return HuxInput(
+      label: label ?? 'Email',
+      hint: hint ?? 'Enter your email address',
+      prefixIcon: Icon(LucideIcons.mail),
+      keyboardType: TextInputType.emailAddress,
+      onChanged: onChanged,
+      validator: validator ?? (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your email';
+        }
+        if (!value.contains('@')) {
+          return 'Please enter a valid email';
+        }
+        return null;
+      },
+    );
+  }
+}
+```
+
+## Custom Variants
+
+### Creating Button Variants
+
+Extend button functionality with custom variants:
+
+```dart
+class CustomButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final Widget child;
+  final bool isGradient;
+
+  const CustomButton({
+    required this.onPressed,
+    required this.child,
+    this.isGradient = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isGradient) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue, Colors.purple],
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: HuxButton(
+          onPressed: onPressed,
+          variant: HuxButtonVariant.ghost,
+          child: child,
+        ),
+      );
+    }
+    
+    return HuxButton(
+      onPressed: onPressed,
+      child: child,
+    );
+  }
+}
+```
+
+### Custom Card Variants
+
+Create specialized card components:
+
+```dart
+class StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color? color;
+
+  const StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return HuxCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: HuxTokens.textSecondary(context),
+                  fontSize: 14,
+                ),
+              ),
+              Icon(
+                icon,
+                color: color ?? HuxTokens.primary(context),
+                size: 20,
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              color: HuxTokens.textPrimary(context),
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+## Advanced Styling
+
+### Custom Animations
+
+Add custom animations to components:
+
+```dart
+class AnimatedButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  const AnimatedButton({
+    required this.onPressed,
+    required this.child,
+  });
+
+  @override
+  _AnimatedButtonState createState() => _AnimatedButtonState();
+}
+
+class _AnimatedButtonState extends State<AnimatedButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 100),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.95).animate(_controller);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onPressed?.call();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: HuxButton(
+          onPressed: widget.onPressed,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+### Conditional Styling
+
+Apply styles based on state or conditions:
+
+```dart
+HuxButton(
+  onPressed: () {},
+  variant: isActive 
+      ? HuxButtonVariant.primary 
+      : HuxButtonVariant.outline,
+  primaryColor: isActive 
+      ? Colors.green 
+      : null,
+  child: Text(isActive ? 'Active' : 'Inactive'),
+)
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Composition over Modification" icon="puzzle-piece">
+    Prefer wrapping and composing components rather than modifying their internals:
+    
+    ```dart
+    // ✅ Good - Composition
+    Container(
+      decoration: BoxDecoration(...),
+      child: HuxButton(...),
+    )
+    
+    // ❌ Avoid - Modifying internal implementation
+    ```
+  </Accordion>
+  
+  <Accordion title="Reusable Components" icon="repeat">
+    Create reusable wrapper components for common patterns:
+    
+    ```dart
+    // Create once, use everywhere
+    class PrimaryActionButton extends StatelessWidget {
+      // Custom implementation
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Theme Consistency" icon="palette">
+    Always use HuxTokens for colors to maintain theme consistency:
+    
+    ```dart
+    // ✅ Good
+    color: HuxTokens.textPrimary(context)
+    
+    // ❌ Avoid
+    color: Colors.black
+    ```
+  </Accordion>
+  
+  <Accordion title="Accessibility" icon="universal-access">
+    Maintain accessibility when customizing:
+    
+    ```dart
+    // Ensure proper contrast ratios
+    // Use semantic colors from HuxTokens
+    // Maintain keyboard navigation
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Examples
+
+<CardGroup cols={2}>
+  <Card
+    title="Component Composition"
+    icon="layers"
+    href="/examples/component-composition"
+  >
+    See how to compose multiple Hux components
+  </Card>
+  <Card
+    title="Custom Variants"
+    icon="shapes"
+    href="/examples/custom-variants"
+  >
+    Learn to create custom component variants
+  </Card>
+  <Card
+    title="Theming Guide"
+    icon="palette"
+    href="/theming"
+  >
+    Basic theming and design tokens
+  </Card>
+  <Card
+    title="Advanced Theming"
+    icon="gear"
+    href="/advanced/theming"
+  >
+    Deep dive into advanced theming
+  </Card>
+</CardGroup>

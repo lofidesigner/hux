@@ -5,8 +5,431 @@ description: 'Deep dive into advanced theming techniques and customization'
 
 ## Overview
 
-Advanced theming techniques for power users who want to deeply customize Hux UI themes and create complex design systems.
+Advanced theming techniques for power users who want to deeply customize Hux UI themes and create complex design systems. This guide covers Material 3 seed colors, custom theme extensions, brand-specific themes, and advanced token usage.
 
 <Note>
-  Advanced theming documentation is coming soon. For basic theming, see the [Theming guide](/theming).
+  For basic theming, see the [Theming guide](/theming).
 </Note>
+
+## Material 3 Seed Colors
+
+### Using Seed Colors
+
+Hux UI automatically detects and respects Material 3 seed colors, enabling full Material 3 theming integration:
+
+```dart
+MaterialApp(
+  theme: HuxTheme.lightTheme.copyWith(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.deepPurple,
+      brightness: Brightness.light,
+    ),
+  ),
+  darkTheme: HuxTheme.darkTheme.copyWith(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.deepPurple,
+      brightness: Brightness.dark,
+    ),
+  ),
+  home: MyApp(),
+)
+```
+
+### Custom Seed Color Integration
+
+All Hux components automatically use the custom seed color when provided:
+
+```dart
+// Buttons, charts, toggles, and other components
+// automatically use the seed color
+HuxButton(
+  onPressed: () {},
+  child: Text('Uses seed color'),
+  // No need to specify primaryColor - uses seed automatically
+)
+
+HuxChart.line(
+  data: chartData,
+  xField: 'x',
+  yField: 'y',
+  // Automatically uses seed color
+)
+```
+
+## Custom Theme Extensions
+
+### Creating Theme Extensions
+
+Extend Hux themes with custom properties:
+
+```dart
+// Define custom theme extension
+@immutable
+class CustomColors extends ThemeExtension<CustomColors> {
+  final Color brandPrimary;
+  final Color brandSecondary;
+  final Color accent;
+
+  const CustomColors({
+    required this.brandPrimary,
+    required this.brandSecondary,
+    required this.accent,
+  });
+
+  @override
+  ThemeExtension<CustomColors> copyWith({
+    Color? brandPrimary,
+    Color? brandSecondary,
+    Color? accent,
+  }) {
+    return CustomColors(
+      brandPrimary: brandPrimary ?? this.brandPrimary,
+      brandSecondary: brandSecondary ?? this.brandSecondary,
+      accent: accent ?? this.accent,
+    );
+  }
+
+  @override
+  ThemeExtension<CustomColors> lerp(
+    ThemeExtension<CustomColors>? other,
+    double t,
+  ) {
+    if (other is! CustomColors) return this;
+    return CustomColors(
+      brandPrimary: Color.lerp(brandPrimary, other.brandPrimary, t)!,
+      brandSecondary: Color.lerp(brandSecondary, other.brandSecondary, t)!,
+      accent: Color.lerp(accent, other.accent, t)!,
+    );
+  }
+}
+
+// Use in your app
+final customTheme = HuxTheme.lightTheme.copyWith(
+  extensions: [
+    CustomColors(
+      brandPrimary: Colors.blue,
+      brandSecondary: Colors.blueAccent,
+      accent: Colors.orange,
+    ),
+  ],
+);
+```
+
+### Accessing Theme Extensions
+
+Use custom theme extensions in your widgets:
+
+```dart
+class CustomWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final customColors = Theme.of(context).extension<CustomColors>();
+    
+    return Container(
+      color: customColors?.brandPrimary ?? Colors.blue,
+      child: Text('Custom themed content'),
+    );
+  }
+}
+```
+
+## Brand-Specific Themes
+
+### Creating Brand Themes
+
+Create complete brand-specific theme configurations:
+
+```dart
+class BrandTheme {
+  static ThemeData get lightTheme {
+    return HuxTheme.lightTheme.copyWith(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Color(0xFF1E40AF), // Brand blue
+        brightness: Brightness.light,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Color(0xFF1E40AF),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      cardTheme: CardTheme(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return HuxTheme.darkTheme.copyWith(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Color(0xFF3B82F6), // Lighter brand blue for dark
+        brightness: Brightness.dark,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Color(0xFF1E3A8A),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+    );
+  }
+}
+```
+
+### Multi-Brand Support
+
+Support multiple brands in a single app:
+
+```dart
+enum AppBrand { primary, secondary, enterprise }
+
+class ThemeManager {
+  static ThemeData getTheme(AppBrand brand, bool isDark) {
+    switch (brand) {
+      case AppBrand.primary:
+        return isDark ? BrandTheme.darkTheme : BrandTheme.lightTheme;
+      case AppBrand.secondary:
+        return isDark ? SecondaryBrandTheme.darkTheme : SecondaryBrandTheme.lightTheme;
+      case AppBrand.enterprise:
+        return isDark ? EnterpriseTheme.darkTheme : EnterpriseTheme.lightTheme;
+    }
+  }
+}
+```
+
+## Advanced Token Usage
+
+### Custom Token Functions
+
+Create helper functions for complex token combinations:
+
+```dart
+class CustomTokens {
+  /// Get a gradient color based on theme
+  static List<Color> getGradientColors(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark
+        ? [HuxColors.black, HuxColors.black90]
+        : [HuxColors.white, HuxColors.black5];
+  }
+
+  /// Get shadow color with proper opacity
+  static Color getShadowColor(BuildContext context) {
+    return HuxTokens.textPrimary(context).withOpacity(0.1);
+  }
+
+  /// Get border color for focused state
+  static Color getFocusedBorderColor(BuildContext context) {
+    return HuxTokens.primary(context);
+  }
+}
+```
+
+### Dynamic Token Calculation
+
+Calculate tokens based on runtime values:
+
+```dart
+class AdaptiveTokens {
+  /// Get text color that adapts to background brightness
+  static Color getAdaptiveTextColor(
+    BuildContext context,
+    Color backgroundColor,
+  ) {
+    // Use HuxWCAG for contrast calculation
+    return HuxWCAG.getContrastingTextColor(
+      backgroundColor: backgroundColor,
+      context: context,
+    );
+  }
+
+  /// Get surface color with custom opacity
+  static Color getSurfaceWithOpacity(
+    BuildContext context,
+    double opacity,
+  ) {
+    final baseColor = HuxTokens.surfacePrimary(context);
+    return baseColor.withOpacity(opacity);
+  }
+}
+```
+
+## Theme Inheritance
+
+### Extending Base Themes
+
+Create theme variations by extending base themes:
+
+```dart
+class CompactTheme {
+  static ThemeData fromBase(ThemeData base) {
+    return base.copyWith(
+      // Reduce padding and spacing
+      cardTheme: base.cardTheme?.copyWith(
+        margin: EdgeInsets.all(8),
+      ),
+      // Smaller text sizes
+      textTheme: base.textTheme.apply(
+        fontSizeFactor: 0.9,
+      ),
+    );
+  }
+}
+
+// Usage
+final compactLightTheme = CompactTheme.fromBase(HuxTheme.lightTheme);
+final compactDarkTheme = CompactTheme.fromBase(HuxTheme.darkTheme);
+```
+
+### Conditional Theme Properties
+
+Apply theme properties conditionally:
+
+```dart
+ThemeData buildTheme({
+  required bool isDark,
+  required bool isHighContrast,
+  required bool isCompact,
+}) {
+  var theme = isDark ? HuxTheme.darkTheme : HuxTheme.lightTheme;
+  
+  if (isHighContrast) {
+    theme = theme.copyWith(
+      // Increase contrast ratios
+      colorScheme: theme.colorScheme.copyWith(
+        primary: theme.colorScheme.primary.withOpacity(1.0),
+      ),
+    );
+  }
+  
+  if (isCompact) {
+    theme = CompactTheme.fromBase(theme);
+  }
+  
+  return theme;
+}
+```
+
+## Advanced Color Schemes
+
+### Custom Color Palettes
+
+Define complete custom color palettes:
+
+```dart
+class CustomColorScheme {
+  static const Color primary = Color(0xFF6366F1);
+  static const Color secondary = Color(0xFF8B5CF6);
+  static const Color accent = Color(0xFFEC4899);
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color error = Color(0xFFEF4444);
+  
+  static ColorScheme get lightColorScheme {
+    return ColorScheme.light(
+      primary: primary,
+      secondary: secondary,
+      tertiary: accent,
+      error: error,
+    );
+  }
+  
+  static ColorScheme get darkColorScheme {
+    return ColorScheme.dark(
+      primary: primary,
+      secondary: secondary,
+      tertiary: accent,
+      error: error,
+    );
+  }
+}
+
+// Apply to theme
+final customTheme = HuxTheme.lightTheme.copyWith(
+  colorScheme: CustomColorScheme.lightColorScheme,
+);
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Seed Color First" icon="seedling">
+    Use Material 3 seed colors for automatic color generation:
+    
+    ```dart
+    // ✅ Good - Automatic color scheme
+    colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue)
+    
+    // ⚠️ Use custom schemes only when needed
+    ```
+  </Accordion>
+  
+  <Accordion title="Theme Extensions" icon="puzzle-piece">
+    Use theme extensions for brand-specific colors:
+    
+    ```dart
+    // ✅ Good - Extensible and type-safe
+    final colors = Theme.of(context).extension<CustomColors>();
+    ```
+  </Accordion>
+  
+  <Accordion title="Token Consistency" icon="link">
+    Always use HuxTokens for semantic colors:
+    
+    ```dart
+    // ✅ Good - Theme-aware
+    HuxTokens.textPrimary(context)
+    
+    // ❌ Avoid - Hardcoded
+    Colors.black
+    ```
+  </Accordion>
+  
+  <Accordion title="Test Both Themes" icon="eye">
+    Always test custom themes in both light and dark modes:
+    
+    ```dart
+    // Test light mode
+    theme: customLightTheme,
+    themeMode: ThemeMode.light,
+    
+    // Test dark mode
+    darkTheme: customDarkTheme,
+    themeMode: ThemeMode.dark,
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Examples
+
+<CardGroup cols={2}>
+  <Card
+    title="Basic Theming"
+    icon="palette"
+    href="/theming"
+  >
+    Start with basic theming concepts
+  </Card>
+  <Card
+    title="Customization"
+    icon="gear"
+    href="/advanced/customization"
+  >
+    Learn component customization techniques
+  </Card>
+  <Card
+    title="Theme Switching"
+    icon="moon"
+    href="/examples/theme-switching"
+  >
+    See dynamic theme switching in action
+  </Card>
+  <Card
+    title="Figma Library"
+    icon="figma"
+    href="https://www.figma.com/community/file/1541197128732135637/the-hux-ui"
+  >
+    Explore the complete design system
+  </Card>
+</CardGroup>
