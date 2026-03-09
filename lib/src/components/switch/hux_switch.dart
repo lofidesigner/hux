@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/hux_tokens.dart';
 
 /// HuxSwitch is a toggle switch component with smooth animations that follows
@@ -39,45 +40,63 @@ class HuxSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: isDisabled || onChanged == null
-          ? null
-          : () {
-              if (onChanged != null) {
-                onChanged!(!value);
-              }
+    final bool isEnabled = !isDisabled && onChanged != null;
+    void toggle() => onChanged?.call(!value);
+
+    return Semantics(
+      container: true,
+      toggled: value,
+      enabled: isEnabled,
+      child: FocusableActionDetector(
+        enabled: isEnabled,
+        mouseCursor: isEnabled ? SystemMouseCursors.click : MouseCursor.defer,
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        },
+        actions: <Type, Action<Intent>>{
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              toggle();
+              return null;
             },
-      child: Padding(
-        padding: const EdgeInsets.all(4), // Touch target padding
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: _getSwitchWidth(),
-          height: _getSwitchHeight(),
-          padding: EdgeInsets.all(_getPadding()),
-          decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(10), // Consistent with Hux border radius
-            color: _getBackgroundColor(context),
-            border: Border.all(
-              color: _getBorderColor(context),
-              width: 1, // Consistent with Hux border width
-            ),
           ),
-          child: AnimatedAlign(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              width: _getHandleSize(),
-              height: _getHandleSize(),
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: isEnabled ? toggle : null,
+          child: Padding(
+            padding: const EdgeInsets.all(4), // Touch target padding
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: _getSwitchWidth(),
+              height: _getSwitchHeight(),
+              padding: EdgeInsets.all(_getPadding()),
               decoration: BoxDecoration(
                 borderRadius:
-                    BorderRadius.circular(8), // Consistent rounded corners
-                color: _getHandleColor(context),
+                    BorderRadius.circular(10), // Consistent with Hux border radius
+                color: _getBackgroundColor(context),
                 border: Border.all(
-                  color: _getHandleBorderColor(context),
-                  width: 1,
+                  color: _getBorderColor(context),
+                  width: 1, // Consistent with Hux border width
+                ),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: _getHandleSize(),
+                  height: _getHandleSize(),
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.circular(8), // Consistent rounded corners
+                    color: _getHandleColor(context),
+                    border: Border.all(
+                      color: _getHandleBorderColor(context),
+                      width: 1,
+                    ),
+                  ),
                 ),
               ),
             ),

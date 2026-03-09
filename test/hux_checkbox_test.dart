@@ -1,4 +1,6 @@
+import 'dart:ui' show CheckedState;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hux/hux.dart';
 
@@ -168,6 +170,60 @@ void main() {
       );
 
       expect(find.byType(HuxCheckbox), findsOneWidget);
+    });
+
+    testWidgets('exposes checkbox semantics', (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: HuxCheckbox(
+                value: true,
+                onChanged: (value) {},
+                label: 'Accept terms',
+              ),
+            ),
+          ),
+        );
+
+        final node = tester.getSemantics(find.byType(HuxCheckbox));
+        final data = node.getSemanticsData();
+        expect(data.label, contains('Accept terms'));
+        expect(data.flagsCollection.isChecked, isNot(CheckedState.none));
+        expect(data.flagsCollection.isChecked, CheckedState.isTrue);
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets('toggles with keyboard activation',
+        (WidgetTester tester) async {
+      bool checked = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return HuxCheckbox(
+                  value: checked,
+                  onChanged: (value) => setState(() => checked = value ?? false),
+                  label: 'Keyboard checkbox',
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pump();
+
+      expect(checked, isTrue);
     });
   });
 }

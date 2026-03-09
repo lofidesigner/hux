@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/hux_tokens.dart';
 import '../../utils/hux_wcag.dart';
 
@@ -45,53 +46,78 @@ class HuxCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: isDisabled || onChanged == null
-          ? null
-          : () => onChanged?.call(!value),
-      child: Padding(
-        padding: const EdgeInsets.all(4), // Touch target padding
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: _getCheckboxSize(),
-              height: _getCheckboxSize(),
-              decoration: BoxDecoration(
-                color: _getBackgroundColor(context),
-                border: Border.all(
-                  color: _getBorderColor(context),
-                  width: 1, // Consistent with Hux border width
-                ),
-                borderRadius:
-                    BorderRadius.circular(6), // Slightly rounded like cards
-              ),
-              child: value
-                  ? Icon(
-                      Icons.check,
-                      size: _getIconSize(),
-                      color: _getCheckColor(context),
-                    )
-                  : null,
+    final bool isEnabled = !isDisabled && onChanged != null;
+    void toggle() => onChanged?.call(!value);
+
+    return MergeSemantics(
+      child: Semantics(
+        container: true,
+        checked: value,
+        enabled: isEnabled,
+        label: label,
+        child: FocusableActionDetector(
+          enabled: isEnabled,
+          mouseCursor: isEnabled ? SystemMouseCursors.click : MouseCursor.defer,
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                toggle();
+                return null;
+              },
             ),
-            if (label != null) ...[
-              SizedBox(width: _getLabelSpacing()),
-              Flexible(
-                child: Text(
-                  label!,
-                  style: TextStyle(
-                    fontSize: _getFontSize(),
-                    fontWeight:
-                        FontWeight.w500, // Consistent with Hux typography
-                    color: isDisabled
-                        ? HuxTokens.textDisabled(context)
-                        : HuxTokens.textPrimary(context),
+          },
+          child: GestureDetector(
+            onTap: isEnabled ? toggle : null,
+            child: Padding(
+              padding: const EdgeInsets.all(4), // Touch target padding
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: _getCheckboxSize(),
+                    height: _getCheckboxSize(),
+                    decoration: BoxDecoration(
+                      color: _getBackgroundColor(context),
+                      border: Border.all(
+                        color: _getBorderColor(context),
+                        width: 1, // Consistent with Hux border width
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(6), // Slightly rounded like cards
+                    ),
+                    child: value
+                        ? Icon(
+                            Icons.check,
+                            size: _getIconSize(),
+                            color: _getCheckColor(context),
+                          )
+                        : null,
                   ),
-                ),
+                  if (label != null) ...[
+                    SizedBox(width: _getLabelSpacing()),
+                    Flexible(
+                      child: Text(
+                        label!,
+                        style: TextStyle(
+                          fontSize: _getFontSize(),
+                          fontWeight:
+                              FontWeight.w500, // Consistent with Hux typography
+                          color: isDisabled
+                              ? HuxTokens.textDisabled(context)
+                              : HuxTokens.textPrimary(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
     );

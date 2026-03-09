@@ -1,4 +1,6 @@
+import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hux/hux.dart';
 
@@ -155,6 +157,57 @@ void main() {
       );
 
       expect(find.byType(HuxSwitch), findsOneWidget);
+    });
+
+    testWidgets('exposes switch semantics', (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: HuxSwitch(
+                value: true,
+                onChanged: (value) {},
+              ),
+            ),
+          ),
+        );
+
+        final node = tester.getSemantics(find.byType(HuxSwitch));
+        final data = node.getSemanticsData();
+        expect(data.flagsCollection.isToggled, isNot(Tristate.none));
+        expect(data.flagsCollection.isToggled, Tristate.isTrue);
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets('toggles with keyboard activation',
+        (WidgetTester tester) async {
+      bool enabled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return HuxSwitch(
+                  value: enabled,
+                  onChanged: (value) => setState(() => enabled = value),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pump();
+
+      expect(enabled, isTrue);
     });
   });
 }

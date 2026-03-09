@@ -1,4 +1,6 @@
+import 'dart:ui' show CheckedState;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hux/hux.dart';
 
@@ -178,6 +180,62 @@ void main() {
       expect(find.byType(HuxRadio<String>), findsOneWidget);
       expect(find.byType(HuxRadio<int>), findsOneWidget);
       expect(find.byType(HuxRadio<bool>), findsOneWidget);
+    });
+
+    testWidgets('exposes radio semantics', (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: HuxRadio<String>(
+                value: 'option1',
+                groupValue: 'option1',
+                onChanged: (value) {},
+                label: 'Option 1',
+              ),
+            ),
+          ),
+        );
+
+        final node = tester.getSemantics(find.byType(HuxRadio<String>));
+        final data = node.getSemanticsData();
+        expect(data.label, contains('Option 1'));
+        expect(data.flagsCollection.isChecked, isNot(CheckedState.none));
+        expect(data.flagsCollection.isChecked, CheckedState.isTrue);
+        expect(data.flagsCollection.isInMutuallyExclusiveGroup, isTrue);
+      } finally {
+        semantics.dispose();
+      }
+    });
+
+    testWidgets('selects with keyboard activation', (WidgetTester tester) async {
+      String? selected;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) {
+                return HuxRadio<String>(
+                  value: 'option1',
+                  groupValue: selected,
+                  onChanged: (value) => setState(() => selected = value),
+                  label: 'Keyboard radio',
+                );
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pump();
+
+      expect(selected, equals('option1'));
     });
   });
 }

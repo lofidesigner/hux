@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/hux_tokens.dart';
 
 /// HuxRadio is a customizable radio button component with consistent styling
@@ -47,56 +48,83 @@ class HuxRadio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap:
-          isDisabled || onChanged == null ? null : () => onChanged?.call(value),
-      child: Padding(
-        padding: const EdgeInsets.all(4), // Touch target padding
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: _radioSize,
-              height: _radioSize,
-              decoration: BoxDecoration(
-                color: _getBackgroundColor(context),
-                border: Border.all(
-                  color: _getBorderColor(context),
-                  width: 1, // Consistent with Hux border width
-                ),
-                shape: BoxShape.circle, // Radio buttons are circular
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: _innerCircleSize,
-                        height: _innerCircleSize,
-                        decoration: BoxDecoration(
-                          color: _getInnerCircleColor(context),
-                          shape: BoxShape.circle,
+    final bool isEnabled = !isDisabled && onChanged != null;
+    void select() => onChanged?.call(value);
+
+    return MergeSemantics(
+      child: Semantics(
+        container: true,
+        checked: isSelected,
+        inMutuallyExclusiveGroup: true,
+        enabled: isEnabled,
+        label: label,
+        child: FocusableActionDetector(
+          enabled: isEnabled,
+          mouseCursor: isEnabled ? SystemMouseCursors.click : MouseCursor.defer,
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                select();
+                return null;
+              },
+            ),
+          },
+          child: GestureDetector(
+            onTap: isEnabled ? select : null,
+            child: Padding(
+              padding: const EdgeInsets.all(4), // Touch target padding
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: _radioSize,
+                    height: _radioSize,
+                    decoration: BoxDecoration(
+                      color: _getBackgroundColor(context),
+                      border: Border.all(
+                        color: _getBorderColor(context),
+                        width: 1, // Consistent with Hux border width
+                      ),
+                      shape: BoxShape.circle, // Radio buttons are circular
+                    ),
+                    child: isSelected
+                        ? Center(
+                            child: Container(
+                              width: _innerCircleSize,
+                              height: _innerCircleSize,
+                              decoration: BoxDecoration(
+                                color: _getInnerCircleColor(context),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                  if (label != null) ...[
+                    SizedBox(width: _labelSpacing),
+                    Flexible(
+                      child: Text(
+                        label!,
+                        style: TextStyle(
+                          fontSize: _fontSize,
+                          fontWeight:
+                              FontWeight.w500, // Consistent with Hux typography
+                          color: isDisabled
+                              ? HuxTokens.textDisabled(context)
+                              : HuxTokens.textPrimary(context),
                         ),
                       ),
-                    )
-                  : null,
-            ),
-            if (label != null) ...[
-              SizedBox(width: _labelSpacing),
-              Flexible(
-                child: Text(
-                  label!,
-                  style: TextStyle(
-                    fontSize: _fontSize,
-                    fontWeight:
-                        FontWeight.w500, // Consistent with Hux typography
-                    color: isDisabled
-                        ? HuxTokens.textDisabled(context)
-                        : HuxTokens.textPrimary(context),
-                  ),
-                ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
     );
