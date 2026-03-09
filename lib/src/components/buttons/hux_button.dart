@@ -32,6 +32,8 @@ class HuxButton extends StatelessWidget {
     this.isDisabled = false,
     this.icon,
     this.primaryColor,
+    this.focusNode,
+    this.autofocus = false,
   });
 
   /// Callback triggered when the button is pressed
@@ -58,6 +60,12 @@ class HuxButton extends StatelessWidget {
   /// Primary color used for styling the button (optional, defaults to theme primary)
   final Color? primaryColor;
 
+  /// Optional focus node for keyboard focus control.
+  final FocusNode? focusNode;
+
+  /// Whether this button should request focus automatically.
+  final bool autofocus;
+
   /// Width behavior of the button (optional)
   /// - null: Hug content (default)
   /// - HuxButtonWidth.expand: Full width
@@ -77,6 +85,8 @@ class HuxButton extends StatelessWidget {
       width: _getWidth(),
       child: ElevatedButton(
         onPressed: isDisabled || isLoading ? null : onPressed,
+        focusNode: focusNode,
+        autofocus: autofocus,
         style: buttonStyle.copyWith(
           // Override minimum width constraints for hug behavior
           minimumSize: (width == null || width == HuxButtonWidth.hug)

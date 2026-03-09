@@ -118,7 +118,7 @@ class HuxSnackbar {
             BoxShadow(
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.black.withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.1),
+                  : Colors.black.withValues(alpha: 0.08),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -132,10 +132,10 @@ class HuxSnackbar {
               sigmaY: Theme.of(context).brightness == Brightness.dark ? 10 : 5,
             ),
             child: Container(
+              key: const ValueKey('huxSnackbarContainer'),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: (backgroundColor ?? _getBackgroundColor(context))
-                    .withValues(alpha: 0.1),
+                color: _getContainerBackgroundColor(context),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _getBorderColor(context),
@@ -161,12 +161,15 @@ class HuxSnackbar {
                         if (title != null) ...[
                           Text(
                             title!,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight
-                                      .w600, // Consistent with Hux typography
+                            style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight
+                                          .w600, // Consistent with Hux typography
+                                      color: textColor ?? _getTextColor(context),
+                                    ) ??
+                                TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                   color: textColor ?? _getTextColor(context),
                                 ),
                           ),
@@ -174,10 +177,14 @@ class HuxSnackbar {
                         ],
                         Text(
                           message,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
                                     color: textColor ?? _getTextColor(context),
-                                  ),
+                                  ) ??
+                              TextStyle(
+                                fontSize: 12,
+                                color: textColor ?? _getTextColor(context),
+                              ),
                         ),
                       ],
                     ),
@@ -212,7 +219,7 @@ class HuxSnackbar {
   Color _getBackgroundColor(BuildContext context) {
     switch (variant) {
       case HuxSnackbarVariant.info:
-        return HuxTokens.surfaceSecondary(context);
+        return HuxTokens.surfaceElevated(context);
       case HuxSnackbarVariant.success:
         return HuxTokens.surfaceOverlay(context);
       case HuxSnackbarVariant.warning:
@@ -261,6 +268,14 @@ class HuxSnackbar {
       case HuxSnackbarVariant.error:
         return HuxTokens.textDestructive(context);
     }
+  }
+
+  Color _getContainerBackgroundColor(BuildContext context) {
+    if (backgroundColor != null) return backgroundColor!;
+
+    final baseColor = _getBackgroundColor(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return baseColor.withValues(alpha: isDark ? 0.72 : 0.78);
   }
 
   IconData _getIcon() {

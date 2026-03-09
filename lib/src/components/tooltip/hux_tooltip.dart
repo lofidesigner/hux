@@ -109,6 +109,7 @@ class HuxTooltip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tooltipKey = GlobalKey<TooltipState>();
     final effectiveBackgroundColor =
         backgroundColor ?? HuxTokens.primary(context);
     final effectiveTextColor = textColor ?? HuxTokens.textInvert(context);
@@ -144,6 +145,7 @@ class HuxTooltip extends StatelessWidget {
             : null);
 
     return Tooltip(
+      key: tooltipKey,
       message: effectiveRichMessage != null ? null : message,
       preferBelow: preferBelow,
       excludeFromSemantics: excludeFromSemantics,
@@ -177,7 +179,17 @@ class HuxTooltip extends StatelessWidget {
       padding: effectivePadding,
       margin: effectiveMargin,
       richMessage: effectiveRichMessage,
-      child: child,
+      child: Focus(
+        canRequestFocus: false,
+        onFocusChange: (hasFocus) {
+          if (hasFocus) {
+            tooltipKey.currentState?.ensureTooltipVisible();
+          } else {
+            Tooltip.dismissAllToolTips();
+          }
+        },
+        child: child,
+      ),
     );
   }
 }

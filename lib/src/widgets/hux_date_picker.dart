@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/hux_tokens.dart';
 import '../components/buttons/hux_button.dart';
 
@@ -64,6 +65,7 @@ class _HuxDatePickerState extends State<HuxDatePicker> {
   OverlayEntry? _overlayEntry;
   late DateTime _currentDate;
   final LayerLink _layerLink = LayerLink();
+  final FocusNode _panelFocusNode = FocusNode(debugLabel: 'huxDatePickerPanel');
 
   @override
   void initState() {
@@ -83,6 +85,7 @@ class _HuxDatePickerState extends State<HuxDatePicker> {
   @override
   void dispose() {
     _removeOverlay();
+    _panelFocusNode.dispose();
     super.dispose();
   }
 
@@ -135,14 +138,17 @@ class _HuxDatePickerState extends State<HuxDatePicker> {
               child: Material(
                 color: widget.overlayColor,
                 child: _HuxDatePickerPanel(
+                  key: const ValueKey('huxDatePickerPanel'),
                   initialDate: _currentDate,
                   firstDate: widget.firstDate,
                   lastDate: widget.lastDate,
+                  panelFocusNode: _panelFocusNode,
                   onSelected: (date) {
                     setState(() => _currentDate = date);
                     widget.onDateChanged?.call(date);
                     _removeOverlay();
                   },
+                  onRequestClose: _removeOverlay,
                   isAbove: showAbove,
                 ),
               ),
@@ -153,6 +159,11 @@ class _HuxDatePickerState extends State<HuxDatePicker> {
     );
 
     Overlay.of(context, rootOverlay: false).insert(_overlayEntry!);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _overlayEntry != null) {
+        _panelFocusNode.requestFocus();
+      }
+    });
   }
 
   void _removeOverlay() {
@@ -191,10 +202,13 @@ class _HuxDatePickerState extends State<HuxDatePicker> {
 
 class _HuxDatePickerPanel extends StatefulWidget {
   const _HuxDatePickerPanel({
+    super.key,
     required this.initialDate,
     required this.firstDate,
     required this.lastDate,
     required this.onSelected,
+    required this.panelFocusNode,
+    required this.onRequestClose,
     this.isAbove = false,
   });
 
@@ -209,6 +223,8 @@ class _HuxDatePickerPanel extends StatefulWidget {
 
   /// Callback invoked when a date is chosen from the panel.
   final ValueChanged<DateTime> onSelected;
+  final FocusNode panelFocusNode;
+  final VoidCallback onRequestClose;
 
   /// Whether the panel is rendered above the trigger (for limited space below).
   final bool isAbove;
@@ -217,12 +233,31 @@ class _HuxDatePickerPanel extends StatefulWidget {
   State<_HuxDatePickerPanel> createState() => _HuxDatePickerPanelState();
 }
 
+class _CalendarTabIntent extends Intent {
+  const _CalendarTabIntent({required this.forward});
+  final bool forward;
+}
+
 class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
+  static const int _firstYear = 1900;
+  static const int _lastYear = 2050;
+  static const int _monthColumns = 3;
   late DateTime _selectedDate;
   late DateTime _currentMonth;
+  late DateTime _focusedDate;
   bool _isShowingMonthPicker = false;
   bool _isShowingYearPicker = false;
   late ScrollController _yearScrollController;
+  final FocusNode _prevMonthFocusNode = FocusNode(debugLabel: 'prevMonth');
+  final FocusNode _monthFocusNode = FocusNode(debugLabel: 'monthButton');
+  final FocusNode _yearFocusNode = FocusNode(debugLabel: 'yearButton');
+  final FocusNode _nextMonthFocusNode = FocusNode(debugLabel: 'nextMonth');
+  late final List<FocusNode> _monthOptionFocusNodes;
+  late final List<FocusNode> _yearOptionFocusNodes;
+  int? _focusedMonthOptionIndex;
+  int? _focusedYearOptionIndex;
+  bool _isMonthButtonFocused = false;
+  bool _isYearButtonFocused = false;
 
   @override
   void initState() {
@@ -233,17 +268,40 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
             ? widget.initialDate.year
             : 2025;
     _currentMonth = DateTime(defaultYear, widget.initialDate.month);
+    _focusedDate = _selectedDate;
     _yearScrollController = ScrollController();
+    _monthOptionFocusNodes = List<FocusNode>.generate(
+      12,
+      (index) => FocusNode(debugLabel: 'monthOption-${index + 1}'),
+    );
+    _yearOptionFocusNodes = List<FocusNode>.generate(
+      _lastYear - _firstYear + 1,
+      (index) => FocusNode(debugLabel: 'yearOption-${_firstYear + index}'),
+    );
   }
 
   @override
   void dispose() {
     _yearScrollController.dispose();
+    _prevMonthFocusNode.dispose();
+    _monthFocusNode.dispose();
+    _yearFocusNode.dispose();
+    _nextMonthFocusNode.dispose();
+    for (final FocusNode node in _monthOptionFocusNodes) {
+      node.dispose();
+    }
+    for (final FocusNode node in _yearOptionFocusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
   void _handleSelect(DateTime date) {
-    setState(() => _selectedDate = date);
+    setState(() {
+      _selectedDate = date;
+      _focusedDate = date;
+      _currentMonth = DateTime(date.year, date.month);
+    });
     widget.onSelected(date);
   }
 
@@ -259,34 +317,384 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     });
   }
 
+  bool _isSelectableDate(DateTime date) {
+    return !date.isBefore(widget.firstDate) && !date.isAfter(widget.lastDate);
+  }
+
+  void _moveFocusByDays(int deltaDays) {
+    if (_isShowingMonthPicker || _isShowingYearPicker) return;
+    final DateTime target =
+        DateTime(_focusedDate.year, _focusedDate.month, _focusedDate.day + deltaDays);
+    final DateTime clamped = target.isBefore(widget.firstDate)
+        ? widget.firstDate
+        : (target.isAfter(widget.lastDate) ? widget.lastDate : target);
+
+    if (!_isSelectableDate(clamped)) return;
+    setState(() {
+      _focusedDate = clamped;
+      _currentMonth = DateTime(clamped.year, clamped.month);
+    });
+  }
+
+  void _cycleTabFocus({required bool forward}) {
+    final FocusNode? current = FocusManager.instance.primaryFocus;
+    final bool onHeader = current == _prevMonthFocusNode ||
+        current == _monthFocusNode ||
+        current == _yearFocusNode ||
+        current == _nextMonthFocusNode;
+    final bool onCalendar = current == widget.panelFocusNode;
+    final bool onMonthPicker =
+        _monthOptionFocusNodes.contains(current) || _focusedMonthOptionIndex != null;
+    final bool onYearPicker =
+        _yearOptionFocusNodes.contains(current) || _focusedYearOptionIndex != null;
+
+    if (_isShowingMonthPicker) {
+      if (onHeader) {
+        _focusMonthOption(_currentMonth.month - 1);
+        return;
+      }
+      if (onMonthPicker) {
+        (forward ? _prevMonthFocusNode : _nextMonthFocusNode).requestFocus();
+        return;
+      }
+      _focusMonthOption(_currentMonth.month - 1);
+      return;
+    }
+
+    if (_isShowingYearPicker) {
+      if (onHeader) {
+        _focusYearOption(_currentMonth.year - _firstYear);
+        return;
+      }
+      if (onYearPicker) {
+        (forward ? _prevMonthFocusNode : _nextMonthFocusNode).requestFocus();
+        return;
+      }
+      _focusYearOption(_currentMonth.year - _firstYear);
+      return;
+    }
+
+    if (onHeader) {
+      widget.panelFocusNode.requestFocus();
+      return;
+    }
+
+    if (onCalendar) {
+      if (forward) {
+        _prevMonthFocusNode.requestFocus();
+      } else {
+        _nextMonthFocusNode.requestFocus();
+      }
+      return;
+    }
+
+    widget.panelFocusNode.requestFocus();
+  }
+
+  void _focusMonthOption(int index) {
+    final int clamped = index.clamp(0, _monthOptionFocusNodes.length - 1);
+    _focusedMonthOptionIndex = clamped;
+    _monthOptionFocusNodes[clamped].requestFocus();
+  }
+
+  void _focusYearOption(int index) {
+    final int clamped = index.clamp(0, _yearOptionFocusNodes.length - 1);
+    _focusedYearOptionIndex = clamped;
+    _yearOptionFocusNodes[clamped].requestFocus();
+    _scrollYearOptionIntoView(clamped);
+  }
+
+  void _scrollYearOptionIntoView(int index) {
+    if (!_yearScrollController.hasClients) {
+      return;
+    }
+    const double itemHeight = 36.0;
+    const double itemPadding = 8.0;
+    const double totalItemHeight = itemHeight + itemPadding;
+    const double viewportHeight = 4 * 32 + 24;
+    final double targetOffset = (index * totalItemHeight) - (viewportHeight / 2);
+    final double maxOffset = _yearScrollController.position.maxScrollExtent;
+    _yearScrollController.animateTo(
+      targetOffset.clamp(0.0, maxOffset),
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _moveHeaderFocus({required bool forward}) {
+    final List<FocusNode> header = <FocusNode>[
+      _prevMonthFocusNode,
+      _monthFocusNode,
+      _yearFocusNode,
+      _nextMonthFocusNode,
+    ];
+    final FocusNode? current = FocusManager.instance.primaryFocus;
+    int index = header.indexOf(current ?? _monthFocusNode);
+    if (index == -1) {
+      index = 0;
+    }
+    final int nextIndex =
+        (index + (forward ? 1 : -1) + header.length) % header.length;
+    header[nextIndex].requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: HuxTokens.surfaceElevated(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: HuxTokens.buttonSecondaryBorder(context)),
-        boxShadow: [
-          BoxShadow(
-            color: HuxTokens.shadowColor(context),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return FocusTraversalGroup(
+      policy: WidgetOrderTraversalPolicy(),
+      child: Shortcuts(
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.escape): DismissIntent(),
+          SingleActivator(LogicalKeyboardKey.arrowLeft):
+              DirectionalFocusIntent(TraversalDirection.left),
+          SingleActivator(LogicalKeyboardKey.arrowRight):
+              DirectionalFocusIntent(TraversalDirection.right),
+          SingleActivator(LogicalKeyboardKey.arrowUp):
+              DirectionalFocusIntent(TraversalDirection.up),
+          SingleActivator(LogicalKeyboardKey.arrowDown):
+              DirectionalFocusIntent(TraversalDirection.down),
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.tab):
+              _CalendarTabIntent(forward: true),
+          SingleActivator(LogicalKeyboardKey.tab, shift: true):
+              _CalendarTabIntent(forward: false),
+        },
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            DismissIntent: CallbackAction<DismissIntent>(
+              onInvoke: (_) {
+                widget.onRequestClose();
+                return null;
+              },
+            ),
+            DirectionalFocusIntent: CallbackAction<DirectionalFocusIntent>(
+              onInvoke: (DirectionalFocusIntent intent) {
+                final FocusNode? current = FocusManager.instance.primaryFocus;
+                final bool onCalendar = current == widget.panelFocusNode;
+                final bool onHeader = current == _prevMonthFocusNode ||
+                    current == _monthFocusNode ||
+                    current == _yearFocusNode ||
+                    current == _nextMonthFocusNode;
+                final int monthPickerIndex = _focusedMonthOptionIndex ??
+                    (_currentMonth.month - 1);
+                final int yearPickerIndex =
+                    _focusedYearOptionIndex ?? (_currentMonth.year - _firstYear);
+
+                if (_isShowingMonthPicker) {
+                  if (onHeader) {
+                    switch (intent.direction) {
+                      case TraversalDirection.left:
+                        _moveHeaderFocus(forward: false);
+                        break;
+                      case TraversalDirection.right:
+                        _moveHeaderFocus(forward: true);
+                        break;
+                      case TraversalDirection.up:
+                      case TraversalDirection.down:
+                        _focusMonthOption(_currentMonth.month - 1);
+                        break;
+                    }
+                    return null;
+                  }
+                  switch (intent.direction) {
+                    case TraversalDirection.left:
+                      _focusMonthOption(monthPickerIndex - 1);
+                      break;
+                    case TraversalDirection.right:
+                      _focusMonthOption(monthPickerIndex + 1);
+                      break;
+                    case TraversalDirection.up:
+                      if (monthPickerIndex < _monthColumns) {
+                        _monthFocusNode.requestFocus();
+                      } else {
+                        _focusMonthOption(monthPickerIndex - _monthColumns);
+                      }
+                      break;
+                    case TraversalDirection.down:
+                      _focusMonthOption(monthPickerIndex + _monthColumns);
+                      break;
+                  }
+                  return null;
+                }
+
+                if (_isShowingYearPicker) {
+                  if (onHeader) {
+                    switch (intent.direction) {
+                      case TraversalDirection.left:
+                        _moveHeaderFocus(forward: false);
+                        break;
+                      case TraversalDirection.right:
+                        _moveHeaderFocus(forward: true);
+                        break;
+                      case TraversalDirection.up:
+                      case TraversalDirection.down:
+                        _focusYearOption(_currentMonth.year - _firstYear);
+                        break;
+                    }
+                    return null;
+                  }
+                  switch (intent.direction) {
+                    case TraversalDirection.up:
+                      if (yearPickerIndex == 0) {
+                        _yearFocusNode.requestFocus();
+                      } else {
+                        _focusYearOption(yearPickerIndex - 1);
+                      }
+                      break;
+                    case TraversalDirection.down:
+                      _focusYearOption(yearPickerIndex + 1);
+                      break;
+                    case TraversalDirection.left:
+                      _focusYearOption(yearPickerIndex - 1);
+                      break;
+                    case TraversalDirection.right:
+                      _focusYearOption(yearPickerIndex + 1);
+                      break;
+                  }
+                  return null;
+                }
+
+                if (onHeader) {
+                  switch (intent.direction) {
+                    case TraversalDirection.left:
+                      _moveHeaderFocus(forward: false);
+                      break;
+                    case TraversalDirection.right:
+                      _moveHeaderFocus(forward: true);
+                      break;
+                    case TraversalDirection.down:
+                      widget.panelFocusNode.requestFocus();
+                      break;
+                    case TraversalDirection.up:
+                      widget.panelFocusNode.requestFocus();
+                      break;
+                  }
+                  return null;
+                }
+
+                if (onCalendar) {
+                  switch (intent.direction) {
+                    case TraversalDirection.left:
+                      _moveFocusByDays(-1);
+                      break;
+                    case TraversalDirection.right:
+                      _moveFocusByDays(1);
+                      break;
+                    case TraversalDirection.up:
+                      final DateTime previousWeekDate = DateTime(
+                        _focusedDate.year,
+                        _focusedDate.month,
+                        _focusedDate.day - 7,
+                      );
+                      final bool wouldLeaveCurrentMonth =
+                          previousWeekDate.year != _currentMonth.year ||
+                              previousWeekDate.month != _currentMonth.month;
+                      if (wouldLeaveCurrentMonth) {
+                        _monthFocusNode.requestFocus();
+                      } else {
+                        _moveFocusByDays(-7);
+                      }
+                      break;
+                    case TraversalDirection.down:
+                      _moveFocusByDays(7);
+                      break;
+                  }
+                }
+                return null;
+              },
+            ),
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                final FocusNode? current = FocusManager.instance.primaryFocus;
+                if (current == _prevMonthFocusNode) {
+                  _previousMonth();
+                  return null;
+                }
+                if (current == _nextMonthFocusNode) {
+                  _nextMonth();
+                  return null;
+                }
+                if (current == _monthFocusNode) {
+                  _toggleMonthPicker();
+                  return null;
+                }
+                if (current == _yearFocusNode) {
+                  _toggleYearPicker();
+                  return null;
+                }
+                final int monthPickerIndex =
+                    _focusedMonthOptionIndex ?? (_currentMonth.month - 1);
+                if (_isShowingMonthPicker) {
+                  _handleMonthSelection(monthPickerIndex + 1);
+                  return null;
+                }
+                final int yearPickerIndex =
+                    _focusedYearOptionIndex ?? (_currentMonth.year - _firstYear);
+                if (_isShowingYearPicker) {
+                  _handleYearSelection(_firstYear + yearPickerIndex);
+                  return null;
+                }
+                if (!_isShowingMonthPicker &&
+                    !_isShowingYearPicker &&
+                    _isSelectableDate(_focusedDate)) {
+                  _handleSelect(_focusedDate);
+                }
+                return null;
+              },
+            ),
+            _CalendarTabIntent: CallbackAction<_CalendarTabIntent>(
+              onInvoke: (_CalendarTabIntent intent) {
+                if (_isShowingMonthPicker || _isShowingYearPicker) {
+                  return null;
+                }
+                _moveFocusByDays(intent.forward ? 1 : -1);
+                return null;
+              },
+            ),
+          },
+          child: Focus(
+            focusNode: widget.panelFocusNode,
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.tab) {
+                final bool isShiftPressed =
+                    HardwareKeyboard.instance.isShiftPressed;
+                _cycleTabFocus(forward: !isShiftPressed);
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: HuxTokens.surfaceElevated(context),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: HuxTokens.buttonSecondaryBorder(context)),
+                boxShadow: [
+                  BoxShadow(
+                    color: HuxTokens.shadowColor(context),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 7 * 32 + 6, child: _buildHeader()),
+                  const SizedBox(height: 16),
+                  if (_isShowingMonthPicker)
+                    SizedBox(width: 7 * 32 + 6, child: _buildMonthPicker())
+                  else if (_isShowingYearPicker)
+                    SizedBox(width: 7 * 32 + 6, child: _buildYearPicker())
+                  else
+                    SizedBox(width: 7 * 32 + 6, child: _buildCalendarGrid()),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(width: 7 * 32 + 6, child: _buildHeader()),
-          const SizedBox(height: 16),
-          if (_isShowingMonthPicker)
-            SizedBox(width: 7 * 32 + 6, child: _buildMonthPicker())
-          else if (_isShowingYearPicker)
-            SizedBox(width: 7 * 32 + 6, child: _buildYearPicker())
-          else
-            SizedBox(width: 7 * 32 + 6, child: _buildCalendarGrid()),
-        ],
+        ),
       ),
     );
   }
@@ -294,37 +702,89 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   Widget _buildHeader() {
     return Row(
       children: [
-        _NavigationButton(icon: Icons.chevron_left, onPressed: _previousMonth),
+        _NavigationButton(
+          icon: Icons.chevron_left,
+          onPressed: _previousMonth,
+          focusNode: _prevMonthFocusNode,
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _buildMonthButton()),
+        Expanded(child: _buildMonthButton(focusNode: _monthFocusNode)),
         const SizedBox(width: 8),
-        Expanded(child: _buildYearButton()),
+        Expanded(child: _buildYearButton(focusNode: _yearFocusNode)),
         const SizedBox(width: 12),
-        _NavigationButton(icon: Icons.chevron_right, onPressed: _nextMonth),
+        _NavigationButton(
+          icon: Icons.chevron_right,
+          onPressed: _nextMonth,
+          focusNode: _nextMonthFocusNode,
+        ),
       ],
     );
   }
 
-  Widget _buildMonthButton() {
-    return HuxButton(
-      onPressed: _toggleMonthPicker,
-      variant: HuxButtonVariant.outline,
-      size: HuxButtonSize.small,
-      child: Text(
-        _getMonthName(_currentMonth.month),
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+  Widget _buildMonthButton({required FocusNode focusNode}) {
+    return Focus(
+      focusNode: focusNode,
+      onFocusChange: (focused) {
+        if (_isMonthButtonFocused != focused) {
+          setState(() => _isMonthButtonFocused = focused);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _isMonthButtonFocused
+                ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                : Colors.transparent,
+            width: 2,
+            strokeAlign: BorderSide.strokeAlignOutside,
+          ),
+        ),
+        child: HuxButton(
+          onPressed: _toggleMonthPicker,
+          variant: HuxButtonVariant.outline,
+          size: HuxButtonSize.small,
+          child: Text(
+            _getMonthName(_currentMonth.month),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildYearButton() {
-    return HuxButton(
-      onPressed: _toggleYearPicker,
-      variant: HuxButtonVariant.outline,
-      size: HuxButtonSize.small,
-      child: Text(
-        _currentMonth.year.toString(),
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+  Widget _buildYearButton({required FocusNode focusNode}) {
+    return Focus(
+      focusNode: focusNode,
+      onFocusChange: (focused) {
+        if (_isYearButtonFocused != focused) {
+          setState(() => _isYearButtonFocused = focused);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _isYearButtonFocused
+                ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                : Colors.transparent,
+            width: 2,
+            strokeAlign: BorderSide.strokeAlignOutside,
+          ),
+        ),
+        child: HuxButton(
+          onPressed: _toggleYearPicker,
+          variant: HuxButtonVariant.outline,
+          size: HuxButtonSize.small,
+          child: Text(
+            _currentMonth.year.toString(),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
     );
   }
@@ -333,23 +793,35 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     setState(() {
       _isShowingMonthPicker = !_isShowingMonthPicker;
       _isShowingYearPicker = false;
+      _focusedYearOptionIndex = null;
     });
+    if (_isShowingMonthPicker) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusMonthOption(_currentMonth.month - 1);
+      });
+    } else {
+      _focusedMonthOptionIndex = null;
+    }
   }
 
   void _toggleYearPicker() {
     setState(() {
       _isShowingYearPicker = !_isShowingYearPicker;
       _isShowingMonthPicker = false;
+      _focusedMonthOptionIndex = null;
     });
     if (_isShowingYearPicker) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final int currentYearIndex = _currentMonth.year - 1900;
+        final int currentYearIndex = _currentMonth.year - _firstYear;
         const double itemHeight = 36.0;
         const double itemPadding = 4.0;
         const double totalItemHeight = itemHeight + itemPadding;
         final double scrollOffset = (currentYearIndex * totalItemHeight) - 100;
         _yearScrollController.jumpTo(scrollOffset.clamp(0.0, double.infinity));
+        _focusYearOption(currentYearIndex);
       });
+    } else {
+      _focusedYearOptionIndex = null;
     }
   }
 
@@ -357,6 +829,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, month);
       _isShowingMonthPicker = false;
+      _focusedMonthOptionIndex = null;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _monthFocusNode.requestFocus();
     });
   }
 
@@ -364,6 +840,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     setState(() {
       _currentMonth = DateTime(year, _currentMonth.month);
       _isShowingYearPicker = false;
+      _focusedYearOptionIndex = null;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _yearFocusNode.requestFocus();
     });
   }
 
@@ -423,7 +903,43 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     const double itemWidth = (7 * 32 + 6 - (2 * 8)) / 3;
     return SizedBox(
       width: itemWidth,
-      child: HuxButton(
+      child: _PickerOptionButton(
+        focusNode: _monthOptionFocusNodes[month - 1],
+        onFocusChange: (focused) {
+          if (focused) {
+            _focusedMonthOptionIndex = month - 1;
+          }
+        },
+        onKeyEvent: (node, event) {
+          if (event is! KeyDownEvent) {
+            return KeyEventResult.ignored;
+          }
+          final int index = month - 1;
+          switch (event.logicalKey) {
+            case LogicalKeyboardKey.arrowLeft:
+              _focusMonthOption(index - 1);
+              return KeyEventResult.handled;
+            case LogicalKeyboardKey.arrowRight:
+              _focusMonthOption(index + 1);
+              return KeyEventResult.handled;
+            case LogicalKeyboardKey.arrowUp:
+              if (index < _monthColumns) {
+                _monthFocusNode.requestFocus();
+              } else {
+                _focusMonthOption(index - _monthColumns);
+              }
+              return KeyEventResult.handled;
+            case LogicalKeyboardKey.arrowDown:
+              _focusMonthOption(index + _monthColumns);
+              return KeyEventResult.handled;
+            case LogicalKeyboardKey.enter:
+            case LogicalKeyboardKey.space:
+              _handleMonthSelection(month);
+              return KeyEventResult.handled;
+            default:
+              return KeyEventResult.ignored;
+          }
+        },
         onPressed: () => _handleMonthSelection(month),
         variant:
             isSelected ? HuxButtonVariant.primary : HuxButtonVariant.outline,
@@ -440,7 +956,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
 
   Widget _buildYearPicker() {
     final List<int> years =
-        List.generate(2050 - 1900 + 1, (index) => 1900 + index);
+        List.generate(_lastYear - _firstYear + 1, (index) => _firstYear + index);
     return Column(
       children: [
         Text(
@@ -466,7 +982,38 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                 final bool isSelected = year == _currentMonth.year;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: HuxButton(
+                  child: _PickerOptionButton(
+                    focusNode: _yearOptionFocusNodes[index],
+                    onFocusChange: (focused) {
+                      if (focused) {
+                        _focusedYearOptionIndex = index;
+                      }
+                    },
+                    onKeyEvent: (node, event) {
+                      if (event is! KeyDownEvent) {
+                        return KeyEventResult.ignored;
+                      }
+                      switch (event.logicalKey) {
+                        case LogicalKeyboardKey.arrowUp:
+                        case LogicalKeyboardKey.arrowLeft:
+                          if (index == 0) {
+                            _yearFocusNode.requestFocus();
+                          } else {
+                            _focusYearOption(index - 1);
+                          }
+                          return KeyEventResult.handled;
+                        case LogicalKeyboardKey.arrowDown:
+                        case LogicalKeyboardKey.arrowRight:
+                          _focusYearOption(index + 1);
+                          return KeyEventResult.handled;
+                        case LogicalKeyboardKey.enter:
+                        case LogicalKeyboardKey.space:
+                          _handleYearSelection(year);
+                          return KeyEventResult.handled;
+                        default:
+                          return KeyEventResult.ignored;
+                      }
+                    },
                     onPressed: () => _handleYearSelection(year),
                     variant: isSelected
                         ? HuxButtonVariant.primary
@@ -561,6 +1108,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                       day: prevMonthDay,
                       isCurrentMonth: false,
                       isSelected: false,
+                      isFocused: false,
                       isToday: false,
                       isDisabled: true,
                     ),
@@ -573,6 +1121,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                       day: nextMonthDay,
                       isCurrentMonth: false,
                       isSelected: false,
+                      isFocused: false,
                       isToday: false,
                       isDisabled: true,
                     ),
@@ -596,6 +1145,9 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                       day: dayNumber,
                       isCurrentMonth: true,
                       isSelected: isSelected,
+                      isFocused: date.year == _focusedDate.year &&
+                          date.month == _focusedDate.month &&
+                          date.day == _focusedDate.day,
                       isToday: isToday,
                       isDisabled: isDisabled,
                       onTap: isDisabled ? null : () => _handleSelect(date),
@@ -616,6 +1168,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     required int day,
     required bool isCurrentMonth,
     required bool isSelected,
+    required bool isFocused,
     required bool isToday,
     required bool isDisabled,
     VoidCallback? onTap,
@@ -624,6 +1177,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
       day: day,
       isCurrentMonth: isCurrentMonth,
       isSelected: isSelected,
+      isFocused: isFocused,
       isToday: isToday,
       isDisabled: isDisabled,
       onTap: onTap,
@@ -655,6 +1209,7 @@ class _DayCell extends StatefulWidget {
     required this.day,
     required this.isCurrentMonth,
     required this.isSelected,
+    required this.isFocused,
     required this.isToday,
     required this.isDisabled,
     this.onTap,
@@ -663,6 +1218,7 @@ class _DayCell extends StatefulWidget {
   final int day;
   final bool isCurrentMonth;
   final bool isSelected;
+  final bool isFocused;
   final bool isToday;
   final bool isDisabled;
   final VoidCallback? onTap;
@@ -739,6 +1295,12 @@ class _DayCellState extends State<_DayCell> {
   }
 
   Border? _getBorder() {
+    if (widget.isFocused && !widget.isSelected) {
+      return Border.all(
+        color: HuxTokens.primary(context).withValues(alpha: 0.7),
+        width: 1.5,
+      );
+    }
     if (widget.isToday && !widget.isSelected) {
       return Border.all(color: HuxTokens.primary(context), width: 1);
     }
@@ -751,10 +1313,12 @@ class _NavigationButton extends StatefulWidget {
   const _NavigationButton({
     required this.icon,
     required this.onPressed,
+    this.focusNode,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
+  final FocusNode? focusNode;
 
   @override
   State<_NavigationButton> createState() => _NavigationButtonState();
@@ -763,31 +1327,47 @@ class _NavigationButton extends StatefulWidget {
 class _NavigationButtonState extends State<_NavigationButton> {
   bool _isHovered = false;
   bool _isPressed = false;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onPressed,
-        onTapDown: (_) => setState(() => _isPressed = true),
-        onTapUp: (_) => setState(() => _isPressed = false),
-        onTapCancel: () => setState(() => _isPressed = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Icon(
-              widget.icon,
-              size: 18,
-              color: _getIconColor(),
+    return Focus(
+      focusNode: widget.focusNode,
+      onFocusChange: (focused) {
+        if (_isFocused != focused) {
+          setState(() => _isFocused = focused);
+        }
+      },
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) => setState(() => _isPressed = false),
+          onTapCancel: () => setState(() => _isPressed = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: _getBackgroundColor(),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _isFocused
+                    ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                    : Colors.transparent,
+                width: 2,
+                strokeAlign: BorderSide.strokeAlignOutside,
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                widget.icon,
+                size: 18,
+                color: _getIconColor(),
+              ),
             ),
           ),
         ),
@@ -803,5 +1383,66 @@ class _NavigationButtonState extends State<_NavigationButton> {
 
   Color _getIconColor() {
     return HuxTokens.textPrimary(context);
+  }
+}
+
+class _PickerOptionButton extends StatefulWidget {
+  const _PickerOptionButton({
+    this.focusNode,
+    this.onFocusChange,
+    this.onKeyEvent,
+    required this.onPressed,
+    required this.variant,
+    required this.size,
+    required this.child,
+  });
+
+  final FocusNode? focusNode;
+  final ValueChanged<bool>? onFocusChange;
+  final FocusOnKeyEventCallback? onKeyEvent;
+  final VoidCallback onPressed;
+  final HuxButtonVariant variant;
+  final HuxButtonSize size;
+  final Widget child;
+
+  @override
+  State<_PickerOptionButton> createState() => _PickerOptionButtonState();
+}
+
+class _PickerOptionButtonState extends State<_PickerOptionButton> {
+  bool _isFocused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: widget.focusNode,
+      onFocusChange: (focused) {
+        if (_isFocused != focused) {
+          setState(() => _isFocused = focused);
+        }
+        widget.onFocusChange?.call(focused);
+      },
+      onKeyEvent: widget.onKeyEvent,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: _isFocused
+                ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                : Colors.transparent,
+            width: 2,
+            strokeAlign: BorderSide.strokeAlignOutside,
+          ),
+        ),
+        child: HuxButton(
+          onPressed: widget.onPressed,
+          variant: widget.variant,
+          size: widget.size,
+          child: widget.child,
+        ),
+      ),
+    );
   }
 }

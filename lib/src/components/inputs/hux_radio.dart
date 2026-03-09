@@ -17,7 +17,7 @@ import '../../theme/hux_tokens.dart';
 ///   label: 'Option 1',
 /// )
 /// ```
-class HuxRadio<T> extends StatelessWidget {
+class HuxRadio<T> extends StatefulWidget {
   /// Creates a HuxRadio widget.
   const HuxRadio({
     super.key,
@@ -47,20 +47,32 @@ class HuxRadio<T> extends StatelessWidget {
   bool get isSelected => value == groupValue;
 
   @override
+  State<HuxRadio<T>> createState() => _HuxRadioState<T>();
+}
+
+class _HuxRadioState<T> extends State<HuxRadio<T>> {
+  bool _isFocused = false;
+
+  @override
   Widget build(BuildContext context) {
-    final bool isEnabled = !isDisabled && onChanged != null;
-    void select() => onChanged?.call(value);
+    final bool isEnabled = !widget.isDisabled && widget.onChanged != null;
+    void select() => widget.onChanged?.call(widget.value);
 
     return MergeSemantics(
       child: Semantics(
         container: true,
-        checked: isSelected,
+        checked: widget.isSelected,
         inMutuallyExclusiveGroup: true,
         enabled: isEnabled,
-        label: label,
+        label: widget.label,
         child: FocusableActionDetector(
           enabled: isEnabled,
           mouseCursor: isEnabled ? SystemMouseCursors.click : MouseCursor.defer,
+          onShowFocusHighlight: (isFocused) {
+            if (_isFocused != isFocused) {
+              setState(() => _isFocused = isFocused);
+            }
+          },
           shortcuts: const <ShortcutActivator, Intent>{
             SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
             SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
@@ -81,40 +93,55 @@ class HuxRadio<T> extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    width: _radioSize,
-                    height: _radioSize,
+                  AnimatedContainer(
+                    key: const ValueKey('huxRadioFocusRing'),
+                    duration: const Duration(milliseconds: 120),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: _getBackgroundColor(context),
+                      borderRadius: BorderRadius.circular(999),
                       border: Border.all(
-                        color: _getBorderColor(context),
-                        width: 1, // Consistent with Hux border width
+                        color: _isFocused
+                            ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                            : Colors.transparent,
+                        width: 2,
+                        strokeAlign: BorderSide.strokeAlignOutside,
                       ),
-                      shape: BoxShape.circle, // Radio buttons are circular
                     ),
-                    child: isSelected
-                        ? Center(
-                            child: Container(
-                              width: _innerCircleSize,
-                              height: _innerCircleSize,
-                              decoration: BoxDecoration(
-                                color: _getInnerCircleColor(context),
-                                shape: BoxShape.circle,
+                    child: Container(
+                      width: _radioSize,
+                      height: _radioSize,
+                      decoration: BoxDecoration(
+                        color: _getBackgroundColor(context),
+                        border: Border.all(
+                          color: _getBorderColor(context),
+                          width: 1, // Consistent with Hux border width
+                        ),
+                        shape: BoxShape.circle, // Radio buttons are circular
+                      ),
+                      child: widget.isSelected
+                          ? Center(
+                              child: Container(
+                                width: _innerCircleSize,
+                                height: _innerCircleSize,
+                                decoration: BoxDecoration(
+                                  color: _getInnerCircleColor(context),
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                          )
-                        : null,
+                            )
+                          : null,
+                    ),
                   ),
-                  if (label != null) ...[
+                  if (widget.label != null) ...[
                     SizedBox(width: _labelSpacing),
                     Flexible(
                       child: Text(
-                        label!,
+                        widget.label!,
                         style: TextStyle(
                           fontSize: _fontSize,
                           fontWeight:
                               FontWeight.w500, // Consistent with Hux typography
-                          color: isDisabled
+                          color: widget.isDisabled
                               ? HuxTokens.textDisabled(context)
                               : HuxTokens.textPrimary(context),
                         ),
@@ -131,22 +158,22 @@ class HuxRadio<T> extends StatelessWidget {
   }
 
   Color _getBackgroundColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.surfaceSecondary(context).withValues(alpha: 0.5);
     }
     return HuxTokens.surfaceSecondary(context);
   }
 
   Color _getBorderColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.borderSecondary(context).withValues(alpha: 0.5);
     }
     return HuxTokens.borderSecondary(context);
   }
 
   Color _getInnerCircleColor(BuildContext context) {
-    if (isSelected) {
-      if (isDisabled) {
+    if (widget.isSelected) {
+      if (widget.isDisabled) {
         return HuxTokens.primary(context).withValues(alpha: 0.5);
       }
       return HuxTokens.primary(context);

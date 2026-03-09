@@ -16,7 +16,7 @@ import '../../theme/hux_tokens.dart';
 ///   size: HuxSwitchSize.medium,
 /// )
 /// ```
-class HuxSwitch extends StatelessWidget {
+class HuxSwitch extends StatefulWidget {
   /// Creates a HuxSwitch widget.
   const HuxSwitch({
     super.key,
@@ -39,17 +39,29 @@ class HuxSwitch extends StatelessWidget {
   final HuxSwitchSize size;
 
   @override
+  State<HuxSwitch> createState() => _HuxSwitchState();
+}
+
+class _HuxSwitchState extends State<HuxSwitch> {
+  bool _isFocused = false;
+
+  @override
   Widget build(BuildContext context) {
-    final bool isEnabled = !isDisabled && onChanged != null;
-    void toggle() => onChanged?.call(!value);
+    final bool isEnabled = !widget.isDisabled && widget.onChanged != null;
+    void toggle() => widget.onChanged?.call(!widget.value);
 
     return Semantics(
       container: true,
-      toggled: value,
+      toggled: widget.value,
       enabled: isEnabled,
       child: FocusableActionDetector(
         enabled: isEnabled,
         mouseCursor: isEnabled ? SystemMouseCursors.click : MouseCursor.defer,
+        onShowFocusHighlight: (isFocused) {
+          if (_isFocused != isFocused) {
+            setState(() => _isFocused = isFocused);
+          }
+        },
         shortcuts: const <ShortcutActivator, Intent>{
           SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
           SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
@@ -68,33 +80,50 @@ class HuxSwitch extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(4), // Touch target padding
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: _getSwitchWidth(),
-              height: _getSwitchHeight(),
-              padding: EdgeInsets.all(_getPadding()),
+              key: const ValueKey('huxSwitchFocusRing'),
+              duration: const Duration(milliseconds: 120),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(10), // Consistent with Hux border radius
-                color: _getBackgroundColor(context),
                 border: Border.all(
-                  color: _getBorderColor(context),
-                  width: 1, // Consistent with Hux border width
+                  color: _isFocused
+                      ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                      : Colors.transparent,
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignOutside,
                 ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: AnimatedAlign(
+              child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: _getHandleSize(),
-                  height: _getHandleSize(),
-                  decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.circular(8), // Consistent rounded corners
-                    color: _getHandleColor(context),
-                    border: Border.all(
-                      color: _getHandleBorderColor(context),
-                      width: 1,
+                width: _getSwitchWidth(),
+                height: _getSwitchHeight(),
+                padding: EdgeInsets.all(_getPadding()),
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(10), // Consistent with Hux border radius
+                  color: _getBackgroundColor(context),
+                  border: Border.all(
+                    color: _getBorderColor(context),
+                    width: 1, // Consistent with Hux border width
+                  ),
+                ),
+                child: AnimatedAlign(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  alignment: widget.value
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Container(
+                    width: _getHandleSize(),
+                    height: _getHandleSize(),
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(8), // Consistent rounded corners
+                      color: _getHandleColor(context),
+                      border: Border.all(
+                        color: _getHandleBorderColor(context),
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),
@@ -107,41 +136,41 @@ class HuxSwitch extends StatelessWidget {
   }
 
   Color _getBackgroundColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.surfaceSecondary(context).withValues(alpha: 0.5);
     }
-    return value
+    return widget.value
         ? HuxTokens.primary(context).withValues(alpha: 0.1)
         : HuxTokens.surfaceSecondary(context);
   }
 
   Color _getBorderColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.borderSecondary(context);
     }
     return HuxTokens.borderPrimary(context);
   }
 
   Color _getHandleColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.surfaceSecondary(context);
     }
-    return value
+    return widget.value
         ? HuxTokens.primary(context)
         : HuxTokens.surfacePrimary(context);
   }
 
   Color _getHandleBorderColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.borderSecondary(context);
     }
-    return value
+    return widget.value
         ? HuxTokens.primary(context)
         : HuxTokens.borderPrimary(context);
   }
 
   double _getSwitchWidth() {
-    switch (size) {
+    switch (widget.size) {
       case HuxSwitchSize.small:
         return 36;
       case HuxSwitchSize.medium:
@@ -152,7 +181,7 @@ class HuxSwitch extends StatelessWidget {
   }
 
   double _getSwitchHeight() {
-    switch (size) {
+    switch (widget.size) {
       case HuxSwitchSize.small:
         return 20;
       case HuxSwitchSize.medium:
@@ -163,7 +192,7 @@ class HuxSwitch extends StatelessWidget {
   }
 
   double _getHandleSize() {
-    switch (size) {
+    switch (widget.size) {
       case HuxSwitchSize.small:
         return 14;
       case HuxSwitchSize.medium:

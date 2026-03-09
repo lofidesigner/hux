@@ -21,7 +21,6 @@ void main() {
       );
 
       expect(find.byType(HuxRadio<String>), findsOneWidget);
-      expect(find.byType(Container), findsOneWidget);
     });
 
     testWidgets('renders with label', (WidgetTester tester) async {
@@ -55,13 +54,8 @@ void main() {
         ),
       );
 
-      // Should show inner circle when selected
-      final radioContainer = tester.widget<Container>(
-        find.byType(Container).first,
-      );
-
-      // The container should have a child (the inner circle) when selected
-      expect(radioContainer.child, isNotNull);
+      // Should render inner circle marker when selected
+      expect(find.byType(Center), findsOneWidget);
     });
 
     testWidgets('shows unselected state when value does not match groupValue',
@@ -78,13 +72,8 @@ void main() {
         ),
       );
 
-      // Should not show inner circle when not selected
-      final radioContainer = tester.widget<Container>(
-        find.byType(Container).first,
-      );
-
-      // The container should not have a child when not selected
-      expect(radioContainer.child, isNull);
+      // Should not render inner circle marker when not selected
+      expect(find.byType(Center), findsNothing);
     });
 
     testWidgets('calls onChanged when tapped', (WidgetTester tester) async {
@@ -236,6 +225,41 @@ void main() {
       await tester.pump();
 
       expect(selected, equals('option1'));
+    });
+
+    testWidgets('shows visual focus ring when focused',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: HuxRadio<String>(
+              value: 'option1',
+              groupValue: null,
+              onChanged: (_) {},
+              label: 'Focusable radio',
+            ),
+          ),
+        ),
+      );
+
+      final Finder ringFinder = find.byKey(const ValueKey('huxRadioFocusRing'));
+
+      final AnimatedContainer beforeFocus =
+          tester.widget<AnimatedContainer>(ringFinder);
+      final BoxDecoration beforeDecoration =
+          beforeFocus.decoration! as BoxDecoration;
+      final Border beforeBorder = beforeDecoration.border! as Border;
+      expect(beforeBorder.top.color, equals(Colors.transparent));
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+
+      final AnimatedContainer afterFocus =
+          tester.widget<AnimatedContainer>(ringFinder);
+      final BoxDecoration afterDecoration =
+          afterFocus.decoration! as BoxDecoration;
+      final Border afterBorder = afterDecoration.border! as Border;
+      expect(afterBorder.top.color, isNot(equals(Colors.transparent)));
     });
   });
 }

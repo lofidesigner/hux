@@ -225,5 +225,40 @@ void main() {
 
       expect(checked, isTrue);
     });
+
+    testWidgets('shows visual focus ring when focused',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: HuxCheckbox(
+              value: false,
+              onChanged: (_) {},
+              label: 'Focusable checkbox',
+            ),
+          ),
+        ),
+      );
+
+      final Finder ringFinder =
+          find.byKey(const ValueKey('huxCheckboxFocusRing'));
+
+      final AnimatedContainer beforeFocus =
+          tester.widget<AnimatedContainer>(ringFinder);
+      final BoxDecoration beforeDecoration =
+          beforeFocus.decoration! as BoxDecoration;
+      final Border beforeBorder = beforeDecoration.border! as Border;
+      expect(beforeBorder.top.color, equals(Colors.transparent));
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+
+      final AnimatedContainer afterFocus =
+          tester.widget<AnimatedContainer>(ringFinder);
+      final BoxDecoration afterDecoration =
+          afterFocus.decoration! as BoxDecoration;
+      final Border afterBorder = afterDecoration.border! as Border;
+      expect(afterBorder.top.color, isNot(equals(Colors.transparent)));
+    });
   });
 }

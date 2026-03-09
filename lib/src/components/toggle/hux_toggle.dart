@@ -23,7 +23,7 @@ import '../buttons/hux_button.dart';
 ///   variant: HuxButtonVariant.primary,
 /// )
 /// ```
-class HuxToggle extends StatelessWidget {
+class HuxToggle extends StatefulWidget {
   /// Creates a HuxToggle widget.
   const HuxToggle({
     super.key,
@@ -62,28 +62,43 @@ class HuxToggle extends StatelessWidget {
   final Color? primaryColor;
 
   @override
+  State<HuxToggle> createState() => _HuxToggleState();
+}
+
+class _HuxToggleState extends State<HuxToggle> {
+  bool _isFocused = false;
+
+  @override
   Widget build(BuildContext context) {
-    final height = size == HuxToggleSize.small
+    final height = widget.size == HuxToggleSize.small
         ? 32.0
-        : size == HuxToggleSize.medium
+        : widget.size == HuxToggleSize.medium
             ? 40.0
             : 48.0;
-    final width = label == null ? height : null;
+    final width = widget.label == null ? height : null;
 
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: isDisabled || onChanged == null
+        onTap: widget.isDisabled || widget.onChanged == null
             ? null
-            : () => onChanged?.call(!value),
+            : () => widget.onChanged?.call(!widget.value),
+        onFocusChange: (isFocused) {
+          if (_isFocused != isFocused) {
+            setState(() => _isFocused = isFocused);
+          }
+        },
         splashFactory: NoSplash.splashFactory,
         overlayColor: WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> states) {
+            if (states.contains(WidgetState.focused)) {
+              return HuxTokens.primary(context).withValues(alpha: 0.12);
+            }
             if (states.contains(WidgetState.hovered)) {
-              if (value) {
-                return switch (variant) {
+              if (widget.value) {
+                return switch (widget.variant) {
                   HuxButtonVariant.primary =>
                     HuxTokens.buttonPrimaryHover(context),
                   HuxButtonVariant.secondary =>
@@ -102,40 +117,55 @@ class HuxToggle extends StatelessWidget {
           height: height,
           width: width,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(
-              horizontal: _getHorizontalPadding(),
-              vertical: _getVerticalPadding(),
-            ),
+            key: const ValueKey('huxToggleFocusRing'),
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: _getBackgroundColor(context),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _getBorderColor(context),
-                width: 1,
+                color: _isFocused
+                    ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                    : Colors.transparent,
+                width: 2,
+                strokeAlign: BorderSide.strokeAlignOutside,
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: _getIconSize(),
-                  color: _getIconColor(context),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: EdgeInsets.symmetric(
+                horizontal: _getHorizontalPadding(),
+                vertical: _getVerticalPadding(),
+              ),
+              decoration: BoxDecoration(
+                color: _getBackgroundColor(context),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _getBorderColor(context),
+                  width: 1,
                 ),
-                if (label != null) ...[
-                  SizedBox(width: 8),
-                  Text(
-                    label!,
-                    style: TextStyle(
-                      fontSize: _getFontSize(),
-                      fontWeight: FontWeight.w500,
-                      color: _getTextColor(context),
-                    ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    widget.icon,
+                    size: _getIconSize(),
+                    color: _getIconColor(context),
                   ),
+                  if (widget.label != null) ...[
+                    SizedBox(width: 8),
+                    Text(
+                      widget.label!,
+                      style: TextStyle(
+                        fontSize: _getFontSize(),
+                        fontWeight: FontWeight.w500,
+                        color: _getTextColor(context),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -144,12 +174,12 @@ class HuxToggle extends StatelessWidget {
   }
 
   Color _getBackgroundColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.surfaceSecondary(context).withValues(alpha: 0.5);
     }
 
-    if (!value) {
-      return switch (variant) {
+    if (!widget.value) {
+      return switch (widget.variant) {
         HuxButtonVariant.primary ||
         HuxButtonVariant.secondary =>
           HuxTokens.surfacePrimary(context),
@@ -159,9 +189,9 @@ class HuxToggle extends StatelessWidget {
       };
     }
 
-    return switch (variant) {
+    return switch (widget.variant) {
       HuxButtonVariant.primary =>
-        primaryColor ?? Theme.of(context).colorScheme.primary,
+        widget.primaryColor ?? Theme.of(context).colorScheme.primary,
       HuxButtonVariant.secondary =>
         HuxTokens.buttonSecondaryBackground(context),
       HuxButtonVariant.outline ||
@@ -171,12 +201,12 @@ class HuxToggle extends StatelessWidget {
   }
 
   Color _getBorderColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.borderSecondary(context);
     }
 
-    if (!value) {
-      return switch (variant) {
+    if (!widget.value) {
+      return switch (widget.variant) {
         HuxButtonVariant.primary ||
         HuxButtonVariant.secondary ||
         HuxButtonVariant.outline =>
@@ -185,28 +215,28 @@ class HuxToggle extends StatelessWidget {
       };
     }
 
-    return switch (variant) {
+    return switch (widget.variant) {
       HuxButtonVariant.primary =>
-        primaryColor ?? Theme.of(context).colorScheme.primary,
+        widget.primaryColor ?? Theme.of(context).colorScheme.primary,
       HuxButtonVariant.secondary => HuxTokens.buttonSecondaryBorder(context),
       HuxButtonVariant.outline =>
-        primaryColor ?? Theme.of(context).colorScheme.primary,
+        widget.primaryColor ?? Theme.of(context).colorScheme.primary,
       HuxButtonVariant.ghost => Colors.transparent,
     };
   }
 
   Color _getIconColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.iconSecondary(context);
     }
 
-    if (!value) {
+    if (!widget.value) {
       return HuxTokens.iconPrimary(context);
     }
 
     final effectivePrimaryColor =
-        primaryColor ?? Theme.of(context).colorScheme.primary;
-    return switch (variant) {
+        widget.primaryColor ?? Theme.of(context).colorScheme.primary;
+    return switch (widget.variant) {
       HuxButtonVariant.primary => HuxWCAG.getContrastingTextColor(
           backgroundColor: effectivePrimaryColor,
           context: context,
@@ -219,17 +249,17 @@ class HuxToggle extends StatelessWidget {
   }
 
   Color _getTextColor(BuildContext context) {
-    if (isDisabled) {
+    if (widget.isDisabled) {
       return HuxTokens.textDisabled(context);
     }
 
-    if (!value) {
+    if (!widget.value) {
       return HuxTokens.textPrimary(context);
     }
 
     final effectivePrimaryColor =
-        primaryColor ?? Theme.of(context).colorScheme.primary;
-    return switch (variant) {
+        widget.primaryColor ?? Theme.of(context).colorScheme.primary;
+    return switch (widget.variant) {
       HuxButtonVariant.primary => HuxWCAG.getContrastingTextColor(
           backgroundColor: effectivePrimaryColor,
           context: context,
@@ -242,7 +272,7 @@ class HuxToggle extends StatelessWidget {
   }
 
   double _getIconSize() {
-    switch (size) {
+    switch (widget.size) {
       case HuxToggleSize.small:
         return 16;
       case HuxToggleSize.medium:
@@ -253,7 +283,7 @@ class HuxToggle extends StatelessWidget {
   }
 
   double _getFontSize() {
-    switch (size) {
+    switch (widget.size) {
       case HuxToggleSize.small:
         return 12;
       case HuxToggleSize.medium:
@@ -264,8 +294,8 @@ class HuxToggle extends StatelessWidget {
   }
 
   double _getHorizontalPadding() {
-    if (label == null) return 0; // Icon-only button
-    switch (size) {
+    if (widget.label == null) return 0; // Icon-only button
+    switch (widget.size) {
       case HuxToggleSize.small:
         return 12;
       case HuxToggleSize.medium:
@@ -276,8 +306,8 @@ class HuxToggle extends StatelessWidget {
   }
 
   double _getVerticalPadding() {
-    if (label == null) return 0; // Icon-only button
-    switch (size) {
+    if (widget.label == null) return 0; // Icon-only button
+    switch (widget.size) {
       case HuxToggleSize.small:
         return 6;
       case HuxToggleSize.medium:
