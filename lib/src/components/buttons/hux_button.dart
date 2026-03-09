@@ -129,6 +129,8 @@ class HuxButton extends StatelessWidget {
     final horizontalPadding = isIconOnly ? 0.0 : _getHorizontalPadding();
     final verticalPadding = isIconOnly ? 0.0 : _getVerticalPadding();
 
+    final focusColor = HuxTokens.primary(context).withValues(alpha: 0.5);
+
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.all(backgroundColor),
       foregroundColor: WidgetStateProperty.all(foregroundColor),
@@ -142,15 +144,27 @@ class HuxButton extends StatelessWidget {
           vertical: verticalPadding,
         ),
       ),
-      shape: WidgetStateProperty.all(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: borderSide,
-        ),
+      shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
+        (Set<WidgetState> states) {
+          final isFocused = states.contains(WidgetState.focused);
+          return RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: isFocused
+                ? BorderSide(
+                    color: focusColor,
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  )
+                : borderSide,
+          );
+        },
       ),
       // Custom hover effect only (no press effect)
       overlayColor: WidgetStateProperty.resolveWith<Color?>(
         (Set<WidgetState> states) {
+          if (states.contains(WidgetState.focused)) {
+            return focusColor.withValues(alpha: 0.12);
+          }
           if (states.contains(WidgetState.hovered)) {
             // Enhanced hover effect for primary buttons
             if (variant == HuxButtonVariant.primary) {
