@@ -121,6 +121,7 @@ class _HuxRadioState<T> extends State<HuxRadio<T>> {
                       child: widget.isSelected
                           ? Center(
                               child: Container(
+                                key: const ValueKey('huxRadioInnerCircle'),
                                 width: _innerCircleSize,
                                 height: _innerCircleSize,
                                 decoration: BoxDecoration(

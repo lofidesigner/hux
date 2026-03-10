@@ -1,3 +1,5 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,8 +55,16 @@ void main() {
         ),
       );
 
-      await tester.longPress(find.byIcon(Icons.info));
-      await tester.pumpAndSettle();
+      final tooltipChild = find.byIcon(Icons.info);
+      final mouseGesture =
+          await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouseGesture.addPointer();
+      await mouseGesture.moveTo(tester.getCenter(tooltipChild));
+
+      await tester.pump(customDuration - const Duration(milliseconds: 1));
+      expect(find.text('Wait tooltip'), findsNothing);
+
+      await tester.pump(const Duration(milliseconds: 1));
 
       expect(find.text('Wait tooltip'), findsOneWidget);
     });

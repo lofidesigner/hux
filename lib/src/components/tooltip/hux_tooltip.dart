@@ -30,7 +30,7 @@ import '../../theme/hux_tokens.dart';
 ///   child: Text('Hover me'),
 /// )
 /// ```
-class HuxTooltip extends StatelessWidget {
+class HuxTooltip extends StatefulWidget {
   /// Creates a HuxTooltip widget.
   ///
   /// Either [message] or [richMessage] must be provided.
@@ -108,32 +108,53 @@ class HuxTooltip extends StatelessWidget {
   final InlineSpan? richMessage;
 
   @override
+  State<HuxTooltip> createState() => _HuxTooltipState();
+}
+
+class _HuxTooltipState extends State<HuxTooltip> {
+  GlobalKey<TooltipState> _tooltipKey = GlobalKey<TooltipState>();
+
+  void _showTooltipForThisInstance() {
+    _tooltipKey.currentState?.ensureTooltipVisible();
+  }
+
+  void _dismissTooltipForThisInstance() {
+    if (!mounted) {
+      return;
+    }
+    // Rotating the tooltip key disposes the previous Tooltip state,
+    // removing only this instance's overlay instead of dismissing globally.
+    setState(() {
+      _tooltipKey = GlobalKey<TooltipState>();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final tooltipKey = GlobalKey<TooltipState>();
     final effectiveBackgroundColor =
-        backgroundColor ?? HuxTokens.primary(context);
-    final effectiveTextColor = textColor ?? HuxTokens.textInvert(context);
+        widget.backgroundColor ?? HuxTokens.primary(context);
+    final effectiveTextColor = widget.textColor ?? HuxTokens.textInvert(context);
     final effectivePadding =
-        padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 4);
-    final effectiveMargin = margin ?? const EdgeInsets.all(8);
+        widget.padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 4);
+    final effectiveMargin = widget.margin ?? const EdgeInsets.all(8);
 
     // If icon is provided, use richMessage to render icon + text
-    final effectiveRichMessage = richMessage ??
-        (icon != null
+    final effectiveRichMessage = widget.richMessage ??
+        (widget.icon != null
             ? TextSpan(
                 children: [
                   WidgetSpan(
                     child: Icon(
-                      icon,
-                      size: iconSize,
-                      color: iconColor ?? effectiveTextColor,
+                      widget.icon,
+                      size: widget.iconSize,
+                      color: widget.iconColor ?? effectiveTextColor,
                     ),
                     alignment: PlaceholderAlignment.middle,
                   ),
                   const WidgetSpan(child: SizedBox(width: 8)),
                   TextSpan(
-                    text: message,
-                    style: textStyle ??
+                    text: widget.message,
+                    style: widget.textStyle ??
                         TextStyle(
                           color: effectiveTextColor,
                           fontSize: 14,
@@ -145,14 +166,14 @@ class HuxTooltip extends StatelessWidget {
             : null);
 
     return Tooltip(
-      key: tooltipKey,
-      message: effectiveRichMessage != null ? null : message,
-      preferBelow: preferBelow,
-      excludeFromSemantics: excludeFromSemantics,
-      verticalOffset: verticalOffset,
-      waitDuration: waitDuration,
-      showDuration: showDuration,
-      decoration: decoration ??
+      key: _tooltipKey,
+      message: effectiveRichMessage != null ? null : widget.message,
+      preferBelow: widget.preferBelow,
+      excludeFromSemantics: widget.excludeFromSemantics,
+      verticalOffset: widget.verticalOffset,
+      waitDuration: widget.waitDuration,
+      showDuration: widget.showDuration,
+      decoration: widget.decoration ??
           BoxDecoration(
             color: effectiveBackgroundColor,
             borderRadius: BorderRadius.circular(8),
@@ -170,7 +191,7 @@ class HuxTooltip extends StatelessWidget {
           ),
       textStyle: effectiveRichMessage != null
           ? null
-          : (textStyle ??
+          : (widget.textStyle ??
               TextStyle(
                 color: effectiveTextColor,
                 fontSize: 12,
@@ -183,12 +204,12 @@ class HuxTooltip extends StatelessWidget {
         canRequestFocus: false,
         onFocusChange: (hasFocus) {
           if (hasFocus) {
-            tooltipKey.currentState?.ensureTooltipVisible();
+            _showTooltipForThisInstance();
           } else {
-            Tooltip.dismissAllToolTips();
+            _dismissTooltipForThisInstance();
           }
         },
-        child: child,
+        child: widget.child,
       ),
     );
   }

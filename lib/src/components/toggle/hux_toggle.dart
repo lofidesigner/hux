@@ -70,6 +70,7 @@ class _HuxToggleState extends State<HuxToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isEnabled = !widget.isDisabled && widget.onChanged != null;
     final height = widget.size == HuxToggleSize.small
         ? 32.0
         : widget.size == HuxToggleSize.medium
@@ -77,94 +78,99 @@ class _HuxToggleState extends State<HuxToggle> {
             : 48.0;
     final width = widget.label == null ? height : null;
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: isEnabled,
+      toggled: widget.value,
+      label: widget.label,
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(10),
-        onTap: widget.isDisabled || widget.onChanged == null
-            ? null
-            : () => widget.onChanged?.call(!widget.value),
-        onFocusChange: (isFocused) {
-          if (_isFocused != isFocused) {
-            setState(() => _isFocused = isFocused);
-          }
-        },
-        splashFactory: NoSplash.splashFactory,
-        overlayColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.focused)) {
-              return HuxTokens.primary(context).withValues(alpha: 0.12);
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: isEnabled ? () => widget.onChanged?.call(!widget.value) : null,
+          onFocusChange: (isFocused) {
+            if (_isFocused != isFocused) {
+              setState(() => _isFocused = isFocused);
             }
-            if (states.contains(WidgetState.hovered)) {
-              if (widget.value) {
-                return switch (widget.variant) {
-                  HuxButtonVariant.primary =>
-                    HuxTokens.buttonPrimaryHover(context),
-                  HuxButtonVariant.secondary =>
-                    HuxTokens.surfaceHover(context).withValues(alpha: 0.2),
-                  HuxButtonVariant.outline ||
-                  HuxButtonVariant.ghost =>
-                    HuxTokens.surfaceHover(context),
-                };
-              }
-              return HuxTokens.surfaceHover(context);
-            }
-            return null;
           },
-        ),
-        child: SizedBox(
-          height: height,
-          width: width,
-          child: AnimatedContainer(
-            key: const ValueKey('huxToggleFocusRing'),
-            duration: const Duration(milliseconds: 120),
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: _isFocused
-                    ? HuxTokens.primary(context).withValues(alpha: 0.6)
-                    : Colors.transparent,
-                width: 2,
-                strokeAlign: BorderSide.strokeAlignOutside,
-              ),
-            ),
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState.focused)) {
+                return HuxTokens.primary(context).withValues(alpha: 0.12);
+              }
+              if (states.contains(WidgetState.hovered)) {
+                if (widget.value) {
+                  return switch (widget.variant) {
+                    HuxButtonVariant.primary =>
+                      HuxTokens.buttonPrimaryHover(context),
+                    HuxButtonVariant.secondary =>
+                      HuxTokens.surfaceHover(context).withValues(alpha: 0.2),
+                    HuxButtonVariant.outline ||
+                    HuxButtonVariant.ghost =>
+                      HuxTokens.surfaceHover(context),
+                  };
+                }
+                return HuxTokens.surfaceHover(context);
+              }
+              return null;
+            },
+          ),
+          child: SizedBox(
+            height: height,
+            width: width,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(
-                horizontal: _getHorizontalPadding(),
-                vertical: _getVerticalPadding(),
-              ),
+              key: const ValueKey('huxToggleFocusRing'),
+              duration: const Duration(milliseconds: 120),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: _getBackgroundColor(context),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _getBorderColor(context),
-                  width: 1,
+                  color: _isFocused
+                      ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                      : Colors.transparent,
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignOutside,
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    widget.icon,
-                    size: _getIconSize(),
-                    color: _getIconColor(context),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _getHorizontalPadding(),
+                  vertical: _getVerticalPadding(),
+                ),
+                decoration: BoxDecoration(
+                  color: _getBackgroundColor(context),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: _getBorderColor(context),
+                    width: 1,
                   ),
-                  if (widget.label != null) ...[
-                    SizedBox(width: 8),
-                    Text(
-                      widget.label!,
-                      style: TextStyle(
-                        fontSize: _getFontSize(),
-                        fontWeight: FontWeight.w500,
-                        color: _getTextColor(context),
-                      ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      widget.icon,
+                      size: _getIconSize(),
+                      color: _getIconColor(context),
                     ),
+                    if (widget.label != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.label!,
+                        style: TextStyle(
+                          fontSize: _getFontSize(),
+                          fontWeight: FontWeight.w500,
+                          color: _getTextColor(context),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

@@ -167,6 +167,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _moveFocusInActivePane({required bool forward}) {
+    // Use hasFocus (not hasPrimaryFocus) so arrow navigation keeps moving
+    // within the pane when any descendant of _sidebarScopeNode or
+    // _contentScopeNode is focused. If neither pane currently owns focus,
+    // _focusContent() is the intended fallback target.
     if (_sidebarScopeNode.hasFocus) {
       if (forward) {
         _sidebarScopeNode.nextFocus();
@@ -186,6 +190,41 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     _focusContent();
+  }
+
+  bool _isArrowKeyOwnedByInteractiveWidget() {
+    final primaryFocus = FocusManager.instance.primaryFocus;
+    final focusedContext = primaryFocus?.context;
+    if (focusedContext == null) {
+      return false;
+    }
+
+    bool isInteractiveWidget(Widget widget) {
+      return widget is EditableText ||
+          widget is TextField ||
+          widget is Slider ||
+          widget is DropdownButton ||
+          widget is DropdownButtonFormField ||
+          widget is DropdownMenu ||
+          widget is CalendarDatePicker ||
+          widget is DatePickerDialog ||
+          widget is InputDatePickerFormField;
+    }
+
+    if (isInteractiveWidget(focusedContext.widget)) {
+      return true;
+    }
+
+    var hasInteractiveAncestor = false;
+    focusedContext.visitAncestorElements((element) {
+      if (isInteractiveWidget(element.widget)) {
+        hasInteractiveAncestor = true;
+        return false;
+      }
+      return true;
+    });
+
+    return hasInteractiveAncestor;
   }
 
   void _scrollToSection(GlobalKey key) {
@@ -334,6 +373,10 @@ class _MyHomePageState extends State<MyHomePage> {
               actions: <Type, Action<Intent>>{
                 _PaneNavigationIntent: CallbackAction<_PaneNavigationIntent>(
                   onInvoke: (_PaneNavigationIntent intent) {
+                    if (_isArrowKeyOwnedByInteractiveWidget()) {
+                      return null;
+                    }
+
                     switch (intent.direction) {
                       case _PaneDirection.left:
                         _focusSidebar(isMobile: isMobile);

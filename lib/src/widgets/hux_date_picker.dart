@@ -242,6 +242,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   static const int _firstYear = 1900;
   static const int _lastYear = 2050;
   static const int _monthColumns = 3;
+  static const double _yearOptionItemHeight = 36.0;
+  static const double _yearOptionItemPadding = 8.0;
+  static const int _yearPickerVisibleCount = 4;
+  static const double _yearPickerViewportOffset = 24.0;
   late DateTime _selectedDate;
   late DateTime _currentMonth;
   late DateTime _focusedDate;
@@ -252,12 +256,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   final FocusNode _monthFocusNode = FocusNode(debugLabel: 'monthButton');
   final FocusNode _yearFocusNode = FocusNode(debugLabel: 'yearButton');
   final FocusNode _nextMonthFocusNode = FocusNode(debugLabel: 'nextMonth');
-  late final List<FocusNode> _monthOptionFocusNodes;
-  late final List<FocusNode> _yearOptionFocusNodes;
+  final Map<int, FocusNode> _monthOptionFocusNodes = <int, FocusNode>{};
+  final Map<int, FocusNode> _yearOptionFocusNodes = <int, FocusNode>{};
   int? _focusedMonthOptionIndex;
   int? _focusedYearOptionIndex;
-  bool _isMonthButtonFocused = false;
-  bool _isYearButtonFocused = false;
 
   @override
   void initState() {
@@ -270,14 +272,6 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     _currentMonth = DateTime(defaultYear, widget.initialDate.month);
     _focusedDate = _selectedDate;
     _yearScrollController = ScrollController();
-    _monthOptionFocusNodes = List<FocusNode>.generate(
-      12,
-      (index) => FocusNode(debugLabel: 'monthOption-${index + 1}'),
-    );
-    _yearOptionFocusNodes = List<FocusNode>.generate(
-      _lastYear - _firstYear + 1,
-      (index) => FocusNode(debugLabel: 'yearOption-${_firstYear + index}'),
-    );
   }
 
   @override
@@ -287,10 +281,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     _monthFocusNode.dispose();
     _yearFocusNode.dispose();
     _nextMonthFocusNode.dispose();
-    for (final FocusNode node in _monthOptionFocusNodes) {
+    for (final FocusNode node in _monthOptionFocusNodes.values) {
       node.dispose();
     }
-    for (final FocusNode node in _yearOptionFocusNodes) {
+    for (final FocusNode node in _yearOptionFocusNodes.values) {
       node.dispose();
     }
     super.dispose();
@@ -344,9 +338,11 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
         current == _nextMonthFocusNode;
     final bool onCalendar = current == widget.panelFocusNode;
     final bool onMonthPicker =
-        _monthOptionFocusNodes.contains(current) || _focusedMonthOptionIndex != null;
+        _monthOptionFocusNodes.values.contains(current) ||
+            _focusedMonthOptionIndex != null;
     final bool onYearPicker =
-        _yearOptionFocusNodes.contains(current) || _focusedYearOptionIndex != null;
+        _yearOptionFocusNodes.values.contains(current) ||
+            _focusedYearOptionIndex != null;
 
     if (_isShowingMonthPicker) {
       if (onHeader) {
@@ -392,26 +388,39 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   }
 
   void _focusMonthOption(int index) {
-    final int clamped = index.clamp(0, _monthOptionFocusNodes.length - 1);
+    final int clamped = index.clamp(0, 11);
     _focusedMonthOptionIndex = clamped;
-    _monthOptionFocusNodes[clamped].requestFocus();
+    _monthOptionNode(clamped).requestFocus();
   }
 
   void _focusYearOption(int index) {
-    final int clamped = index.clamp(0, _yearOptionFocusNodes.length - 1);
+    final int clamped = index.clamp(0, _lastYear - _firstYear);
     _focusedYearOptionIndex = clamped;
-    _yearOptionFocusNodes[clamped].requestFocus();
+    _yearOptionNode(clamped).requestFocus();
     _scrollYearOptionIntoView(clamped);
+  }
+
+  FocusNode _monthOptionNode(int index) {
+    return _monthOptionFocusNodes.putIfAbsent(
+      index,
+      () => FocusNode(debugLabel: 'monthOption-${index + 1}'),
+    );
+  }
+
+  FocusNode _yearOptionNode(int index) {
+    return _yearOptionFocusNodes.putIfAbsent(
+      index,
+      () => FocusNode(debugLabel: 'yearOption-${_firstYear + index}'),
+    );
   }
 
   void _scrollYearOptionIntoView(int index) {
     if (!_yearScrollController.hasClients) {
       return;
     }
-    const double itemHeight = 36.0;
-    const double itemPadding = 8.0;
-    const double totalItemHeight = itemHeight + itemPadding;
-    const double viewportHeight = 4 * 32 + 24;
+    const double totalItemHeight = _yearOptionItemHeight + _yearOptionItemPadding;
+    const double viewportHeight =
+        (_yearPickerVisibleCount * 32) + _yearPickerViewportOffset;
     final double targetOffset = (index * totalItemHeight) - (viewportHeight / 2);
     final double maxOffset = _yearScrollController.position.maxScrollExtent;
     _yearScrollController.animateTo(
@@ -722,69 +731,27 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   }
 
   Widget _buildMonthButton({required FocusNode focusNode}) {
-    return Focus(
+    return _PickerOptionButton(
       focusNode: focusNode,
-      onFocusChange: (focused) {
-        if (_isMonthButtonFocused != focused) {
-          setState(() => _isMonthButtonFocused = focused);
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: _isMonthButtonFocused
-                ? HuxTokens.primary(context).withValues(alpha: 0.6)
-                : Colors.transparent,
-            width: 2,
-            strokeAlign: BorderSide.strokeAlignOutside,
-          ),
-        ),
-        child: HuxButton(
-          onPressed: _toggleMonthPicker,
-          variant: HuxButtonVariant.outline,
-          size: HuxButtonSize.small,
-          child: Text(
-            _getMonthName(_currentMonth.month),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-        ),
+      onPressed: _toggleMonthPicker,
+      variant: HuxButtonVariant.outline,
+      size: HuxButtonSize.small,
+      child: Text(
+        _getMonthName(_currentMonth.month),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       ),
     );
   }
 
   Widget _buildYearButton({required FocusNode focusNode}) {
-    return Focus(
+    return _PickerOptionButton(
       focusNode: focusNode,
-      onFocusChange: (focused) {
-        if (_isYearButtonFocused != focused) {
-          setState(() => _isYearButtonFocused = focused);
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: _isYearButtonFocused
-                ? HuxTokens.primary(context).withValues(alpha: 0.6)
-                : Colors.transparent,
-            width: 2,
-            strokeAlign: BorderSide.strokeAlignOutside,
-          ),
-        ),
-        child: HuxButton(
-          onPressed: _toggleYearPicker,
-          variant: HuxButtonVariant.outline,
-          size: HuxButtonSize.small,
-          child: Text(
-            _currentMonth.year.toString(),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-        ),
+      onPressed: _toggleYearPicker,
+      variant: HuxButtonVariant.outline,
+      size: HuxButtonSize.small,
+      child: Text(
+        _currentMonth.year.toString(),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -904,7 +871,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     return SizedBox(
       width: itemWidth,
       child: _PickerOptionButton(
-        focusNode: _monthOptionFocusNodes[month - 1],
+        focusNode: _monthOptionNode(month - 1),
         onFocusChange: (focused) {
           if (focused) {
             _focusedMonthOptionIndex = month - 1;
@@ -969,7 +936,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 4 * 32 + 24,
+          height: (_yearPickerVisibleCount * 32) + _yearPickerViewportOffset,
           child: ScrollConfiguration(
             behavior:
                 ScrollConfiguration.of(context).copyWith(scrollbars: false),
@@ -981,9 +948,9 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                 final int year = years[index];
                 final bool isSelected = year == _currentMonth.year;
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: _yearOptionItemPadding),
                   child: _PickerOptionButton(
-                    focusNode: _yearOptionFocusNodes[index],
+                    focusNode: _yearOptionNode(index),
                     onFocusChange: (focused) {
                       if (focused) {
                         _focusedYearOptionIndex = index;

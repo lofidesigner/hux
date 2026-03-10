@@ -118,7 +118,25 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();
 
-      expect(find.byKey(const ValueKey('huxDatePickerPanel')), findsOneWidget);
+      final panelFinder = find.byKey(const ValueKey('huxDatePickerPanel'));
+      expect(panelFinder, findsOneWidget);
+
+      final BuildContext panelContext = tester.element(panelFinder);
+      final BuildContext? focusedContext = FocusManager.instance.primaryFocus?.context;
+      expect(focusedContext, isNotNull);
+
+      bool isFocusInsidePanel = identical(focusedContext, panelContext);
+      if (!isFocusInsidePanel && focusedContext != null) {
+        focusedContext.visitAncestorElements((ancestor) {
+          if (identical(ancestor, panelContext)) {
+            isFocusInsidePanel = true;
+            return false;
+          }
+          return true;
+        });
+      }
+
+      expect(isFocusInsidePanel, isTrue);
     });
 
     testWidgets('Tab from header returns to calendar section',

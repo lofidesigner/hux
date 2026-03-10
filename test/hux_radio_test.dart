@@ -55,7 +55,7 @@ void main() {
       );
 
       // Should render inner circle marker when selected
-      expect(find.byType(Center), findsOneWidget);
+      expect(find.byKey(const ValueKey('huxRadioInnerCircle')), findsOneWidget);
     });
 
     testWidgets('shows unselected state when value does not match groupValue',
@@ -73,7 +73,7 @@ void main() {
       );
 
       // Should not render inner circle marker when not selected
-      expect(find.byType(Center), findsNothing);
+      expect(find.byKey(const ValueKey('huxRadioInnerCircle')), findsNothing);
     });
 
     testWidgets('calls onChanged when tapped', (WidgetTester tester) async {
