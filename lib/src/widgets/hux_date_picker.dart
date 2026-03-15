@@ -239,13 +239,14 @@ class _CalendarTabIntent extends Intent {
 }
 
 class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
-  static const int _firstYear = 1900;
-  static const int _lastYear = 2050;
   static const int _monthColumns = 3;
   static const double _yearOptionItemHeight = 36.0;
   static const double _yearOptionItemPadding = 8.0;
   static const int _yearPickerVisibleCount = 4;
   static const double _yearPickerViewportOffset = 24.0;
+  int get _firstYear => widget.firstDate.year;
+  int get _lastYear => widget.lastDate.year;
+  int get _yearCount => _lastYear - _firstYear + 1;
   late DateTime _selectedDate;
   late DateTime _currentMonth;
   late DateTime _focusedDate;
@@ -265,11 +266,9 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void initState() {
     super.initState();
     _selectedDate = widget.initialDate;
-    final int defaultYear =
-        widget.initialDate.year >= 1900 && widget.initialDate.year <= 2050
-            ? widget.initialDate.year
-            : 2025;
-    _currentMonth = DateTime(defaultYear, widget.initialDate.month);
+    final int clampedInitialYear =
+        widget.initialDate.year.clamp(_firstYear, _lastYear).toInt();
+    _currentMonth = DateTime(clampedInitialYear, widget.initialDate.month);
     _focusedDate = _selectedDate;
     _yearScrollController = ScrollController();
   }
@@ -302,12 +301,14 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _previousMonth() {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
+      _clampFocusedDateToCurrentMonth();
     });
   }
 
   void _nextMonth() {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
+      _clampFocusedDateToCurrentMonth();
     });
   }
 
@@ -394,7 +395,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   }
 
   void _focusYearOption(int index) {
-    final int clamped = index.clamp(0, _lastYear - _firstYear);
+    final int clamped = index.clamp(0, _yearCount - 1);
     _focusedYearOptionIndex = clamped;
     _yearOptionNode(clamped).requestFocus();
     _scrollYearOptionIntoView(clamped);
@@ -715,6 +716,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
           icon: Icons.chevron_left,
           onPressed: _previousMonth,
           focusNode: _prevMonthFocusNode,
+          semanticLabel: 'Previous month',
         ),
         const SizedBox(width: 12),
         Expanded(child: _buildMonthButton(focusNode: _monthFocusNode)),
@@ -725,6 +727,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
           icon: Icons.chevron_right,
           onPressed: _nextMonth,
           focusNode: _nextMonthFocusNode,
+          semanticLabel: 'Next month',
         ),
       ],
     );
@@ -779,7 +782,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     });
     if (_isShowingYearPicker) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final int currentYearIndex = _currentMonth.year - _firstYear;
+        final int currentYearIndex =
+            (_currentMonth.year - _firstYear).clamp(0, _yearCount - 1).toInt();
         const double itemHeight = 36.0;
         const double itemPadding = 4.0;
         const double totalItemHeight = itemHeight + itemPadding;
@@ -795,6 +799,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _handleMonthSelection(int month) {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, month);
+      _clampFocusedDateToCurrentMonth();
       _isShowingMonthPicker = false;
       _focusedMonthOptionIndex = null;
     });
@@ -806,12 +811,20 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _handleYearSelection(int year) {
     setState(() {
       _currentMonth = DateTime(year, _currentMonth.month);
+      _clampFocusedDateToCurrentMonth();
       _isShowingYearPicker = false;
       _focusedYearOptionIndex = null;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _yearFocusNode.requestFocus();
     });
+  }
+
+  void _clampFocusedDateToCurrentMonth() {
+    final int daysInMonth =
+        DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+    final int clampedDay = _focusedDate.day.clamp(1, daysInMonth).toInt();
+    _focusedDate = DateTime(_currentMonth.year, _currentMonth.month, clampedDay);
   }
 
   Widget _buildMonthPicker() {
@@ -922,8 +935,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   }
 
   Widget _buildYearPicker() {
-    final List<int> years =
-        List.generate(_lastYear - _firstYear + 1, (index) => _firstYear + index);
+    final List<int> years = List.generate(_yearCount, (index) => _firstYear + index);
     return Column(
       children: [
         Text(
@@ -1280,11 +1292,13 @@ class _NavigationButton extends StatefulWidget {
   const _NavigationButton({
     required this.icon,
     required this.onPressed,
+    required this.semanticLabel,
     this.focusNode,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
+  final String semanticLabel;
   final FocusNode? focusNode;
 
   @override
@@ -1298,42 +1312,46 @@ class _NavigationButtonState extends State<_NavigationButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: widget.focusNode,
-      onFocusChange: (focused) {
-        if (_isFocused != focused) {
-          setState(() => _isFocused = focused);
-        }
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: GestureDetector(
-          onTap: widget.onPressed,
-          onTapDown: (_) => setState(() => _isPressed = true),
-          onTapUp: (_) => setState(() => _isPressed = false),
-          onTapCancel: () => setState(() => _isPressed = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: _getBackgroundColor(),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: _isFocused
-                    ? HuxTokens.primary(context).withValues(alpha: 0.6)
-                    : Colors.transparent,
-                width: 2,
-                strokeAlign: BorderSide.strokeAlignOutside,
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: Focus(
+        focusNode: widget.focusNode,
+        onFocusChange: (focused) {
+          if (_isFocused != focused) {
+            setState(() => _isFocused = focused);
+          }
+        },
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            onTap: widget.onPressed,
+            onTapDown: (_) => setState(() => _isPressed = true),
+            onTapUp: (_) => setState(() => _isPressed = false),
+            onTapCancel: () => setState(() => _isPressed = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: _getBackgroundColor(),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: _isFocused
+                      ? HuxTokens.primary(context).withValues(alpha: 0.6)
+                      : Colors.transparent,
+                  width: 2,
+                  strokeAlign: BorderSide.strokeAlignOutside,
+                ),
               ),
-            ),
-            child: Center(
-              child: Icon(
-                widget.icon,
-                size: 18,
-                color: _getIconColor(),
+              child: Center(
+                child: Icon(
+                  widget.icon,
+                  size: 18,
+                  color: _getIconColor(),
+                ),
               ),
             ),
           ),

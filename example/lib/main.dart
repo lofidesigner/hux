@@ -44,6 +44,30 @@ class _PaneNavigationIntent extends Intent {
   final _PaneDirection direction;
 }
 
+class _PaneNavigationAction extends Action<_PaneNavigationIntent> {
+  _PaneNavigationAction({
+    required this.shouldDeferToFocusedWidget,
+    required this.onNavigate,
+  });
+
+  final bool Function() shouldDeferToFocusedWidget;
+  final void Function(_PaneNavigationIntent intent) onNavigate;
+
+  @override
+  bool consumesKey(_PaneNavigationIntent intent) {
+    return !shouldDeferToFocusedWidget();
+  }
+
+  @override
+  Object? invoke(_PaneNavigationIntent intent) {
+    if (shouldDeferToFocusedWidget()) {
+      return null;
+    }
+    onNavigate(intent);
+    return null;
+  }
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -371,12 +395,10 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             child: Actions(
               actions: <Type, Action<Intent>>{
-                _PaneNavigationIntent: CallbackAction<_PaneNavigationIntent>(
-                  onInvoke: (_PaneNavigationIntent intent) {
-                    if (_isArrowKeyOwnedByInteractiveWidget()) {
-                      return null;
-                    }
-
+                _PaneNavigationIntent: _PaneNavigationAction(
+                  shouldDeferToFocusedWidget:
+                      _isArrowKeyOwnedByInteractiveWidget,
+                  onNavigate: (_PaneNavigationIntent intent) {
                     switch (intent.direction) {
                       case _PaneDirection.left:
                         _focusSidebar(isMobile: isMobile);
@@ -391,32 +413,30 @@ class _MyHomePageState extends State<MyHomePage> {
                         _moveFocusInActivePane(forward: true);
                         break;
                     }
-                    return null;
                   },
                 ),
               },
-              child: Focus(
-                child: Row(
-                  children: [
-                    if (!isMobile)
-                      FocusScope(
-                        node: _sidebarScopeNode,
-                        child: HuxSidebar(
-                          items: NavigationItems.items,
-                          selectedItemId: _selectedItemId,
-                          onItemSelected: _onSidebarItemSelected,
-                          header: SidebarHeader(
-                            themeMode: widget.themeMode,
-                            onThemeToggle: widget.onThemeToggle,
-                            selectedTheme: _selectedTheme,
-                            onThemeChanged: (theme) {
-                              setState(() {
-                                _selectedTheme = theme;
-                              });
-                            },
-                          ),
+              child: Row(
+                children: [
+                  if (!isMobile)
+                    FocusScope(
+                      node: _sidebarScopeNode,
+                      child: HuxSidebar(
+                        items: NavigationItems.items,
+                        selectedItemId: _selectedItemId,
+                        onItemSelected: _onSidebarItemSelected,
+                        header: SidebarHeader(
+                          themeMode: widget.themeMode,
+                          onThemeToggle: widget.onThemeToggle,
+                          selectedTheme: _selectedTheme,
+                          onThemeChanged: (theme) {
+                            setState(() {
+                              _selectedTheme = theme;
+                            });
+                          },
                         ),
                       ),
+                    ),
 
                     // Main Content Area
                     Expanded(
@@ -591,9 +611,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

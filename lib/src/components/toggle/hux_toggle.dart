@@ -8,6 +8,7 @@ import '../buttons/hux_button.dart';
 ///
 /// Features:
 /// - Icon-only or icon with text
+/// - Accessible naming via label or semanticLabel
 /// - Smooth animations for state changes
 /// - Proper theme adaptation
 /// - Multiple size and style variants
@@ -18,7 +19,8 @@ import '../buttons/hux_button.dart';
 ///   value: isBold,
 ///   onChanged: (value) => setState(() => isBold = value),
 ///   icon: Icons.format_bold,
-///   label: 'Bold', // Optional
+///   label: 'Bold', // Optional visual label
+///   semanticLabel: 'Bold', // Required for icon-only toggles
 ///   size: HuxToggleSize.medium,
 ///   variant: HuxButtonVariant.primary,
 /// )
@@ -31,11 +33,15 @@ class HuxToggle extends StatefulWidget {
     this.onChanged,
     required this.icon,
     this.label,
+    this.semanticLabel,
     this.size = HuxToggleSize.medium,
     this.variant = HuxButtonVariant.primary,
     this.isDisabled = false,
     this.primaryColor,
-  });
+  }) : assert(
+          label != null || semanticLabel != null,
+          'Icon-only HuxToggle requires a semanticLabel when label is null.',
+        );
 
   /// The current toggle state
   final bool value;
@@ -48,6 +54,9 @@ class HuxToggle extends StatefulWidget {
 
   /// Optional label text to display next to the icon
   final String? label;
+
+  /// Optional accessibility label used when [label] is not provided.
+  final String? semanticLabel;
 
   /// Size variant of the toggle
   final HuxToggleSize size;
@@ -83,7 +92,7 @@ class _HuxToggleState extends State<HuxToggle> {
       button: true,
       enabled: isEnabled,
       toggled: widget.value,
-      label: widget.label,
+      label: widget.label ?? widget.semanticLabel,
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(10),

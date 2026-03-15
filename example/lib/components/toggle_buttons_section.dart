@@ -92,6 +92,7 @@ class _ToggleButtonsSectionState extends State<ToggleButtonsSection> {
                       });
                     },
                     icon: LucideIcons.edit2,
+                    semanticLabel: 'Edit',
                     variant: _selectedVariant,
                     primaryColor: _primaryColor,
                   ),
