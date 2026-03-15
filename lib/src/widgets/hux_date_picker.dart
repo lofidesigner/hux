@@ -676,7 +676,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                 if (_isShowingMonthPicker || _isShowingYearPicker) {
                   return null;
                 }
-                _moveFocusByDays(intent.forward ? 1 : -1);
+                _cycleTabFocus(forward: intent.forward);
                 return null;
               },
             ),
@@ -802,9 +802,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final int currentYearIndex =
             (_currentMonth.year - _firstYear).clamp(0, _yearCount - 1).toInt();
-        const double itemHeight = 36.0;
-        const double itemPadding = 4.0;
-        const double totalItemHeight = itemHeight + itemPadding;
+        const double totalItemHeight =
+            _yearOptionItemHeight + _yearOptionItemPadding;
         final double scrollOffset = (currentYearIndex * totalItemHeight) - 100;
         _yearScrollController.jumpTo(scrollOffset.clamp(0.0, double.infinity));
         _focusYearOption(currentYearIndex);
