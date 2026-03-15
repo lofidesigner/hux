@@ -247,6 +247,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   int get _firstYear => widget.firstDate.year;
   int get _lastYear => widget.lastDate.year;
   int get _yearCount => _lastYear - _firstYear + 1;
+  DateTime get _firstSelectableDate => DateUtils.dateOnly(widget.firstDate);
+  DateTime get _lastSelectableDate => DateUtils.dateOnly(widget.lastDate);
+  DateTime get _firstSelectableMonth => DateTime(_firstYear, widget.firstDate.month);
+  DateTime get _lastSelectableMonth => DateTime(_lastYear, widget.lastDate.month);
   late DateTime _selectedDate;
   late DateTime _currentMonth;
   late DateTime _focusedDate;
@@ -268,8 +272,11 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     _selectedDate = widget.initialDate;
     final int clampedInitialYear =
         widget.initialDate.year.clamp(_firstYear, _lastYear).toInt();
-    _currentMonth = DateTime(clampedInitialYear, widget.initialDate.month);
+    _currentMonth = _clampMonthToSelectableWindow(
+      DateTime(clampedInitialYear, widget.initialDate.month),
+    );
     _focusedDate = _selectedDate;
+    _clampFocusedDateToCurrentMonth();
     _yearScrollController = ScrollController();
   }
 
@@ -301,6 +308,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _previousMonth() {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
+      _clampCurrentMonthToSelectableWindow();
       _clampFocusedDateToCurrentMonth();
     });
   }
@@ -308,21 +316,27 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _nextMonth() {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
+      _clampCurrentMonthToSelectableWindow();
       _clampFocusedDateToCurrentMonth();
     });
   }
 
   bool _isSelectableDate(DateTime date) {
-    return !date.isBefore(widget.firstDate) && !date.isAfter(widget.lastDate);
+    final DateTime dateOnly = DateUtils.dateOnly(date);
+    return !dateOnly.isBefore(_firstSelectableDate) &&
+        !dateOnly.isAfter(_lastSelectableDate);
   }
 
   void _moveFocusByDays(int deltaDays) {
     if (_isShowingMonthPicker || _isShowingYearPicker) return;
     final DateTime target =
         DateTime(_focusedDate.year, _focusedDate.month, _focusedDate.day + deltaDays);
-    final DateTime clamped = target.isBefore(widget.firstDate)
-        ? widget.firstDate
-        : (target.isAfter(widget.lastDate) ? widget.lastDate : target);
+    final DateTime targetDateOnly = DateUtils.dateOnly(target);
+    final DateTime clamped = targetDateOnly.isBefore(_firstSelectableDate)
+        ? _firstSelectableDate
+        : (targetDateOnly.isAfter(_lastSelectableDate)
+            ? _lastSelectableDate
+            : targetDateOnly);
 
     if (!_isSelectableDate(clamped)) return;
     setState(() {
@@ -390,8 +404,12 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
 
   void _focusMonthOption(int index) {
     final int clamped = index.clamp(0, 11);
-    _focusedMonthOptionIndex = clamped;
-    _monthOptionNode(clamped).requestFocus();
+    final int? target = _nearestSelectableMonthIndex(clamped);
+    if (target == null) {
+      return;
+    }
+    _focusedMonthOptionIndex = target;
+    _monthOptionNode(target).requestFocus();
   }
 
   void _focusYearOption(int index) {
@@ -799,6 +817,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _handleMonthSelection(int month) {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, month);
+      _clampCurrentMonthToSelectableWindow();
       _clampFocusedDateToCurrentMonth();
       _isShowingMonthPicker = false;
       _focusedMonthOptionIndex = null;
@@ -811,6 +830,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   void _handleYearSelection(int year) {
     setState(() {
       _currentMonth = DateTime(year, _currentMonth.month);
+      _clampCurrentMonthToSelectableWindow();
       _clampFocusedDateToCurrentMonth();
       _isShowingYearPicker = false;
       _focusedYearOptionIndex = null;
@@ -824,7 +844,56 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     final int daysInMonth =
         DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
     final int clampedDay = _focusedDate.day.clamp(1, daysInMonth).toInt();
-    _focusedDate = DateTime(_currentMonth.year, _currentMonth.month, clampedDay);
+    DateTime clamped =
+        DateTime(_currentMonth.year, _currentMonth.month, clampedDay);
+    if (clamped.isBefore(_firstSelectableDate)) {
+      clamped = _firstSelectableDate;
+    } else if (clamped.isAfter(_lastSelectableDate)) {
+      clamped = _lastSelectableDate;
+    }
+    _focusedDate = clamped;
+  }
+
+  void _clampCurrentMonthToSelectableWindow() {
+    _currentMonth = _clampMonthToSelectableWindow(_currentMonth);
+  }
+
+  DateTime _clampMonthToSelectableWindow(DateTime month) {
+    final DateTime normalized = DateTime(month.year, month.month);
+    if (normalized.isBefore(_firstSelectableMonth)) {
+      return _firstSelectableMonth;
+    }
+    if (normalized.isAfter(_lastSelectableMonth)) {
+      return _lastSelectableMonth;
+    }
+    return normalized;
+  }
+
+  bool _isMonthSelectableInCurrentYear(int month) {
+    final int year = _currentMonth.year;
+    final DateTime monthStart = DateTime(year, month, 1);
+    final DateTime monthEnd = DateTime(year, month + 1, 0);
+    return !monthEnd.isBefore(_firstSelectableDate) &&
+        !monthStart.isAfter(_lastSelectableDate);
+  }
+
+  int? _nearestSelectableMonthIndex(int index) {
+    final List<int> selectableIndices = List<int>.generate(12, (i) => i)
+        .where((i) => _isMonthSelectableInCurrentYear(i + 1))
+        .toList();
+    if (selectableIndices.isEmpty) {
+      return null;
+    }
+    int nearest = selectableIndices.first;
+    var nearestDistance = (nearest - index).abs();
+    for (final candidate in selectableIndices.skip(1)) {
+      final distance = (candidate - index).abs();
+      if (distance < nearestDistance) {
+        nearest = candidate;
+        nearestDistance = distance;
+      }
+    }
+    return nearest;
   }
 
   Widget _buildMonthPicker() {
@@ -880,11 +949,13 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
 
   Widget _buildMonthItem(int month, String label) {
     final bool isSelected = month == _currentMonth.month;
+    final bool isSelectable = _isMonthSelectableInCurrentYear(month);
     const double itemWidth = (7 * 32 + 6 - (2 * 8)) / 3;
     return SizedBox(
       width: itemWidth,
       child: _PickerOptionButton(
         focusNode: _monthOptionNode(month - 1),
+        canRequestFocus: isSelectable,
         onFocusChange: (focused) {
           if (focused) {
             _focusedMonthOptionIndex = month - 1;
@@ -914,13 +985,16 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
               return KeyEventResult.handled;
             case LogicalKeyboardKey.enter:
             case LogicalKeyboardKey.space:
+              if (!isSelectable) {
+                return KeyEventResult.ignored;
+              }
               _handleMonthSelection(month);
               return KeyEventResult.handled;
             default:
               return KeyEventResult.ignored;
           }
         },
-        onPressed: () => _handleMonthSelection(month),
+        onPressed: isSelectable ? () => _handleMonthSelection(month) : null,
         variant:
             isSelected ? HuxButtonVariant.primary : HuxButtonVariant.outline,
         size: HuxButtonSize.small,
@@ -1115,8 +1189,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                   final bool isToday = date.year == now.year &&
                       date.month == now.month &&
                       date.day == now.day;
-                  final bool isDisabled = date.isBefore(widget.firstDate) ||
-                      date.isAfter(widget.lastDate);
+                  final bool isDisabled = !_isSelectableDate(date);
 
                   return SizedBox(
                     width: 32,
@@ -1376,6 +1449,7 @@ class _PickerOptionButton extends StatefulWidget {
     this.focusNode,
     this.onFocusChange,
     this.onKeyEvent,
+    this.canRequestFocus = true,
     required this.onPressed,
     required this.variant,
     required this.size,
@@ -1385,7 +1459,8 @@ class _PickerOptionButton extends StatefulWidget {
   final FocusNode? focusNode;
   final ValueChanged<bool>? onFocusChange;
   final FocusOnKeyEventCallback? onKeyEvent;
-  final VoidCallback onPressed;
+  final bool canRequestFocus;
+  final VoidCallback? onPressed;
   final HuxButtonVariant variant;
   final HuxButtonSize size;
   final Widget child;
@@ -1401,6 +1476,7 @@ class _PickerOptionButtonState extends State<_PickerOptionButton> {
   Widget build(BuildContext context) {
     return Focus(
       focusNode: widget.focusNode,
+      canRequestFocus: widget.canRequestFocus,
       onFocusChange: (focused) {
         if (_isFocused != focused) {
           setState(() => _isFocused = focused);
