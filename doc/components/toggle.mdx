@@ -14,7 +14,8 @@ HuxToggle(
   value: isBold,
   onChanged: (value) => setState(() => isBold = value),
   icon: FeatherIcons.bold,
-  label: 'Bold', // Optional
+  label: 'Bold', // Optional visual label
+  semanticLabel: 'Bold', // Optional when label is provided
 )
 ```
 
@@ -27,6 +28,7 @@ HuxToggle(
   value: isEditing,
   onChanged: (value) => setState(() => isEditing = value),
   icon: FeatherIcons.edit2,
+  semanticLabel: 'Edit', // Required when label is null
 )
 ```
 
@@ -173,10 +175,13 @@ HuxToggle(
 | `onChanged` | `ValueChanged<bool>?` | `null` | Callback triggered when toggle state changes |
 | `icon` | `IconData` | **required** | The icon to display in the toggle |
 | `label` | `String?` | `null` | Optional text label to display next to the icon |
+| `semanticLabel` | `String?` | `null` | Accessibility label used when `label` is not provided |
 | `size` | `HuxToggleSize` | `medium` | Size variant of the toggle |
 | `variant` | `HuxButtonVariant` | `primary` | Visual variant of the toggle |
 | `isDisabled` | `bool` | `false` | Whether the toggle is disabled |
 | `primaryColor` | `Color?` | `null` | Optional custom primary color |
+
+> If `label` is omitted (icon-only toggle), provide `semanticLabel` for accessibility.
 
 ### HuxToggleSize Enum
 
@@ -192,7 +197,7 @@ HuxToggle includes several accessibility features:
 Text and icon colors are automatically calculated to ensure WCAG AA compliance (4.5:1 contrast ratio) against any background color.
 
 ### Semantic Roles
-Toggles include proper semantic roles for screen readers.
+Toggles include proper semantic roles for screen readers and announce `label` or `semanticLabel`.
 
 ### Focus States
 Keyboard navigation support with visible focus indicators.
@@ -220,6 +225,7 @@ Proper disabled state handling for assistive technologies.
     - Choose clear, meaningful icons that represent the action
     - Use standard icons (bold, italic) for formatting controls
     - Add labels for actions that aren't immediately clear
+    - For icon-only toggles, always provide `semanticLabel`
   </Accordion>
   
   <Accordion title="Theme Integration" icon="palette">

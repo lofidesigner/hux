@@ -147,7 +147,8 @@ void main() {
         ),
       );
 
-      final Finder ringFinder = find.byKey(const ValueKey('huxToggleFocusRing'));
+      final Finder ringFinder =
+          find.byKey(const ValueKey('huxToggleFocusRing'));
 
       final AnimatedContainer beforeFocus =
           tester.widget<AnimatedContainer>(ringFinder);
@@ -190,7 +191,8 @@ void main() {
         ),
       );
 
-      final Finder ringFinder = find.byKey(const ValueKey('huxToggleFocusRing'));
+      final Finder ringFinder =
+          find.byKey(const ValueKey('huxToggleFocusRing'));
 
       final AnimatedContainer beforeFocus =
           tester.widget<AnimatedContainer>(ringFinder);

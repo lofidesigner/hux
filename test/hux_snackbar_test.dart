@@ -27,7 +27,8 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      final containerFinder = find.byKey(const ValueKey('huxSnackbarContainer'));
+      final containerFinder =
+          find.byKey(const ValueKey('huxSnackbarContainer'));
       expect(containerFinder, findsOneWidget);
       final container = tester.widget<Container>(containerFinder);
       final decoration = container.decoration! as BoxDecoration;

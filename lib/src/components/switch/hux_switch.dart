@@ -99,8 +99,8 @@ class _HuxSwitchState extends State<HuxSwitch> {
                 height: _getSwitchHeight(),
                 padding: EdgeInsets.all(_getPadding()),
                 decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(10), // Consistent with Hux border radius
+                  borderRadius: BorderRadius.circular(
+                      10), // Consistent with Hux border radius
                   color: _getBackgroundColor(context),
                   border: Border.all(
                     color: _getBorderColor(context),
@@ -117,8 +117,8 @@ class _HuxSwitchState extends State<HuxSwitch> {
                     width: _getHandleSize(),
                     height: _getHandleSize(),
                     decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.circular(8), // Consistent rounded corners
+                      borderRadius: BorderRadius.circular(
+                          8), // Consistent rounded corners
                       color: _getHandleColor(context),
                       border: Border.all(
                         color: _getHandleBorderColor(context),

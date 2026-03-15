@@ -161,11 +161,14 @@ class HuxSnackbar {
                         if (title != null) ...[
                           Text(
                             title!,
-                            style: Theme.of(context).textTheme.titleSmall
+                            style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
                                     ?.copyWith(
                                       fontWeight: FontWeight
                                           .w600, // Consistent with Hux typography
-                                      color: textColor ?? _getTextColor(context),
+                                      color:
+                                          textColor ?? _getTextColor(context),
                                     ) ??
                                 TextStyle(
                                   fontSize: 14,
@@ -177,7 +180,9 @@ class HuxSnackbar {
                         ],
                         Text(
                           message,
-                          style: Theme.of(context).textTheme.bodySmall
+                          style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
                                   ?.copyWith(
                                     color: textColor ?? _getTextColor(context),
                                   ) ??

@@ -17,7 +17,8 @@ void main() {
         ),
       );
 
-      final elevated = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+      final elevated =
+          tester.widget<ElevatedButton>(find.byType(ElevatedButton));
       final focusedShape = elevated.style?.shape?.resolve({
         WidgetState.focused,
       });

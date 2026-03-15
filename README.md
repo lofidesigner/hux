@@ -3,7 +3,7 @@
 A modern Flutter UI package with beautiful, customizable components designed for clean and consistent user interfaces.
 
 [![Flutter support](https://img.shields.io/badge/Flutter-3.16%2B-white?style=flat&labelColor=black&logo=flutter&logoColor=WHITE)](https://flutter.dev/)
-[![Figma](https://img.shields.io/badge/Figma-74-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
+[![Figma](https://img.shields.io/badge/Figma-77-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsor-Hux%20UI-white?style=flat&labelColor=black&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/lofidesigner)
 
 [![pub package](https://img.shields.io/pub/v/hux?style=flat&color=white&labelColor=black)](https://pub.dev/packages/hux)
@@ -14,15 +14,12 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Big Release: 0.25.0
+## Latest Release: 1.0.2
 
-**HuxKBD**: New component for displaying keyboard shortcuts or keys
-  - Renders a styled box resembling a physical keyboard key
-  - Supports custom text (e.g., "⌘K", "Enter", "Esc")
-  - Theme-aware styling with automatic light/dark mode adaptation
-  - Monospace font and consistent padding for a "key" aesthetic
-  - Exported as a public component for use in custom UIs
-  - Integrated into `HuxCommand` for consistent shortcut display
+**Accessibility & Keyboard Navigation Polish**
+  - Improved keyboard/focus behavior across pane navigation, section-level Tab traversal, and date picker interactions
+  - Clamped date picker month/focus state to valid bounds and normalized date-only comparisons
+  - Aligned year picker viewport/scroll calculations and strengthened semantics for header navigation and icon-only toggles
 
 [![Changelog](https://img.shields.io/badge/Changelog-View-black?style=for-the-badge&labelColor=white&logo=github&logoColor=black)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/Docs-Browse-black?style=for-the-badge&labelColor=white&logo=readthedocs&logoColor=black)](https://docs.thehuxdesign.com)
@@ -435,6 +432,7 @@ HuxToggle(
   value: isBold,
   onChanged: (value) => setState(() => isBold = value),
   icon: Icons.format_bold,
+  semanticLabel: 'Bold',
   size: HuxToggleSize.medium,
 )
 

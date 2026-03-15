@@ -122,7 +122,8 @@ void main() {
       expect(panelFinder, findsOneWidget);
 
       final BuildContext panelContext = tester.element(panelFinder);
-      final BuildContext? focusedContext = FocusManager.instance.primaryFocus?.context;
+      final BuildContext? focusedContext =
+          FocusManager.instance.primaryFocus?.context;
       expect(focusedContext, isNotNull);
 
       bool isFocusInsidePanel = identical(focusedContext, panelContext);
@@ -321,6 +322,5 @@ void main() {
 
       expect(find.text('Feb'), findsOneWidget);
     });
-
   });
 }

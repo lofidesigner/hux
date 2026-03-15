@@ -249,8 +249,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   int get _yearCount => _lastYear - _firstYear + 1;
   DateTime get _firstSelectableDate => DateUtils.dateOnly(widget.firstDate);
   DateTime get _lastSelectableDate => DateUtils.dateOnly(widget.lastDate);
-  DateTime get _firstSelectableMonth => DateTime(_firstYear, widget.firstDate.month);
-  DateTime get _lastSelectableMonth => DateTime(_lastYear, widget.lastDate.month);
+  DateTime get _firstSelectableMonth =>
+      DateTime(_firstYear, widget.firstDate.month);
+  DateTime get _lastSelectableMonth =>
+      DateTime(_lastYear, widget.lastDate.month);
   late DateTime _selectedDate;
   late DateTime _currentMonth;
   late DateTime _focusedDate;
@@ -329,8 +331,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
 
   void _moveFocusByDays(int deltaDays) {
     if (_isShowingMonthPicker || _isShowingYearPicker) return;
-    final DateTime target =
-        DateTime(_focusedDate.year, _focusedDate.month, _focusedDate.day + deltaDays);
+    final DateTime target = DateTime(
+        _focusedDate.year, _focusedDate.month, _focusedDate.day + deltaDays);
     final DateTime targetDateOnly = DateUtils.dateOnly(target);
     final DateTime clamped = targetDateOnly.isBefore(_firstSelectableDate)
         ? _firstSelectableDate
@@ -355,9 +357,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     final bool onMonthPicker =
         _monthOptionFocusNodes.values.contains(current) ||
             _focusedMonthOptionIndex != null;
-    final bool onYearPicker =
-        _yearOptionFocusNodes.values.contains(current) ||
-            _focusedYearOptionIndex != null;
+    final bool onYearPicker = _yearOptionFocusNodes.values.contains(current) ||
+        _focusedYearOptionIndex != null;
 
     if (_isShowingMonthPicker) {
       if (onHeader) {
@@ -437,10 +438,12 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     if (!_yearScrollController.hasClients) {
       return;
     }
-    const double totalItemHeight = _yearOptionItemHeight + _yearOptionItemPadding;
+    const double totalItemHeight =
+        _yearOptionItemHeight + _yearOptionItemPadding;
     const double viewportHeight =
         (_yearPickerVisibleCount * totalItemHeight) + _yearPickerViewportOffset;
-    final double targetOffset = (index * totalItemHeight) - (viewportHeight / 2);
+    final double targetOffset =
+        (index * totalItemHeight) - (viewportHeight / 2);
     final double maxOffset = _yearScrollController.position.maxScrollExtent;
     _yearScrollController.animateTo(
       targetOffset.clamp(0.0, maxOffset),
@@ -504,10 +507,10 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                     current == _monthFocusNode ||
                     current == _yearFocusNode ||
                     current == _nextMonthFocusNode;
-                final int monthPickerIndex = _focusedMonthOptionIndex ??
-                    (_currentMonth.month - 1);
-                final int yearPickerIndex =
-                    _focusedYearOptionIndex ?? (_currentMonth.year - _firstYear);
+                final int monthPickerIndex =
+                    _focusedMonthOptionIndex ?? (_currentMonth.month - 1);
+                final int yearPickerIndex = _focusedYearOptionIndex ??
+                    (_currentMonth.year - _firstYear);
 
                 if (_isShowingMonthPicker) {
                   if (onHeader) {
@@ -657,8 +660,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                   _handleMonthSelection(monthPickerIndex + 1);
                   return null;
                 }
-                final int yearPickerIndex =
-                    _focusedYearOptionIndex ?? (_currentMonth.year - _firstYear);
+                final int yearPickerIndex = _focusedYearOptionIndex ??
+                    (_currentMonth.year - _firstYear);
                 if (_isShowingYearPicker) {
                   _handleYearSelection(_firstYear + yearPickerIndex);
                   return null;
@@ -698,7 +701,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
               decoration: BoxDecoration(
                 color: HuxTokens.surfaceElevated(context),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: HuxTokens.buttonSecondaryBorder(context)),
+                border:
+                    Border.all(color: HuxTokens.buttonSecondaryBorder(context)),
                 boxShadow: [
                   BoxShadow(
                     color: HuxTokens.shadowColor(context),
@@ -1008,7 +1012,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
   }
 
   Widget _buildYearPicker() {
-    final List<int> years = List.generate(_yearCount, (index) => _firstYear + index);
+    final List<int> years =
+        List.generate(_yearCount, (index) => _firstYear + index);
     return Column(
       children: [
         Text(
@@ -1035,7 +1040,8 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
                 final int year = years[index];
                 final bool isSelected = year == _currentMonth.year;
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: _yearOptionItemPadding),
+                  padding:
+                      const EdgeInsets.only(bottom: _yearOptionItemPadding),
                   child: _PickerOptionButton(
                     focusNode: _yearOptionNode(index),
                     onFocusChange: (focused) {

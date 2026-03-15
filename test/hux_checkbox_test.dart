@@ -208,7 +208,8 @@ void main() {
               builder: (context, setState) {
                 return HuxCheckbox(
                   value: checked,
-                  onChanged: (value) => setState(() => checked = value ?? false),
+                  onChanged: (value) =>
+                      setState(() => checked = value ?? false),
                   label: 'Keyboard checkbox',
                 );
               },

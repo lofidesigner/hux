@@ -198,7 +198,8 @@ void main() {
       }
     });
 
-    testWidgets('selects with keyboard activation', (WidgetTester tester) async {
+    testWidgets('selects with keyboard activation',
+        (WidgetTester tester) async {
       String? selected;
 
       await tester.pumpWidget(

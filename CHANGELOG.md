@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.2] - 2026-03-15
+
+### Fixed
+- **Keyboard Navigation & Focus**:
+  - Improved Tab navigation flow across example app sections/components to keep focus traversal predictable
+  - Updated example pane arrow-key handling to defer to focused interactive widgets
+  - Corrected date picker Tab behavior to cycle focus regions instead of mutating focused dates
+  - Clamped date picker visible month/focused date to the selectable `firstDate..lastDate` window across initialization and navigation paths
+  - Normalized date-bound comparisons to date-only values using `DateUtils.dateOnly(...)`
+  - Aligned year-picker viewport/scroll calculations with shared item sizing constants to prevent offset drift
+- **Accessibility Semantics**:
+  - Added semantic labels for date picker previous/next month header navigation buttons
+  - Improved icon-only `HuxToggle` accessibility by supporting explicit semantic labels
+
 ## [1.0.1] - 2026-02-23
 
 ### Fixed

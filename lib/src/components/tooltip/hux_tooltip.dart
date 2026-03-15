@@ -133,9 +133,10 @@ class _HuxTooltipState extends State<HuxTooltip> {
   Widget build(BuildContext context) {
     final effectiveBackgroundColor =
         widget.backgroundColor ?? HuxTokens.primary(context);
-    final effectiveTextColor = widget.textColor ?? HuxTokens.textInvert(context);
-    final effectivePadding =
-        widget.padding ?? const EdgeInsets.symmetric(horizontal: 10, vertical: 4);
+    final effectiveTextColor =
+        widget.textColor ?? HuxTokens.textInvert(context);
+    final effectivePadding = widget.padding ??
+        const EdgeInsets.symmetric(horizontal: 10, vertical: 4);
     final effectiveMargin = widget.margin ?? const EdgeInsets.all(8);
 
     // If icon is provided, use richMessage to render icon + text

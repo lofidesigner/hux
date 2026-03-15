@@ -40,7 +40,8 @@ void main() {
       expect(find.text('Test tooltip'), findsOneWidget);
     });
 
-    testWidgets('supports configured wait duration', (WidgetTester tester) async {
+    testWidgets('supports configured wait duration',
+        (WidgetTester tester) async {
       const customDuration = Duration(milliseconds: 100);
 
       await tester.pumpWidget(

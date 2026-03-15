@@ -438,179 +438,179 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
 
-                    // Main Content Area
-                    Expanded(
-                      child: FocusScope(
-                        node: _contentScopeNode,
-                        child: HuxLoadingOverlay(
-                          isLoading: _isLoading,
-                          message: 'Processing...',
-                          child: SingleChildScrollView(
-                            controller: _scrollController,
-                            padding: EdgeInsets.all(isMobile
-                                ? 16
-                                : isTablet
-                                    ? 24
-                                    : 32),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Buttons Section
-                                  ButtonsSection(
-                                    key: _buttonsKey,
-                                    onShowSnackBar: _showSnackBar,
-                                    selectedTheme: _selectedTheme,
-                                  ),
+                  // Main Content Area
+                  Expanded(
+                    child: FocusScope(
+                      node: _contentScopeNode,
+                      child: HuxLoadingOverlay(
+                        isLoading: _isLoading,
+                        message: 'Processing...',
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          padding: EdgeInsets.all(isMobile
+                              ? 16
+                              : isTablet
+                                  ? 24
+                                  : 32),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Buttons Section
+                                ButtonsSection(
+                                  key: _buttonsKey,
+                                  onShowSnackBar: _showSnackBar,
+                                  selectedTheme: _selectedTheme,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Input Section
-                                  InputSection(
-                                    key: _textFieldsKey,
-                                  ),
+                                // Input Section
+                                InputSection(
+                                  key: _textFieldsKey,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // OTP Input Section
-                                  OtpSection(
-                                    key: _otpKey,
-                                    onShowSnackBar: _showSnackBar,
-                                  ),
+                                // OTP Input Section
+                                OtpSection(
+                                  key: _otpKey,
+                                  onShowSnackBar: _showSnackBar,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Cards Section
-                                  CardsSection(
-                                    key: _cardsKey,
-                                  ),
+                                // Cards Section
+                                CardsSection(
+                                  key: _cardsKey,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Charts Section
-                                  ChartsSection(
-                                    key: _chartsKey,
-                                    selectedTheme: _selectedTheme,
-                                  ),
+                                // Charts Section
+                                ChartsSection(
+                                  key: _chartsKey,
+                                  selectedTheme: _selectedTheme,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Context Menu Section
-                                  ContextMenuSection(
-                                    key: _contextMenuKey,
-                                    onShowSnackBar: _showSnackBar,
-                                    selectedTheme: _selectedTheme,
-                                  ),
+                                // Context Menu Section
+                                ContextMenuSection(
+                                  key: _contextMenuKey,
+                                  onShowSnackBar: _showSnackBar,
+                                  selectedTheme: _selectedTheme,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Checkboxes Section
-                                  CheckboxesSection(key: _checkboxesKey),
+                                // Checkboxes Section
+                                CheckboxesSection(key: _checkboxesKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Radio Buttons Section
-                                  RadioButtonsSection(key: _radioButtonsKey),
+                                // Radio Buttons Section
+                                RadioButtonsSection(key: _radioButtonsKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Toggle Switches Section
-                                  ToggleSwitchesSection(key: _toggleSwitchesKey),
+                                // Toggle Switches Section
+                                ToggleSwitchesSection(key: _toggleSwitchesKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Slider Section
-                                  SliderSection(key: _sliderKey),
+                                // Slider Section
+                                SliderSection(key: _sliderKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Progress Section
-                                  ProgressSection(key: _progressKey),
+                                // Progress Section
+                                ProgressSection(key: _progressKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Toggle Buttons Section
-                                  ToggleButtonsSection(
-                                    key: _toggleButtonsKey,
-                                    selectedTheme: _selectedTheme,
-                                  ),
+                                // Toggle Buttons Section
+                                ToggleButtonsSection(
+                                  key: _toggleButtonsKey,
+                                  selectedTheme: _selectedTheme,
+                                ),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Badges Section
-                                  BadgesSection(key: _badgesKey),
+                                // Badges Section
+                                BadgesSection(key: _badgesKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Alerts Section
-                                  SnackbarsSection(key: _indicatorsKey),
+                                // Alerts Section
+                                SnackbarsSection(key: _indicatorsKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Avatars Section
-                                  AvatarsSection(key: _displayKey),
+                                // Avatars Section
+                                AvatarsSection(key: _displayKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Loading Section
-                                  LoadingSection(
-                                    key: _loadingKey,
-                                    isLoading: _isLoading,
-                                    onToggleLoading: _toggleLoading,
-                                  ),
-                                  const SizedBox(height: 32),
-                                  // Date Picker Section
-                                  DatePickerSection(key: _datePickerNavKey),
-                                  const SizedBox(height: 32),
-                                  // Tooltip Section
-                                  TooltipSection(key: _tooltipKey),
-                                  const SizedBox(height: 32),
-                                  // Dialog Section
-                                  DialogSection(
-                                    key: _dialogKey,
-                                    onShowConfirmationDialog:
-                                        _showConfirmationDialog,
-                                  ),
-                                  const SizedBox(height: 32),
-                                  // Bottom Sheet Section
-                                  BottomSheetSection(
-                                    key: _bottomSheetKey,
-                                    onShowSnackBar: _showSnackBar,
-                                  ),
-                                  const SizedBox(height: 32),
-                                  // Dropdown Section
-                                  DropdownSection(
-                                    key: _dropdownKey,
-                                    primaryColor: _currentPrimaryColor(context),
-                                  ),
-                                  const SizedBox(height: 32),
-                                  // Pagination Section
-                                  PaginationSection(key: _paginationKey),
-                                  const SizedBox(height: 32),
-                                  // Tabs Section
-                                  TabsSection(key: _tabsKey),
-                                  const SizedBox(height: 32),
-                                  // Breadcrumbs Section
-                                  BreadcrumbsSection(key: _breadcrumbsKey),
-                                  const SizedBox(height: 32),
-                                  // KBD Section
-                                  KbdSection(key: _kbdKey),
+                                // Loading Section
+                                LoadingSection(
+                                  key: _loadingKey,
+                                  isLoading: _isLoading,
+                                  onToggleLoading: _toggleLoading,
+                                ),
+                                const SizedBox(height: 32),
+                                // Date Picker Section
+                                DatePickerSection(key: _datePickerNavKey),
+                                const SizedBox(height: 32),
+                                // Tooltip Section
+                                TooltipSection(key: _tooltipKey),
+                                const SizedBox(height: 32),
+                                // Dialog Section
+                                DialogSection(
+                                  key: _dialogKey,
+                                  onShowConfirmationDialog:
+                                      _showConfirmationDialog,
+                                ),
+                                const SizedBox(height: 32),
+                                // Bottom Sheet Section
+                                BottomSheetSection(
+                                  key: _bottomSheetKey,
+                                  onShowSnackBar: _showSnackBar,
+                                ),
+                                const SizedBox(height: 32),
+                                // Dropdown Section
+                                DropdownSection(
+                                  key: _dropdownKey,
+                                  primaryColor: _currentPrimaryColor(context),
+                                ),
+                                const SizedBox(height: 32),
+                                // Pagination Section
+                                PaginationSection(key: _paginationKey),
+                                const SizedBox(height: 32),
+                                // Tabs Section
+                                TabsSection(key: _tabsKey),
+                                const SizedBox(height: 32),
+                                // Breadcrumbs Section
+                                BreadcrumbsSection(key: _breadcrumbsKey),
+                                const SizedBox(height: 32),
+                                // KBD Section
+                                KbdSection(key: _kbdKey),
 
-                                  const SizedBox(height: 32),
+                                const SizedBox(height: 32),
 
-                                  // Command Section
-                                  CommandSection(
-                                    key: _commandKey,
-                                    onThemeToggle: widget.onThemeToggle,
-                                  ),
-                                  const SizedBox(height: 32),
-                                ],
-                              ),
+                                // Command Section
+                                CommandSection(
+                                  key: _commandKey,
+                                  onThemeToggle: widget.onThemeToggle,
+                                ),
+                                const SizedBox(height: 32),
+                              ],
                             ),
                           ),
                         ),
                       ),
+                    ),
                   ),
                 ],
               ),
