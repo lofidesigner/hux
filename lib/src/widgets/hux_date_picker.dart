@@ -439,7 +439,7 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
     }
     const double totalItemHeight = _yearOptionItemHeight + _yearOptionItemPadding;
     const double viewportHeight =
-        (_yearPickerVisibleCount * 32) + _yearPickerViewportOffset;
+        (_yearPickerVisibleCount * totalItemHeight) + _yearPickerViewportOffset;
     final double targetOffset = (index * totalItemHeight) - (viewportHeight / 2);
     final double maxOffset = _yearScrollController.position.maxScrollExtent;
     _yearScrollController.animateTo(
@@ -1021,7 +1021,9 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: (_yearPickerVisibleCount * 32) + _yearPickerViewportOffset,
+          height: (_yearPickerVisibleCount *
+                  (_yearOptionItemHeight + _yearOptionItemPadding)) +
+              _yearPickerViewportOffset,
           child: ScrollConfiguration(
             behavior:
                 ScrollConfiguration.of(context).copyWith(scrollbars: false),
