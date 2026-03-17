@@ -1,7 +1,9 @@
 import 'dart:ui';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/hux_tokens.dart';
+import '../buttons/hux_button.dart';
 
 /// Visual variants for HuxSnackbar.
 enum HuxSnackbarVariant {
@@ -30,9 +32,11 @@ class HuxSnackbar {
     this.variant = HuxSnackbarVariant.info,
     this.title,
     this.onDismiss,
+    this.onCloseRequest,
     this.showIcon = true,
     this.duration = const Duration(seconds: 4),
     this.action,
+    this.actions,
     this.behavior = SnackBarBehavior.floating,
     this.backgroundColor,
     this.textColor,
@@ -58,6 +62,12 @@ class HuxSnackbar {
   /// Callback when the snackbar is dismissed.
   final VoidCallback? onDismiss;
 
+  /// Internal callback used to request closing this snackbar.
+  ///
+  /// When provided, the snackbar will call this instead of interacting with
+  /// [ScaffoldMessenger]. This enables stacked snackbars via overlays.
+  final VoidCallback? onCloseRequest;
+
   /// Whether to show an icon in the snackbar.
   final bool showIcon;
 
@@ -65,7 +75,14 @@ class HuxSnackbar {
   final Duration duration;
 
   /// Optional action button.
+  ///
+  /// Deprecated by [actions]. Kept for backward compatibility.
   final SnackBarAction? action;
+
+  /// Optional action buttons shown inside the snackbar.
+  ///
+  /// Use this for common patterns like "Undo", "Retry", "View", or "Close".
+  final List<HuxSnackbarAction>? actions;
 
   /// Behavior of the snackbar.
   final SnackBarBehavior behavior;
@@ -97,8 +114,8 @@ class HuxSnackbar {
       key: key,
       content: _buildContent(context),
       duration: duration,
-      action: action,
-      behavior: SnackBarBehavior.floating,
+      // Action UI is rendered inside [_buildContent] to match Hux styling.
+      behavior: behavior,
       backgroundColor: Colors.transparent,
       elevation: 0,
       margin: margin,
@@ -110,115 +127,164 @@ class HuxSnackbar {
   Widget _buildContent(BuildContext context) {
     return Align(
       alignment: Alignment.bottomLeft,
-      child: Container(
-        width: 400,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12), // Consistent with Hux cards
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.black.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: Theme.of(context).brightness == Brightness.dark ? 10 : 5,
-              sigmaY: Theme.of(context).brightness == Brightness.dark ? 10 : 5,
-            ),
-            child: Container(
-              key: const ValueKey('huxSnackbarContainer'),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _getContainerBackgroundColor(context),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _getBorderColor(context),
-                  width: 1, // Consistent with Hux border width
-                ),
+      child: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return Container(
+      width: 400,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: Theme.of(context).brightness == Brightness.dark ? 10 : 5,
+            sigmaY: Theme.of(context).brightness == Brightness.dark ? 10 : 5,
+          ),
+          child: Container(
+            key: const ValueKey('huxSnackbarContainer'),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _getContainerBackgroundColor(context),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _getBorderColor(context),
+                width: 1, // Consistent with Hux border width
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (showIcon) ...[
-                    Icon(
-                      _getIcon(),
-                      color: _getIconColor(context),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (title != null) ...[
-                          Text(
-                            title!,
-                            style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight
-                                          .w600, // Consistent with Hux typography
-                                      color:
-                                          textColor ?? _getTextColor(context),
-                                    ) ??
-                                TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: textColor ?? _getTextColor(context),
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (showIcon) ...[
+                  Icon(
+                    _getIcon(),
+                    color: _getIconColor(context),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (title != null) ...[
                         Text(
-                          message,
+                          title!,
                           style: Theme.of(context)
                                   .textTheme
-                                  .bodySmall
+                                  .titleSmall
                                   ?.copyWith(
+                                    fontWeight: FontWeight
+                                        .w600, // Consistent with Hux typography
                                     color: textColor ?? _getTextColor(context),
                                   ) ??
                               TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
                                 color: textColor ?? _getTextColor(context),
                               ),
                         ),
+                        const SizedBox(height: 4),
                       ],
-                    ),
+                      Text(
+                        message,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: textColor ?? _getTextColor(context),
+                                ) ??
+                            TextStyle(
+                              fontSize: 12,
+                              color: textColor ?? _getTextColor(context),
+                            ),
+                      ),
+                    ],
                   ),
-                  if (onDismiss != null) ...[
-                    const SizedBox(width: 8),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: onDismiss,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Icon(
-                            LucideIcons.x,
-                            size: 16,
-                            color: textColor ?? _getTextColor(context),
-                          ),
+                ),
+                ..._buildActions(context),
+                if (onDismiss != null) ...[
+                  const SizedBox(width: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        onDismiss?.call();
+                        (onCloseRequest ??
+                                () => ScaffoldMessenger.of(context)
+                                    .hideCurrentSnackBar())
+                            .call();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          LucideIcons.x,
+                          size: 16,
+                          color: textColor ?? _getTextColor(context),
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _buildActions(BuildContext context) {
+    final effectiveActions = <HuxSnackbarAction>[
+      if (action != null)
+        HuxSnackbarAction(
+          label: action!.label,
+          onPressed: () {
+            action!.onPressed();
+            (onCloseRequest ??
+                    () => ScaffoldMessenger.of(context).hideCurrentSnackBar())
+                .call();
+          },
+        ),
+      ...?actions,
+    ];
+
+    if (effectiveActions.isEmpty) return const [];
+
+    return [
+      const SizedBox(width: 12),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (final a in effectiveActions)
+            HuxButton(
+              onPressed: () {
+                a.onPressed();
+                (onCloseRequest ??
+                        () =>
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar())
+                    .call();
+              },
+              variant: HuxButtonVariant.primary,
+              size: HuxButtonSize.small,
+              child: Text(a.label),
+            ),
+        ],
+      ),
+    ];
   }
 
   Color _getBackgroundColor(BuildContext context) {
@@ -297,6 +363,25 @@ class HuxSnackbar {
   }
 }
 
+/// Configuration for an action shown inside [HuxSnackbar].
+class HuxSnackbarAction {
+  /// Creates an action button shown inside a [HuxSnackbar].
+  const HuxSnackbarAction({
+    required this.label,
+    required this.onPressed,
+    this.textColor,
+  });
+
+  /// Visible label for the action button (e.g. "Undo").
+  final String label;
+
+  /// Callback invoked when the action button is pressed.
+  final VoidCallback onPressed;
+
+  /// Optional override for the action label color.
+  final Color? textColor;
+}
+
 /// Extension to easily show HuxSnackbar.
 extension HuxSnackbarExtension on BuildContext {
   /// Shows a HuxSnackbar with the given parameters.
@@ -308,6 +393,7 @@ extension HuxSnackbarExtension on BuildContext {
     bool showIcon = true,
     Duration duration = const Duration(seconds: 4),
     SnackBarAction? action,
+    List<HuxSnackbarAction>? actions,
     SnackBarBehavior behavior = SnackBarBehavior.floating,
     Color? backgroundColor,
     Color? textColor,
@@ -326,6 +412,7 @@ extension HuxSnackbarExtension on BuildContext {
       showIcon: showIcon,
       duration: duration,
       action: action,
+      actions: actions,
       behavior: behavior,
       backgroundColor: backgroundColor,
       textColor: textColor,
@@ -338,4 +425,235 @@ extension HuxSnackbarExtension on BuildContext {
 
     ScaffoldMessenger.of(this).showSnackBar(snackbar.build(this));
   }
+}
+
+/// Controller for stacked [HuxSnackbar] overlays.
+///
+/// Flutter's [ScaffoldMessenger] queues snackbars (one at a time). This
+/// controller enables showing multiple snackbars simultaneously by rendering
+/// them in an [Overlay].
+class HuxSnackbarStackController {
+  HuxSnackbarStackController._(this._context);
+
+  final BuildContext _context;
+
+  /// Returns a controller instance associated with [context].
+  static HuxSnackbarStackController of(BuildContext context) =>
+      HuxSnackbarStackController._(context);
+
+  static final ValueNotifier<List<_HuxSnackbarStackItem>> _items =
+      ValueNotifier<List<_HuxSnackbarStackItem>>([]);
+
+  static OverlayEntry? _entry;
+  static OverlayState? _overlayState;
+  static bool _isInserted = false;
+
+  /// Shows [snackbar] as part of the stacked overlay.
+  void show(HuxSnackbar snackbar) {
+    final overlay = Overlay.of(_context, rootOverlay: true);
+
+    _entry ??= OverlayEntry(
+      builder: (context) {
+        return ValueListenableBuilder<List<_HuxSnackbarStackItem>>(
+          valueListenable: _items,
+          builder: (context, items, _) {
+            if (items.isEmpty) return const SizedBox.shrink();
+
+            // Oldest at top, newest at bottom (grows upwards from bottom-left).
+            return Positioned(
+              left: 0,
+              bottom: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16, bottom: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < items.length; i++) ...[
+                        _StackedSnackbarItemView(item: items[i]),
+                        if (i != items.length - 1) const SizedBox(height: 12),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    // Avoid inserting twice in the same frame (OverlayEntry.mounted won't flip
+    // until the next build).
+    if (_overlayState != overlay) {
+      if (_isInserted && (_entry?.mounted ?? false)) {
+        _entry?.remove();
+      }
+      _isInserted = false;
+      _overlayState = overlay;
+    }
+    if (!_isInserted) {
+      overlay.insert(_entry!);
+      _isInserted = true;
+    }
+
+    final id = UniqueKey().toString();
+    final isClosing = ValueNotifier<bool>(false);
+    Timer? timer;
+    if (snackbar.duration > Duration.zero) {
+      timer = Timer(snackbar.duration, () => _beginRemove(id));
+    }
+
+    _items.value = [
+      ..._items.value,
+      _HuxSnackbarStackItem(
+        id: id,
+        snackbar: snackbar,
+        timer: timer,
+        isClosing: isClosing,
+      ),
+    ];
+  }
+
+  static void _beginRemove(String id) {
+    final current = _items.value;
+    final idx = current.indexWhere((e) => e.id == id);
+    if (idx == -1) return;
+
+    final item = current[idx];
+    if (item.isClosing.value) return;
+
+    item.timer?.cancel();
+    item.isClosing.value = true;
+
+    // Let the exit animation play, then remove.
+    Timer(const Duration(milliseconds: 160), () => _removeById(id));
+  }
+
+  static void _removeById(String id) {
+    final current = _items.value;
+    final idx = current.indexWhere((e) => e.id == id);
+    if (idx == -1) return;
+
+    final item = current[idx];
+    item.timer?.cancel();
+    item.isClosing.dispose();
+
+    final next = [...current]..removeAt(idx);
+    _items.value = next;
+
+    if (next.isEmpty) {
+      _entry?.remove();
+      _entry = null;
+      _overlayState = null;
+      _isInserted = false;
+    }
+  }
+}
+
+class _StackedSnackbarItemView extends StatefulWidget {
+  const _StackedSnackbarItemView({required this.item});
+
+  final _HuxSnackbarStackItem item;
+
+  @override
+  State<_StackedSnackbarItemView> createState() =>
+      _StackedSnackbarItemViewState();
+}
+
+class _StackedSnackbarItemViewState extends State<_StackedSnackbarItemView> {
+  @override
+  void initState() {
+    super.initState();
+    widget.item.isClosing.addListener(_onClosingChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant _StackedSnackbarItemView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.isClosing != widget.item.isClosing) {
+      oldWidget.item.isClosing.removeListener(_onClosingChanged);
+      widget.item.isClosing.addListener(_onClosingChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.item.isClosing.removeListener(_onClosingChanged);
+    super.dispose();
+  }
+
+  void _onClosingChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Recreate a snackbar instance with an internal close callback.
+    final sb = widget.item.snackbar;
+    final effective = HuxSnackbar(
+      key: sb.key,
+      message: sb.message,
+      variant: sb.variant,
+      title: sb.title,
+      onDismiss: sb.onDismiss,
+      onCloseRequest: () =>
+          HuxSnackbarStackController._beginRemove(widget.item.id),
+      showIcon: sb.showIcon,
+      duration: sb.duration,
+      action: sb.action,
+      actions: sb.actions,
+      behavior: sb.behavior,
+      backgroundColor: sb.backgroundColor,
+      textColor: sb.textColor,
+      actionTextColor: sb.actionTextColor,
+      elevation: sb.elevation,
+      margin: sb.margin,
+      padding: sb.padding,
+      shape: sb.shape,
+    );
+
+    final closing = widget.item.isClosing.value;
+    return AnimatedSlide(
+      offset: closing ? const Offset(0, 0.08) : Offset.zero,
+      duration: const Duration(milliseconds: 160),
+      curve: Curves.easeInOut,
+      child: AnimatedOpacity(
+        opacity: closing ? 0 : 1,
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeInOut,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          builder: (context, t, child) {
+            return Opacity(
+              opacity: t,
+              child: Transform.translate(
+                // Slide up from the bottom as it appears.
+                offset: Offset(0, (1 - t) * 24),
+                child: child,
+              ),
+            );
+          },
+          child: effective._buildBody(context),
+        ),
+      ),
+    );
+  }
+}
+
+class _HuxSnackbarStackItem {
+  _HuxSnackbarStackItem({
+    required this.id,
+    required this.snackbar,
+    required this.timer,
+    required this.isClosing,
+  });
+
+  final String id;
+  final HuxSnackbar snackbar;
+  final Timer? timer;
+  final ValueNotifier<bool> isClosing;
 }

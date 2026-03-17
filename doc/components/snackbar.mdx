@@ -13,6 +13,8 @@ HuxSnackbar is a message box component that provides clear communication to user
 - **Theme-Adaptive**: Different blur intensities for light (5px) and dark (10px) modes
 - **Semantic Variants**: Info, success, error, and warning states
 - **Auto-positioning**: Floating behavior with proper margins
+- **Optional actions**: Add interactive buttons like “Undo”
+- **Optional stacking**: Show multiple snackbars at once using the overlay controller
 
 ## Component Variants
 
@@ -65,34 +67,55 @@ HuxSnackbar(
 
 ## Basic Usage
 
-### Simple Snackbar
-Basic snackbar with message:
+### Simple Snackbar (via extension)
+Show a snackbar from any widget with a `BuildContext`:
 ```dart
-HuxSnackbar(
-  message: 'This is a simple snackbar message',
-)
+context.showHuxSnackbar(message: 'This is a simple snackbar message');
 ```
 
 ### Dismissible Snackbar
 Snackbar that can be dismissed by the user:
 ```dart
-HuxSnackbar(
+context.showHuxSnackbar(
   message: 'Click the X to dismiss this message',
-  onDismiss: () {
-    // Handle dismiss action
-    print('Snackbar dismissed');
-  },
-)
+  onDismiss: () => print('Snackbar dismissed'),
+);
 ```
 
-### Auto-dismiss Snackbar
-Snackbar that automatically disappears after a set duration:
+### Snackbar with Actions (Undo / Retry / View)
+Add one or more action buttons (for example, “Undo”):
 ```dart
-HuxSnackbar(
-  message: 'This will disappear in 5 seconds',
-  autoDismiss: true,
-  dismissDuration: Duration(seconds: 5),
-)
+context.showHuxSnackbar(
+  message: 'Item deleted',
+  variant: HuxSnackbarVariant.info,
+  actions: [
+    HuxSnackbarAction(
+      label: 'Undo',
+      onPressed: () {
+        // Restore the item
+      },
+    ),
+  ],
+);
+```
+
+### Stacking multiple snackbars (overlay)
+Flutter’s `ScaffoldMessenger` queues snackbars. To **stack** multiple snackbars (show them simultaneously), use the overlay controller:
+
+```dart
+HuxSnackbarStackController.of(context).show(
+  const HuxSnackbar(
+    message: 'Saved',
+    duration: Duration(seconds: 4),
+  ),
+);
+
+HuxSnackbarStackController.of(context).show(
+  const HuxSnackbar(
+    message: 'Synced',
+    duration: Duration(seconds: 4),
+  ),
+);
 ```
 
 ## Properties
@@ -102,12 +125,20 @@ HuxSnackbar(
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `message` | `String` | **required** | The message text to display |
-| `variant` | `HuxAlertVariant` | `info` | Visual variant of the snackbar |
+| `variant` | `HuxSnackbarVariant` | `info` | Visual variant of the snackbar |
+| `title` | `String?` | `null` | Optional title displayed above the message |
 | `onDismiss` | `VoidCallback?` | `null` | Callback when dismiss button is pressed |
-| `autoDismiss` | `bool` | `false` | Whether to automatically dismiss after duration |
-| `dismissDuration` | `Duration` | `5 seconds` | How long to wait before auto-dismissing |
-| `showDismissButton` | `bool` | `true` | Whether to show the dismiss button |
-| `dismissButtonText` | `String` | `'Dismiss'` | Text for the dismiss button |
+| `duration` | `Duration` | `4 seconds` | Duration the snackbar is displayed |
+| `showIcon` | `bool` | `true` | Whether to show an icon in the snackbar |
+| `actions` | `List<HuxSnackbarAction>?` | `null` | Optional action buttons (Undo/Retry/Close/etc.) |
+
+### HuxSnackbarAction Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `label` | `String` | **required** | Button label (e.g. `"Undo"`) |
+| `onPressed` | `VoidCallback` | **required** | Callback when pressed |
+| `textColor` | `Color?` | `null` | Optional label color override |
 
 ### HuxSnackbarVariant Enum
 
@@ -129,36 +160,6 @@ HuxSnackbar(
 )
 ```
 
-### Custom Dismiss Button
-Customize the dismiss button appearance:
-```dart
-HuxSnackbar(
-  message: 'Custom dismiss button',
-  dismissButtonText: 'Got it!',
-  onDismiss: () => print('Custom dismiss action'),
-)
-```
-
-## Layout Options
-
-### Full Width
-Snackbar that spans the full width of its container:
-```dart
-HuxSnackbar(
-  message: 'Full width snackbar message',
-  width: double.infinity,
-)
-```
-
-### Custom Width
-Snackbar with specific width:
-```dart
-HuxSnackbar(
-  message: 'Custom width snackbar',
-  width: 300,
-)
-```
-
 ## Colors
 
 ### Theme-Aware Colors
@@ -168,16 +169,6 @@ Snackbar automatically adapts to light and dark themes:
 - **Success**: Green tones with appropriate contrast  
 - **Error**: Red tones with appropriate contrast
 - **Warning**: Orange tones with appropriate contrast
-
-### Custom Color Overrides
-```dart
-HuxSnackbar(
-  message: 'Custom colored snackbar',
-  backgroundColor: Colors.deepPurple,
-  textColor: Colors.white,
-  dismissButtonColor: Colors.purpleAccent,
-)
-```
 
 ## States
 
@@ -197,7 +188,6 @@ HuxSnackbar includes several accessibility features:
 ### Screen Reader Support
 - Message content is properly announced
 - Dismiss button includes appropriate labels
-- Variant information is conveyed through ARIA attributes
 
 ### Keyboard Navigation
 - Tab navigation to dismiss button
