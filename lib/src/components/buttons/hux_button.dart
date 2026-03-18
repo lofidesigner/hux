@@ -113,10 +113,11 @@ class HuxButton extends StatelessWidget {
         final effectivePrimaryColor =
             primaryColor ?? HuxTokens.primary(context);
         backgroundColor = effectivePrimaryColor;
-        foregroundColor = textColor ?? HuxWCAG.getContrastingTextColor(
-          backgroundColor: effectivePrimaryColor,
-          context: context,
-        );
+        foregroundColor = textColor ??
+            HuxWCAG.getContrastingTextColor(
+              backgroundColor: effectivePrimaryColor,
+              context: context,
+            );
         borderSide = BorderSide(
             color: _getContrastingBorderColor(effectivePrimaryColor, context));
         break;
