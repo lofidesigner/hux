@@ -250,6 +250,7 @@ class HuxSnackbar {
       if (action != null)
         HuxSnackbarAction(
           label: action!.label,
+          textColor: actionTextColor ?? action!.textColor,
           onPressed: () {
             action!.onPressed();
             (onCloseRequest ??
@@ -280,6 +281,7 @@ class HuxSnackbar {
               },
               variant: HuxButtonVariant.primary,
               size: HuxButtonSize.small,
+              textColor: a.textColor ?? actionTextColor,
               child: Text(a.label),
             ),
         ],
@@ -448,9 +450,24 @@ class HuxSnackbarStackController {
   static OverlayState? _overlayState;
   static bool _isInserted = false;
 
+  /// Resets the internal state. Useful for test isolation.
+  @visibleForTesting
+  static void resetForTest() {
+    _items.value = [];
+    _entry = null;
+    _overlayState = null;
+    _isInserted = false;
+  }
+
   /// Shows [snackbar] as part of the stacked overlay.
   void show(HuxSnackbar snackbar) {
     final overlay = Overlay.of(_context, rootOverlay: true);
+
+    if (_overlayState != null && !_overlayState!.mounted) {
+      _overlayState = null;
+      _entry = null;
+      _isInserted = false;
+    }
 
     _entry ??= OverlayEntry(
       builder: (context) {
@@ -487,7 +504,9 @@ class HuxSnackbarStackController {
     // Avoid inserting twice in the same frame (OverlayEntry.mounted won't flip
     // until the next build).
     if (_overlayState != overlay) {
-      if (_isInserted && (_entry?.mounted ?? false)) {
+      if (_isInserted &&
+          (_entry?.mounted ?? false) &&
+          (_overlayState?.mounted ?? false)) {
         _entry?.remove();
       }
       _isInserted = false;
@@ -538,13 +557,19 @@ class HuxSnackbarStackController {
 
     final item = current[idx];
     item.timer?.cancel();
+    if (item.stateListener != null) {
+      item.isClosing.removeListener(item.stateListener!);
+      item.stateListener = null;
+    }
     item.isClosing.dispose();
 
     final next = [...current]..removeAt(idx);
     _items.value = next;
 
     if (next.isEmpty) {
-      _entry?.remove();
+      if ((_entry?.mounted ?? false) && (_overlayState?.mounted ?? false)) {
+        _entry?.remove();
+      }
       _entry = null;
       _overlayState = null;
       _isInserted = false;
@@ -566,21 +591,29 @@ class _StackedSnackbarItemViewState extends State<_StackedSnackbarItemView> {
   @override
   void initState() {
     super.initState();
-    widget.item.isClosing.addListener(_onClosingChanged);
+    widget.item.stateListener = _onClosingChanged;
+    widget.item.isClosing.addListener(widget.item.stateListener!);
   }
 
   @override
   void didUpdateWidget(covariant _StackedSnackbarItemView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.item.isClosing != widget.item.isClosing) {
-      oldWidget.item.isClosing.removeListener(_onClosingChanged);
-      widget.item.isClosing.addListener(_onClosingChanged);
+      if (oldWidget.item.stateListener != null) {
+        oldWidget.item.isClosing.removeListener(oldWidget.item.stateListener!);
+        oldWidget.item.stateListener = null;
+      }
+      widget.item.stateListener = _onClosingChanged;
+      widget.item.isClosing.addListener(widget.item.stateListener!);
     }
   }
 
   @override
   void dispose() {
-    widget.item.isClosing.removeListener(_onClosingChanged);
+    if (widget.item.stateListener != null) {
+      widget.item.isClosing.removeListener(widget.item.stateListener!);
+      widget.item.stateListener = null;
+    }
     super.dispose();
   }
 
@@ -656,4 +689,5 @@ class _HuxSnackbarStackItem {
   final HuxSnackbar snackbar;
   final Timer? timer;
   final ValueNotifier<bool> isClosing;
+  VoidCallback? stateListener;
 }

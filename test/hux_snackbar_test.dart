@@ -4,6 +4,10 @@ import 'package:hux/hux.dart';
 
 void main() {
   group('HuxSnackbar', () {
+    tearDown(() {
+      HuxSnackbarStackController.resetForTest();
+    });
+
     testWidgets('uses opaque container and readable text in light mode',
         (WidgetTester tester) async {
       await tester.pumpWidget(
