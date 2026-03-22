@@ -25,8 +25,11 @@ class _SnackbarsSectionState extends State<SnackbarsSection> {
     ];
   }
 
+<<<<<<< HEAD
   // Returning null hides the dismiss button when actions are shown,
   // and returning an empty closure provides a no-op dismiss when actions are hidden.
+=======
+>>>>>>> 331d93b (feat(snackbar): add actions + stacked overlay controller)
   VoidCallback? _dismissForDemo() => _showActions ? null : () {};
 
   void _showDemoSnackbar({
