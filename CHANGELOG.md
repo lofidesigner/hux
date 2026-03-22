@@ -1,16 +1,23 @@
 # Changelog
 
-## [1.1.0] - 2026-03-17
+## [1.1.0] - 2026-03-23
 
 ### Added
 - **HuxSnackbar actions**: Support for action buttons via `actions: List<HuxSnackbarAction>`
   - Actions render as primary `HuxButton`s for clear affordance
-  - Tapping an action dismisses the snackbar by default
+  - Tapping an action dismisses the snackbar automatically
 - **Stacked snackbars (overlay)**: `HuxSnackbarStackController` for showing multiple snackbars simultaneously
-  - Includes smooth enter/exit animations (slide from bottom + fade)
+  - Smooth enter/exit animations (slide from bottom + fade, 180ms/160ms)
+
+### Fixed
+- **Double-dismiss on legacy action**: Removed redundant `onCloseRequest`/`hideCurrentSnackBar` call from the `HuxSnackbarAction` wrapper — dismissal is now handled exclusively by `HuxButton.onPressed`, preventing snackbars from being dismissed twice
+- **Action styling**: Corrected action button appearance and spacing in stacked and standard snackbar layouts
+- **Stacked overlay**: Resolved layout and positioning edge cases in `HuxSnackbarStackController`
+- **Accessibility**: Improved semantic labels and keyboard navigation within snackbar action rows
+- **Test reliability**: Fixed test pollution and race conditions in snackbar widget tests
 
 ### Changed
-- **Example app**: Updated Snackbar section to demonstrate snackbars with interactive toggles and stacked behavior
+- **Example app**: Updated Snackbar section with interactive toggles and stacked behavior demo
 
 ## [1.0.2] - 2026-03-15
 

@@ -14,12 +14,13 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Release: 1.0.2
+## Latest Release: 1.1.0
 
-**Accessibility & Keyboard Navigation Polish**
-  - Improved keyboard/focus behavior across pane navigation, section-level Tab traversal, and date picker interactions
-  - Clamped date picker month/focus state to valid bounds and normalized date-only comparisons
-  - Aligned year picker viewport/scroll calculations and strengthened semantics for header navigation and icon-only toggles
+**Snackbar Actions & Stacked Overlay**
+  - New `actions: List<HuxSnackbarAction>` parameter for adding Undo/Retry/View buttons to any snackbar
+  - New `HuxSnackbarStackController` for showing multiple snackbars simultaneously via the overlay system
+  - Fixed double-dismiss bug on legacy action callbacks
+  - Improved action styling, accessibility semantics, and test reliability
 
 [![Changelog](https://img.shields.io/badge/Changelog-View-black?style=for-the-badge&labelColor=white&logo=github&logoColor=black)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/Docs-Browse-black?style=for-the-badge&labelColor=white&logo=readthedocs&logoColor=black)](https://docs.thehuxdesign.com)
