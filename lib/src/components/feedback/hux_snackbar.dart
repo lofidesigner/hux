@@ -273,12 +273,7 @@ class HuxSnackbar {
         HuxSnackbarAction(
           label: action!.label,
           textColor: actionTextColor ?? action!.textColor,
-          onPressed: () {
-            action!.onPressed();
-            (onCloseRequest ??
-                    () => ScaffoldMessenger.of(context).hideCurrentSnackBar())
-                .call();
-          },
+          onPressed: action!.onPressed,
         ),
       ...?actions,
     ];
