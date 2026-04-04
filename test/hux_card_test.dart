@@ -29,7 +29,7 @@ void main() {
         ),
       );
 
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('action-row')), findsOneWidget);
       expect(find.byType(Wrap), findsNothing);
@@ -66,7 +66,7 @@ void main() {
         ),
       );
 
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('action-row')), findsNothing);
       expect(find.byType(Wrap), findsOneWidget);

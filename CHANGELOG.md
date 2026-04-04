@@ -10,6 +10,7 @@
   - Smooth enter/exit animations (slide from bottom + fade, 180ms/160ms)
 
 ### Changed
+
 - **Example app**: Updated Snackbar section with interactive toggles and stacked behavior demo
 
 ### Fixed
@@ -1012,4 +1013,4 @@
 - Beautiful data visualization with animated charts
 - Customizable styling options
 - Responsive design support
-- Accessibility considerations 
+- Accessibility considerations

@@ -195,7 +195,7 @@ void main() {
                     ScaffoldMessenger.of(context).showSnackBar(
                       HuxSnackbar(
                         message: 'Dismiss order',
-                        duration: Duration(minutes: 1),
+                        duration: const Duration(minutes: 1),
                         onCloseRequest: () => events.add('close'),
                         onDismiss: () => events.add('dismiss'),
                       ).build(context),
@@ -284,7 +284,7 @@ void main() {
                     ScaffoldMessenger.of(context).showSnackBar(
                       HuxSnackbar(
                         message: 'Legacy action order',
-                        duration: Duration(minutes: 1),
+                        duration: const Duration(minutes: 1),
                         onCloseRequest: () => events.add('close'),
                         action: SnackBarAction(
                           label: 'Undo',

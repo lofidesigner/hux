@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/hux_tokens.dart';
 import '../buttons/hux_button.dart';
 import '../tooltip/hux_tooltip.dart';
+
+class _CloseCurrentTabIntent extends Intent {
+  const _CloseCurrentTabIntent();
+}
+
+class _OpenNewTabIntent extends Intent {
+  const _OpenNewTabIntent();
+}
+
+class _SwitchToNextTabIntent extends Intent {
+  const _SwitchToNextTabIntent();
+}
 
 /// Visual variants for HuxTabView.
 enum HuxTabViewVariant {
@@ -63,7 +76,7 @@ class TabDocument {
 /// - Close buttons on individual tabs
 /// - Optional "New Tab" button
 /// - Horizontal scrolling for many tabs
-/// - Keyboard shortcuts (Ctrl+W/Cmd+W to close, Ctrl+Tab/Cmd+Tab to switch)
+/// - Keyboard shortcuts (Ctrl/Cmd+T to open, Ctrl/Cmd+W to close, Ctrl/Cmd+Tab to switch)
 ///
 /// Example:
 /// ```dart
@@ -91,8 +104,8 @@ class HuxTabView extends StatefulWidget {
     this.onNewTabRequested,
     this.expandContent = true,
     this.tabMaxWidth,
-    this.newTabTooltip = 'New Tab (Ctrl+T)',
-    this.closeTabTooltip = 'Close tab (Ctrl+W)',
+    this.newTabTooltip = 'New Tab (Ctrl/Cmd+T)',
+    this.closeTabTooltip = 'Close tab (Ctrl/Cmd+W)',
   });
 
   /// Initial list of tabs to display
@@ -146,6 +159,7 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   late int _activeIndex;
   int _untitledCount = 0;
   final ScrollController _scrollController = ScrollController();
+  final Set<int> _hoveringTabs = <int>{};
 
   @override
   void initState() {
@@ -166,6 +180,7 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
       setState(() {
         _tabs = List.from(widget.initialTabs ?? []);
         _activeIndex = _activeIndex.clamp(0, _tabs.isEmpty ? 0 : _tabs.length - 1);
+        _hoveringTabs.removeWhere((index) => index >= _tabs.length);
       });
     }
   }
@@ -202,6 +217,13 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
     setState(() {
       _tabs.removeAt(index);
+      final remainingHoveringTabs = _hoveringTabs
+          .where((hoveredIndex) => hoveredIndex != index)
+          .map((hoveredIndex) => hoveredIndex > index ? hoveredIndex - 1 : hoveredIndex)
+          .toSet();
+      _hoveringTabs
+        ..clear()
+        ..addAll(remainingHoveringTabs);
 
       // Adjust active index
       if (_tabs.isEmpty) {
@@ -229,6 +251,26 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
     _scrollToActiveTab();
   }
 
+  void _openNewTab() {
+    final onNewTabRequested = widget.onNewTabRequested;
+    if (onNewTabRequested != null) {
+      onNewTabRequested();
+      return;
+    }
+
+    _addNewTab();
+  }
+
+  void _closeCurrentTab() {
+    if (_tabs.isEmpty) return;
+    _closeTab(_activeIndex);
+  }
+
+  void _switchToNextTab() {
+    if (_tabs.length < 2) return;
+    _switchToTab((_activeIndex + 1) % _tabs.length);
+  }
+
 
 
   void _scrollToActiveTab() {
@@ -236,7 +278,7 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
     // Calculate position to scroll to center the active tab
     final maxScroll = _scrollController.position.maxScrollExtent;
-    final tabWidth = widget.tabMaxWidth ?? _getTabWidth();
+    final tabWidth = _getTabScrollExtent();
     final targetOffset = (_activeIndex * tabWidth) -
         (_scrollController.position.viewportDimension / 2) +
         (tabWidth / 2);
@@ -253,16 +295,49 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
     final content = _tabs.isEmpty
         ? _buildEmptyState(context)
         : _buildTabContent(context);
+    final shortcuts = <ShortcutActivator, Intent>{
+      SingleActivator(LogicalKeyboardKey.keyT, control: true): const _OpenNewTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyT, meta: true): const _OpenNewTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyW, control: true): const _CloseCurrentTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyW, meta: true): const _CloseCurrentTabIntent(),
+      SingleActivator(LogicalKeyboardKey.tab, control: true): const _SwitchToNextTabIntent(),
+      SingleActivator(LogicalKeyboardKey.tab, meta: true): const _SwitchToNextTabIntent(),
+    };
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTabBar(context),
-        const SizedBox(height: 16),
-        widget.expandContent
-            ? Expanded(child: content)
-            : Flexible(fit: FlexFit.loose, child: content),
-      ],
+    return Shortcuts(
+      shortcuts: shortcuts,
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _OpenNewTabIntent: CallbackAction<_OpenNewTabIntent>(
+            onInvoke: (_) {
+              _openNewTab();
+              return null;
+            },
+          ),
+          _CloseCurrentTabIntent: CallbackAction<_CloseCurrentTabIntent>(
+            onInvoke: (_) {
+              _closeCurrentTab();
+              return null;
+            },
+          ),
+          _SwitchToNextTabIntent: CallbackAction<_SwitchToNextTabIntent>(
+            onInvoke: (_) {
+              _switchToNextTab();
+              return null;
+            },
+          ),
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTabBar(context),
+            const SizedBox(height: 16),
+            widget.expandContent
+                ? Expanded(child: content)
+                : Flexible(fit: FlexFit.loose, child: content),
+          ],
+        ),
+      ),
     );
   }
 
@@ -302,89 +377,94 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   Widget _buildTab(BuildContext context, int index) {
     final tab = _tabs[index];
     final isActive = index == _activeIndex;
-    final fixedWidth = widget.tabMaxWidth ?? 260;
-    final isHovering = ValueNotifier<bool>(false);
+    final fixedWidth = _getRenderedTabWidth();
+    final isHovering = _hoveringTabs.contains(index);
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: isHovering,
-      builder: (context, hovering, _) {
-        return MouseRegion(
-          onEnter: (_) => isHovering.value = true,
-          onExit: (_) => isHovering.value = false,
-          child: Container(
-            width: fixedWidth,
-            margin: EdgeInsets.only(bottom: isActive ? 0 : 2),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
-              child: InkWell(
-                onTap: () => _switchToTab(index),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                child: Container(
-                  padding: _getTabPadding(isActive),
-                  decoration:
-                      _getTabDecoration(context, isActive, isHovered: hovering),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      if (tab.icon != null) ...[
-                        Icon(
-                          tab.icon,
-                          size: _getIconSize(),
-                          color: isActive
-                              ? HuxTokens.tabActiveText(context)
-                              : HuxTokens.tabInactiveText(context),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(
-                        child: Text(
-                          tab.title,
-                          style: _getTabTextStyle(context, isActive),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                      if (widget.canCloseTabs && tab.isClosable) ...[
-                        const SizedBox(width: 4),
-                        _buildCloseButton(context, index),
-                      ],
-                    ],
+    return MouseRegion(
+      onEnter: (_) {
+        if (_hoveringTabs.contains(index)) return;
+        setState(() {
+          _hoveringTabs.add(index);
+        });
+      },
+      onExit: (_) {
+        if (!_hoveringTabs.contains(index)) return;
+        setState(() {
+          _hoveringTabs.remove(index);
+        });
+      },
+      child: Container(
+        width: fixedWidth,
+        margin: EdgeInsets.only(bottom: isActive ? 0 : 2),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () => _switchToTab(index),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+            hoverColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            child: Container(
+              padding: _getTabPadding(isActive),
+              decoration: _getTabDecoration(context, isActive, isHovered: isHovering),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (tab.icon != null) ...[
+                    Icon(
+                      tab.icon,
+                      size: _getIconSize(),
+                      color: isActive
+                          ? HuxTokens.tabActiveText(context)
+                          : HuxTokens.tabInactiveText(context),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      tab.title,
+                      style: _getTabTextStyle(context, isActive),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
-                ),
+                  if (widget.canCloseTabs && tab.isClosable) ...[
+                    const SizedBox(width: 4),
+                    _buildCloseButton(context, index),
+                  ],
+                ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   void _addNewTab() {
+    final newContent = _buildEmptyState(context);
+    late TabDocument newTab;
+
     setState(() {
       _untitledCount++;
-      _tabs = [
-        ..._tabs,
-        TabDocument(
-          title: 'Untitled $_untitledCount',
-          icon: LucideIcons.file,
-          content: _buildEmptyState(context),
-        ),
-      ];
+      newTab = TabDocument(
+        title: 'Untitled $_untitledCount',
+        icon: LucideIcons.file,
+        content: newContent,
+      );
+      _tabs = [..._tabs, newTab];
       _activeIndex = _tabs.length - 1;
     });
 
-    widget.onTabAdded?.call(_tabs[_activeIndex]);
+    widget.onTabAdded?.call(newTab);
     widget.onTabChanged?.call(_activeIndex);
     _scrollToActiveTab();
   }
@@ -414,7 +494,7 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
         height: 28,
         child: Center(
           child: HuxButton(
-            onPressed: widget.onNewTabRequested ?? _addNewTab,
+            onPressed: _openNewTab,
             variant: HuxButtonVariant.ghost,
             size: HuxButtonSize.small,
             icon: LucideIcons.plus,
@@ -511,51 +591,39 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   }
 
   TextStyle _getTabTextStyle(BuildContext context, bool isActive) {
+    final fontSize = switch (widget.size) {
+      HuxTabViewSize.small => 12.0,
+      HuxTabViewSize.medium => 14.0,
+      HuxTabViewSize.large => 16.0,
+    };
+
+    return _buildTabTextStyle(
+      context,
+      fontSize: fontSize,
+      isActive: isActive,
+    );
+  }
+
+  TextStyle _buildTabTextStyle(
+    BuildContext context, {
+    required double fontSize,
+    required bool isActive,
+  }) {
     final baseStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
         );
+    final color = isActive
+        ? HuxTokens.tabActiveText(context)
+        : HuxTokens.tabInactiveText(context);
 
-    switch (widget.size) {
-      case HuxTabViewSize.small:
-        return baseStyle?.copyWith(
-              fontSize: 12,
-              color: isActive
-                  ? HuxTokens.tabActiveText(context)
-                  : HuxTokens.tabInactiveText(context),
-            ) ??
-            TextStyle(
-              fontSize: 12,
-              color: isActive
-                  ? HuxTokens.tabActiveText(context)
-                  : HuxTokens.tabInactiveText(context),
-            );
-      case HuxTabViewSize.medium:
-        return baseStyle?.copyWith(
-              fontSize: 14,
-              color: isActive
-                  ? HuxTokens.tabActiveText(context)
-                  : HuxTokens.tabInactiveText(context),
-            ) ??
-            TextStyle(
-              fontSize: 14,
-              color: isActive
-                  ? HuxTokens.tabActiveText(context)
-                  : HuxTokens.tabInactiveText(context),
-            );
-      case HuxTabViewSize.large:
-        return baseStyle?.copyWith(
-              fontSize: 16,
-              color: isActive
-                  ? HuxTokens.tabActiveText(context)
-                  : HuxTokens.tabInactiveText(context),
-            ) ??
-            TextStyle(
-              fontSize: 16,
-              color: isActive
-                  ? HuxTokens.tabActiveText(context)
-                  : HuxTokens.tabInactiveText(context),
-            );
-    }
+    return baseStyle?.copyWith(
+          fontSize: fontSize,
+          color: color,
+        ) ??
+        TextStyle(
+          fontSize: fontSize,
+          color: color,
+        );
   }
 
   EdgeInsets _getTabPadding(bool isActive) {
@@ -587,20 +655,11 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
     }
   }
 
-  double _getMinTabWidth() {
-    switch (widget.size) {
-      case HuxTabViewSize.small:
-        return 80;
-      case HuxTabViewSize.medium:
-        return 100;
-      case HuxTabViewSize.large:
-        return 120;
-    }
-  }
+  double _getRenderedTabWidth() => widget.tabMaxWidth ?? 260;
 
-  double _getTabWidth() {
-    // Estimate average tab width for scrolling calculations
-    return (widget.tabMaxWidth ?? _getMinTabWidth()) + 32;
+  double _getTabScrollExtent() {
+    // Each tab item includes 4px horizontal padding on both sides in the list.
+    return _getRenderedTabWidth() + 8;
   }
 
   double _getIconSize() {
