@@ -212,26 +212,41 @@ class HuxSnackbar {
                     ],
                   ),
                 ),
-                ..._buildActions(context),
+                if (_hasActions) ...[
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: _buildActions(context),
+                  ),
+                ],
                 if (onDismiss != null) ...[
                   const SizedBox(width: 8),
                   Material(
                     color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        onDismiss?.call();
-                        (onCloseRequest ??
+                    child: Tooltip(
+                      message: 'Dismiss notification',
+                      child: Semantics(
+                        button: true,
+                        label: 'Dismiss notification',
+                        child: InkWell(
+                          onTap: () {
+                            final close = onCloseRequest ??
                                 () => ScaffoldMessenger.of(context)
-                                    .hideCurrentSnackBar())
-                            .call();
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          LucideIcons.x,
-                          size: 16,
-                          color: textColor ?? _getTextColor(context),
+                                    .hideCurrentSnackBar();
+                            close();
+                            onDismiss?.call();
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Center(
+                              child: Icon(
+                                LucideIcons.x,
+                                size: 16,
+                                color: textColor ?? _getTextColor(context),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -245,46 +260,41 @@ class HuxSnackbar {
     );
   }
 
-  List<Widget> _buildActions(BuildContext context) {
+  bool get _hasActions => action != null || (actions?.isNotEmpty ?? false);
+
+  Widget _buildActions(BuildContext context) {
     final effectiveActions = <HuxSnackbarAction>[
       if (action != null)
         HuxSnackbarAction(
           label: action!.label,
           onPressed: () {
             action!.onPressed();
-            (onCloseRequest ??
-                    () => ScaffoldMessenger.of(context).hideCurrentSnackBar())
-                .call();
           },
         ),
       ...?actions,
     ];
 
-    if (effectiveActions.isEmpty) return const [];
+    if (effectiveActions.isEmpty) return const SizedBox.shrink();
 
-    return [
-      const SizedBox(width: 12),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          for (final a in effectiveActions)
-            HuxButton(
-              onPressed: () {
-                a.onPressed();
-                (onCloseRequest ??
-                        () =>
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar())
-                    .call();
-              },
-              variant: HuxButtonVariant.primary,
-              size: HuxButtonSize.small,
-              child: Text(a.label),
-            ),
-        ],
-      ),
-    ];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (final a in effectiveActions)
+          HuxButton(
+            onPressed: () {
+              final close = onCloseRequest ??
+                  () => ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              close();
+              a.onPressed();
+            },
+            variant: HuxButtonVariant.primary,
+            size: HuxButtonSize.small,
+            child: Text(a.label),
+          ),
+      ],
+    );
   }
 
   Color _getBackgroundColor(BuildContext context) {
@@ -458,13 +468,24 @@ class HuxSnackbarStackController {
           builder: (context, items, _) {
             if (items.isEmpty) return const SizedBox.shrink();
 
+            final margin = items.last.snackbar.margin.resolve(
+              Directionality.of(context),
+            );
+            final viewInsets = MediaQuery.viewInsetsOf(context);
+
             // Oldest at top, newest at bottom (grows upwards from bottom-left).
             return Positioned(
               left: 0,
+              right: 0,
               bottom: 0,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 16),
+                  padding: EdgeInsets.only(
+                    left: margin.left,
+                    top: margin.top,
+                    right: margin.right,
+                    bottom: margin.bottom + viewInsets.bottom,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,

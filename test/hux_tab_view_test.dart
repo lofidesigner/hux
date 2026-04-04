@@ -260,25 +260,153 @@ void main() {
     testWidgets('calls onTabAdded when tab is added',
         (WidgetTester tester) async {
       TabDocument? addedDoc;
-
-      final key = GlobalKey<_TestTabViewHostState>();
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: _TestTabViewHost(
-              key: key,
+            body: HuxTabView(
+              initialTabs: [
+                TabDocument(title: 'Initial', content: const Text('Content')),
+              ],
+              showNewTabButton: true,
               onTabAdded: (doc) => addedDoc = doc,
             ),
           ),
         ),
       );
 
-      key.currentState!.addTab(
-          TabDocument(title: 'New Tab', content: const Text('Content')));
+      await tester.tap(find.byIcon(LucideIcons.plus));
       await tester.pump();
 
       expect(addedDoc, isNotNull);
-      expect(addedDoc!.title, equals('New Tab'));
+      expect(addedDoc!.title, equals('Untitled 1'));
+      expect(find.text('Untitled 1'), findsOneWidget);
+    });
+
+    testWidgets('updates tabs when identifier order changes with same length',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: HuxTabView(
+              initialTabs: [
+                TabDocument(
+                  identifier: 'first',
+                  title: 'Tab 1',
+                  content: const Text('Content 1'),
+                ),
+                TabDocument(
+                  identifier: 'second',
+                  title: 'Tab 2',
+                  content: const Text('Content 2'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Content 1'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: HuxTabView(
+              initialTabs: [
+                TabDocument(
+                  identifier: 'second',
+                  title: 'Tab 2',
+                  content: const Text('Content 2'),
+                ),
+                TabDocument(
+                  identifier: 'first',
+                  title: 'Tab 1',
+                  content: const Text('Content 1'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Content 2'), findsOneWidget);
+    });
+
+    testWidgets('preserves tab content state by identifier on reorder',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: HuxTabView(
+              initialTabs: [
+                TabDocument(
+                  identifier: 'alpha',
+                  title: 'Alpha',
+                  content: const _TestCounterContent(label: 'Alpha'),
+                ),
+                TabDocument(
+                  identifier: 'beta',
+                  title: 'Beta',
+                  content: const _TestCounterContent(label: 'Beta'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byKey(const ValueKey('increment-Alpha')));
+      await tester.pump();
+      expect(find.text('Alpha: 1'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: HuxTabView(
+              initialTabs: [
+                TabDocument(
+                  identifier: 'beta',
+                  title: 'Beta',
+                  content: const _TestCounterContent(label: 'Beta'),
+                ),
+                TabDocument(
+                  identifier: 'alpha',
+                  title: 'Alpha',
+                  content: const _TestCounterContent(label: 'Alpha'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Beta: 0'), findsOneWidget);
+      expect(find.text('Alpha: 1', skipOffstage: false), findsOneWidget);
+    });
+
+    testWidgets('does not force content to expand when expandContent is false',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 240,
+              child: HuxTabView(
+                expandContent: false,
+                initialTabs: [
+                  TabDocument(title: 'Tab 1', content: const Text('Content')),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final column = tester.widget<Column>(find.byType(Column).first);
+      expect(column.children.whereType<Expanded>(), isEmpty);
+      expect(column.children.whereType<Flexible>(), hasLength(1));
+      expect(find.text('Content'), findsOneWidget);
     });
 
     group('Sizes', () {
@@ -406,36 +534,34 @@ void main() {
   });
 }
 
-/// Test helper widget to allow programmatic tab management
-class _TestTabViewHost extends StatefulWidget {
-  const _TestTabViewHost({
-    super.key,
-    this.onTabAdded,
-  });
+class _TestCounterContent extends StatefulWidget {
+  const _TestCounterContent({required this.label});
 
-  final ValueChanged<TabDocument>? onTabAdded;
+  final String label;
 
   @override
-  State<_TestTabViewHost> createState() => _TestTabViewHostState();
+  State<_TestCounterContent> createState() => _TestCounterContentState();
 }
 
-class _TestTabViewHostState extends State<_TestTabViewHost> {
-  final List<TabDocument> _tabs = [
-    TabDocument(title: 'Initial', content: const Text('Content')),
-  ];
-
-  void addTab(TabDocument doc) {
-    setState(() {
-      _tabs.add(doc);
-    });
-    widget.onTabAdded?.call(doc);
-  }
+class _TestCounterContentState extends State<_TestCounterContent> {
+  int count = 0;
 
   @override
   Widget build(BuildContext context) {
-    return HuxTabView(
-      initialTabs: _tabs,
-      onTabAdded: widget.onTabAdded,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('${widget.label}: $count'),
+        TextButton(
+          key: ValueKey('increment-${widget.label}'),
+          onPressed: () {
+            setState(() {
+              count++;
+            });
+          },
+          child: const Text('Increment'),
+        ),
+      ],
     );
   }
 }

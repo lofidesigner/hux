@@ -37,20 +37,19 @@ Enable the new tab button and handle tab creation:
 ```dart
 HuxTabView(
   showNewTabButton: true,
-  onNewTabRequested: () {
-    // Create a new tab dynamically
-    setState(() {
-      tabs.add(TabDocument(
-        title: 'Untitled ${tabs.length + 1}',
-        content: EditorPage(),
-      ));
-    });
-  },
   initialTabs: [
     TabDocument(title: 'Document 1', content: EditorPage()),
   ],
+  onNewTabRequested: () {
+    // Trigger your app's tab creation flow here.
+    // See the Programmatic Control section for a complete state-managed example.
+  },
 )
 ```
+
+<Callout type="info">
+For a complete example of managing tabs dynamically, see the Programmatic Control section.
+</Callout>
 
 ## Handling Tab Lifecycle
 
@@ -217,6 +216,8 @@ HuxTabView(
 Control tabs programmatically using a custom state management approach:
 
 ```dart
+import 'dart:math' as math;
+
 class MyEditor extends StatefulWidget {
   @override
   _MyEditorState createState() => _MyEditorState();
@@ -240,7 +241,7 @@ class _MyEditorState extends State<MyEditor> {
     setState(() {
       _tabs.removeAt(index);
       if (_activeTab >= _tabs.length) {
-        _activeTab = _tabs.length - 1;
+        _activeTab = math.max(0, _tabs.length - 1);
       }
     });
   }
@@ -308,7 +309,7 @@ HuxTabView(
 | `expandContent` | `bool` | `true` | Whether content fills available space |
 | `tabMaxWidth` | `double?` | `null` | Maximum width for individual tabs |
 | `newTabTooltip` | `String` | `'New Tab (Ctrl+T)'` | Tooltip for new tab button |
-| `closeTabTooltip` | `String` | `'Close tab (Ctrl+W)'` | Tooltip for close buttons |
+| `closeTabTooltip` | `String` | `'Close Tab (Ctrl+W)'` | Tooltip for close buttons |
 
 ### TabDocument
 
@@ -327,9 +328,9 @@ HuxTabView(
 
 ### HuxTabViewSize
 
-- `HuxTabViewSize.small` — Compact tabs (36px height)
-- `HuxTabViewSize.medium` — Standard tabs (44px height)
-- `HuxTabViewSize.large` — Prominent tabs (52px height)
+- `HuxTabViewSize.small` — Compact tabs (36 logical pixels)
+- `HuxTabViewSize.medium` — Standard tabs (44 logical pixels)
+- `HuxTabViewSize.large` — Prominent tabs (52 logical pixels)
 
 ## Theming
 

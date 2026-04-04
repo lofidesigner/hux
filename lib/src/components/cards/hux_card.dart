@@ -238,18 +238,14 @@ class HuxCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    // If action is a Row, extract its children and wrap them
                     if (action is Row) {
                       final row = action as Row;
-                      return Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        alignment: WrapAlignment.start,
-                        children: row.children,
+                      return _AdaptiveActionLayout(
+                        row: row,
+                        constraints: constraints,
+                        wrapAlignment: WrapAlignment.start,
                       );
                     }
-                    // Otherwise, just show the action as-is (it should handle its own wrapping)
                     return action!;
                   },
                 ),
@@ -307,20 +303,12 @@ class HuxCard extends StatelessWidget {
                       alignment: Alignment.topRight,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          // If action is a Row and might overflow, wrap it
                           if (action is Row) {
                             final row = action as Row;
-                            return ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: constraints.maxWidth,
-                              ),
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                alignment: WrapAlignment.end,
-                                children: row.children,
-                              ),
+                            return _AdaptiveActionLayout(
+                              row: row,
+                              constraints: constraints,
+                              wrapAlignment: WrapAlignment.end,
                             );
                           }
                           return action!;
@@ -330,6 +318,81 @@ class HuxCard extends StatelessWidget {
                   ),
               ],
             ),
+    );
+  }
+}
+
+class _AdaptiveActionLayout extends StatefulWidget {
+  const _AdaptiveActionLayout({
+    required this.row,
+    required this.constraints,
+    required this.wrapAlignment,
+  });
+
+  final Row row;
+  final BoxConstraints constraints;
+  final WrapAlignment wrapAlignment;
+
+  @override
+  State<_AdaptiveActionLayout> createState() => _AdaptiveActionLayoutState();
+}
+
+class _AdaptiveActionLayoutState extends State<_AdaptiveActionLayout> {
+  final GlobalKey _measureKey = GlobalKey();
+  double? _intrinsicWidth;
+
+  @override
+  void didUpdateWidget(covariant _AdaptiveActionLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.row != widget.row) {
+      _intrinsicWidth = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_intrinsicWidth == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final box = _measureKey.currentContext?.findRenderObject() as RenderBox?;
+        final width = box?.size.width;
+        if (width != null && width > 0 && width != _intrinsicWidth) {
+          setState(() {
+            _intrinsicWidth = width;
+          });
+        }
+      });
+
+      return Offstage(
+        offstage: true,
+        child: UnconstrainedBox(
+          alignment: Alignment.topLeft,
+          constrainedAxis: Axis.vertical,
+          child: IntrinsicWidth(
+            key: _measureKey,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: widget.row.children,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final maxWidth = widget.constraints.maxWidth;
+    if (!maxWidth.isFinite || _intrinsicWidth! <= maxWidth) {
+      return widget.row;
+    }
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: widget.wrapAlignment,
+        children: widget.row.children,
+      ),
     );
   }
 }

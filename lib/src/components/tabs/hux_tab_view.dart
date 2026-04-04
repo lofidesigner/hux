@@ -159,19 +159,33 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   void didUpdateWidget(HuxTabView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final oldLength = oldWidget.initialTabs?.length ?? 0;
-    final newLength = widget.initialTabs?.length ?? 0;
-
-    // Update if length changed (tabs added or removed)
-    if (newLength != oldLength) {
+    if (!_hasSameIdentifierSequence(
+      oldWidget.initialTabs,
+      widget.initialTabs,
+    )) {
       setState(() {
         _tabs = List.from(widget.initialTabs ?? []);
-        // Clamp active index to valid range
-        if (_activeIndex >= _tabs.length) {
-          _activeIndex = _tabs.isEmpty ? 0 : _tabs.length - 1;
-        }
+        _activeIndex = _activeIndex.clamp(0, _tabs.isEmpty ? 0 : _tabs.length - 1);
       });
     }
+  }
+
+  bool _hasSameIdentifierSequence(
+    List<TabDocument>? oldTabs,
+    List<TabDocument>? newTabs,
+  ) {
+    final previous = oldTabs ?? const <TabDocument>[];
+    final current = newTabs ?? const <TabDocument>[];
+
+    if (previous.length != current.length) return false;
+
+    for (var index = 0; index < previous.length; index++) {
+      if (previous[index].identifier != current[index].identifier) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   @override
@@ -236,16 +250,18 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final content = _tabs.isEmpty
+        ? _buildEmptyState(context)
+        : _buildTabContent(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTabBar(context),
         const SizedBox(height: 16),
-        Expanded(
-          child: _tabs.isEmpty
-              ? _buildEmptyState(context)
-              : _buildTabContent(context),
-        ),
+        widget.expandContent
+            ? Expanded(child: content)
+            : Flexible(fit: FlexFit.loose, child: content),
       ],
     );
   }
@@ -412,10 +428,20 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   Widget _buildTabContent(BuildContext context) {
     if (_tabs.isEmpty) return const SizedBox.shrink();
 
-    return IndexedStack(
-      index: _activeIndex,
-      sizing: StackFit.expand,
-      children: _tabs.map((tab) => tab.content).toList(),
+    return Stack(
+      fit: StackFit.expand,
+      children: _tabs.asMap().entries.map((entry) {
+        final index = entry.key;
+        final tab = entry.value;
+        return Offstage(
+          key: ValueKey('tab-content-${tab.identifier ?? index}'),
+          offstage: index != _activeIndex,
+          child: TickerMode(
+            enabled: index == _activeIndex,
+            child: tab.content,
+          ),
+        );
+      }).toList(),
     );
   }
 

@@ -33,7 +33,7 @@ class HuxOtpInput extends StatefulWidget {
     this.validator,
     this.autofocus = false,
     this.width,
-  });
+  }) : assert(length > 0, 'length must be > 0');
 
   /// Number of OTP digits (default: 6)
   final int length;
@@ -308,6 +308,10 @@ class _HuxOtpInputState extends State<HuxOtpInput> {
   }
 
   double _getFieldWidth(double maxWidth) {
+    if (widget.length <= 0) {
+      return 48;
+    }
+
     if (!maxWidth.isFinite || maxWidth <= 0) {
       return 48;
     }
