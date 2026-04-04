@@ -1,0 +1,317 @@
+---
+title: Tab Bar
+description: Chrome-style tab bar with drag-to-reorder, dynamic add/close, and touch support
+---
+
+# Tab Bar
+
+A Chrome-style tab bar widget with comprehensive features for managing tabs including drag-to-reorder, dynamic tab addition/removal, and special touch handling for mobile devices.
+
+## Features
+
+- **Drag to Reorder**: Tabs can be reordered by direct mouse dragging
+- **Dynamic Add/Close**: Programmatically add and remove tabs at runtime
+- **Touch Support**: Long press before dragging to distinguish between scroll and drag operations
+- **Curved Transitions**: Smooth curved edges between active tab and content area
+- **Theme Aware**: Automatically adapts to light and dark themes
+- **Multiple Sizes**: Available in small, medium, and large variants
+
+## Basic Usage
+
+```dart
+final controller = HuxTabBarController(
+  initialTabs: [
+    HuxTabBarItem(
+      label: 'Home',
+      icon: LucideIcons.home,
+      content: Text('Home content'),
+    ),
+    HuxTabBarItem(
+      label: 'Settings',
+      icon: LucideIcons.settings,
+      content: Text('Settings content'),
+    ),
+  ],
+  initialIndex: 0,
+);
+
+HuxTabBar(
+  controller: controller,
+)
+```
+
+## Controller Usage
+
+The tab bar uses a controller to manage state:
+
+```dart
+// Add a new tab
+controller.addTab(HuxTabBarItem(
+  label: 'New Tab',
+  content: Text('New content'),
+));
+
+// Remove a tab
+controller.removeTab(index);
+
+// Set active tab
+controller.setActiveIndex(index);
+
+// Reorder tabs
+controller.reorderTabs(oldIndex, newIndex);
+```
+
+## Sizes
+
+Tab bar comes in three sizes:
+
+```dart
+// Small tabs
+HuxTabBar(
+  controller: controller,
+  size: HuxChromeTabsSize.small,
+)
+
+// Medium tabs (default)
+HuxTabBar(
+  controller: controller,
+  size: HuxChromeTabsSize.medium,
+)
+
+// Large tabs
+HuxTabBar(
+  controller: controller,
+  size: HuxChromeTabsSize.large,
+)
+```
+
+## Tab Properties
+
+### With Icons
+
+```dart
+HuxTabBarItem(
+  label: 'Documents',
+  icon: LucideIcons.fileText,
+  content: DocumentsView(),
+)
+```
+
+### Non-Closable Tabs
+
+```dart
+HuxTabBarItem(
+  label: 'Home',
+  content: HomeView(),
+  isClosable: false,
+)
+```
+
+## Callbacks
+
+### Active Tab Changed
+
+```dart
+HuxTabBar(
+  controller: controller,
+  onActiveChanged: (index) {
+    print('Active tab: $index');
+  },
+)
+```
+
+### Tabs Reordered
+
+```dart
+HuxTabBar(
+  controller: controller,
+  onTabsReordered: (oldIndex, newIndex) {
+    print('Tab moved from $oldIndex to $newIndex');
+  },
+)
+```
+
+### Tab Closed
+
+```dart
+HuxTabBar(
+  controller: controller,
+  onTabClosed: (index) {
+    print('Tab at index $index was closed');
+  },
+)
+```
+
+### Add Tab Pressed
+
+```dart
+HuxTabBar(
+  controller: controller,
+  onAddTab: () {
+    // Show dialog to add new tab
+  },
+)
+```
+
+## Dynamic Tabs Example
+
+Full example demonstrating dynamic tab management:
+
+```dart
+class TabBarExample extends StatefulWidget {
+  @override
+  State<TabBarExample> createState() => _TabBarExampleState();
+}
+
+class _TabBarExampleState extends State<TabBarExample> {
+  late final _controller = HuxTabBarController(
+    initialTabs: [
+      HuxTabBarItem(
+        label: 'Tab 1',
+        content: _buildContent('Tab 1'),
+      ),
+    ],
+    initialIndex: 0,
+  );
+  int _tabCounter = 2;
+
+  Widget _buildContent(String title) {
+    return Center(child: Text('$title content'));
+  }
+
+  void _addTab() {
+    _controller.addTab(HuxTabBarItem(
+      label: 'Tab $_tabCounter',
+      content: _buildContent('Tab $_tabCounter'),
+    ));
+    _tabCounter++;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        HuxTabBar(
+          controller: _controller,
+          onAddTab: _addTab,
+        ),
+        Expanded(
+          child: ListenableBuilder(
+            listenable: _controller,
+            builder: (context, child) {
+              return _controller.getCentent ?? SizedBox.shrink();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+## Customization
+
+### Tab Width Constraints
+
+Control the minimum and maximum width of tabs:
+
+```dart
+HuxTabBar(
+  controller: controller,
+  minWidth: 100,
+  maxWidth: 250,
+)
+```
+
+### Intrinsic Width
+
+Enable or disable intrinsic width calculation for better performance:
+
+```dart
+// Enabled (default) - better performance for dynamic content
+HuxTabBar(
+  controller: controller,
+  useIntrinsicWidth: true,
+)
+
+// Disabled - better for very long tab labels
+HuxTabBar(
+  controller: controller,
+  useIntrinsicWidth: false,
+)
+```
+
+## Drag Behavior
+
+### Mouse Interaction
+
+- Click and drag tabs directly to reorder
+- 500ms delay after hover to distinguish between drag and click operations
+
+### Touch Interaction
+
+- Long press (500ms) before dragging to distinguish between scroll and drag
+- This solves the issue of accidentally triggering drag when trying to scroll the tab list
+
+## Design Details
+
+### Curved Transitions
+
+The active tab features smooth curved edges that connect seamlessly with the content area below, creating a visual continuity similar to Chrome browser tabs.
+
+### Theme Integration
+
+Tab bar automatically adapts to your theme:
+- Background colors match surface tokens
+- Text colors adjust for proper contrast
+- Border colors follow theme guidelines
+
+## Best Practices
+
+1. **Tab Labels**: Keep labels concise (1-2 words)
+2. **Icons**: Use icons to improve scannability
+3. **Controller Lifecycle**: Dispose the controller when no longer needed
+4. **Close Handlers**: Implement `onTabClosed` for important cleanup
+5. **Content**: Ensure tab content is meaningful and distinct
+6. **Touch Users**: Be aware of the long press requirement for drag operations
+
+## Accessibility
+
+- Keyboard navigation support
+- Proper focus management
+- Semantic structure for screen readers
+- ARIA labels for interactive elements
+
+## Examples
+
+### Browser-Style Interface
+
+```dart
+HuxTabBar(
+  controller: _controller,
+  size: HuxChromeTabsSize.medium,
+  onActiveChanged: (index) {
+    // Track analytics
+  },
+)
+```
+
+### Document Editor
+
+```dart
+HuxTabBar(
+  controller: _controller,
+  onTabsReordered: (oldIndex, newIndex) {
+    reorderDocuments(oldIndex, newIndex);
+  },
+  onTabClosed: (index) {
+    closeDocument(index);
+  },
+)
+```
