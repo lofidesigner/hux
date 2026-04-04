@@ -30,7 +30,7 @@ class HuxTabBarController extends ChangeNotifier {
 
   /// Returns the content widget of the currently active tab.
   /// Returns null if there are no tabs.
-  Widget? get getCentent =>
+  Widget? get getContent =>
       _indexIsValid(_activeIndex) ? _tabs[_activeIndex].content : null;
 
   /// Returns the number of tabs.
@@ -282,7 +282,8 @@ class _HuxTabBarState extends State<HuxTabBar> {
                 },
                 onReorderStart: widget.controller.setActiveIndex,
                 itemCount: widget.controller.tabCount,
-                itemBuilder: _mouseTimer.isActive // 触控需要有延迟区分是拖拽还是滑动列表
+                itemBuilder: _mouseTimer
+                        .isActive // Touch requires delay to distinguish drag from scroll
                     ? (context, index) {
                         final tab = widget.controller.getTab(index);
                         return ReorderableDragStartListener(
@@ -514,7 +515,7 @@ class _ChromeTabPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     final path = Path();
 
-    // 左下角四分之一圆弧
+    // Bottom-left quarter circle
     path.moveTo(0, size.height);
     path.quadraticBezierTo(
       curveRadius,
@@ -524,7 +525,7 @@ class _ChromeTabPainter extends CustomPainter {
     );
     path.lineTo(curveRadius, curveRadius);
 
-    // 左上角圆弧
+    // Top-left corner arc
     path.quadraticBezierTo(
       curveRadius,
       0,
@@ -532,10 +533,10 @@ class _ChromeTabPainter extends CustomPainter {
       0,
     );
 
-    // 顶部边缘
+    // Top edge
     path.lineTo(size.width - curveRadius * 2, 0);
 
-    // 右上角圆弧
+    // Top-right corner arc
     path.quadraticBezierTo(
       size.width - curveRadius,
       0,
@@ -543,10 +544,10 @@ class _ChromeTabPainter extends CustomPainter {
       curveRadius,
     );
 
-    // 右边缘向下
+    // Right edge downward
     path.lineTo(size.width - curveRadius, size.height - curveRadius);
 
-    // 右下角四分之一圆弧（向上凹陷）
+    // Bottom-right quarter circle (concave upward)
     path.quadraticBezierTo(
       size.width - curveRadius,
       size.height,

@@ -205,7 +205,7 @@ class _TabBarExampleState extends State<TabBarExample> {
           child: ListenableBuilder(
             listenable: _controller,
             builder: (context, child) {
-              return _controller.getCentent ?? SizedBox.shrink();
+              return _controller.getContent ?? SizedBox.shrink();
             },
           ),
         ),

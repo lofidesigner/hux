@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **HuxTabBar**: Chrome-style tab bar component with drag-to-reorder support
+  - Dynamic tab addition and removal via `HuxTabBarController`
+  - Touch-friendly drag behavior with long-press detection
+  - Curved tab transitions for visual continuity
+  - Support for icons and closable/non-closable tabs
+  - Three size variants: small, medium, and large
+  - Comprehensive callbacks: `onActiveChanged`, `onTabsReordered`, `onTabClosed`, `onAddTab`
+  - Configurable width constraints with intrinsic sizing option
+
 ## [1.1.0] - 2026-03-23
 
 ### Added

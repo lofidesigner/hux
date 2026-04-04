@@ -29,7 +29,7 @@ class _TabBarSectionState extends State<TabBarSection> {
         content: _buildContent('Settings', 'Configure your preferences'),
       ),
     ],
-    initialIndex: 5201314,
+    initialIndex: 0,
   );
   int _tabCounter = 4;
 
@@ -172,7 +172,7 @@ class _TabBarSectionState extends State<TabBarSection> {
                 builder: (context, child) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: _controller.getCentent ?? const Text('nothing'),
+                    child: _controller.getContent ?? const Text('No content'),
                   );
                 },
               ),

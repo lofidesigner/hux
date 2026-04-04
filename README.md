@@ -62,6 +62,7 @@ flutter pub add hux
 
 ### Tabs
 - `HuxTabs` - Organize content into multiple panels with tab navigation
+- `HuxTabBar` - Chrome-style tab bar with drag-to-reorder and dynamic tab management
 
 ### Inputs
 - `HuxInput` - Enhanced text input with consistent styling (renamed from HuxTextField)
