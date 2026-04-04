@@ -310,22 +310,17 @@ class HuxCard extends StatelessWidget {
                           // If action is a Row and might overflow, wrap it
                           if (action is Row) {
                             final row = action as Row;
-                            // Check if we have enough space - if not, wrap
-                            // Use a simple heuristic: if available width is less than 300px, wrap
-                            if (constraints.maxWidth < 300) {
-                              return Wrap(
+                            return ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: constraints.maxWidth,
+                              ),
+                              child: Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 alignment: WrapAlignment.end,
                                 children: row.children,
-                              );
-                            }
-                            // Otherwise, keep the original Row but ensure it's right-aligned
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: row.children,
+                              ),
                             );
                           }
                           return action!;

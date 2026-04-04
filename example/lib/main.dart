@@ -7,6 +7,7 @@ import 'components/breadcrumbs_section.dart';
 import 'components/kbd_section.dart';
 import 'components/command_section.dart';
 import 'components/tabs_section.dart';
+import 'components/tab_view_section.dart';
 import 'components/otp_section.dart';
 import 'components/progress_section.dart';
 import 'components/bottom_sheet_section.dart';
@@ -164,6 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _dropdownKey = GlobalKey();
   final _paginationKey = GlobalKey();
   final _tabsKey = GlobalKey();
+  final _tabViewKey = GlobalKey();
   final _breadcrumbsKey = GlobalKey();
   final _commandKey = GlobalKey();
   final _kbdKey = GlobalKey();
@@ -299,6 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'dropdown': _dropdownKey,
       'pagination': _paginationKey,
       'tabs': _tabsKey,
+      'tab-view': _tabViewKey,
       'breadcrumbs': _breadcrumbsKey,
       'command': _commandKey,
       'kbd': _kbdKey,
@@ -590,6 +593,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 const SizedBox(height: 32),
                                 // Tabs Section
                                 TabsSection(key: _tabsKey),
+                                const SizedBox(height: 32),
+                                // TabView Section
+                                TabViewSection(key: _tabViewKey),
                                 const SizedBox(height: 32),
                                 // Breadcrumbs Section
                                 BreadcrumbsSection(key: _breadcrumbsKey),

@@ -119,6 +119,11 @@ class NavigationItems {
       icon: LucideIcons.layout,
     ),
     HuxSidebarItemData(
+      id: 'tab-view',
+      label: 'TabView',
+      icon: LucideIcons.folderOpen,
+    ),
+    HuxSidebarItemData(
       id: 'breadcrumbs',
       label: 'Breadcrumbs',
       icon: LucideIcons.navigation,
