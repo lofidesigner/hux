@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -19,11 +21,11 @@ class _SwitchToNextTabIntent extends Intent {
 
 /// Visual variants for HuxTabView.
 enum HuxTabViewVariant {
-  /// Default tabs with underline indicator and close buttons
-  default_,
+  /// Pill-style tabs with rounded corners and subtle background (default)
+  pill,
 
-  /// Minimal tabs with text color changes and close buttons
-  minimal,
+  /// Chrome-style tabs with curved edges (from merged HuxTabBar)
+  chrome,
 }
 
 /// Size variants for HuxTabView.
@@ -65,18 +67,111 @@ class TabDocument {
   final String? identifier;
 }
 
+/// Controller for managing HuxTabView state externally.
+///
+/// Use this controller to programmatically manage tabs when you need
+/// external control over the tab state.
+class HuxTabViewController extends ChangeNotifier {
+  /// Creates a HuxTabViewController.
+  HuxTabViewController({
+    List<TabDocument> initialTabs = const [],
+    int initialIndex = 0,
+  })  : _tabs = List.from(initialTabs),
+        _activeIndex = initialIndex.clamp(
+          0,
+          initialTabs.isEmpty ? 0 : initialTabs.length - 1,
+        );
+
+  final List<TabDocument> _tabs;
+  int _activeIndex;
+
+  /// Returns the index of the currently active tab.
+  int get activeIndex => _activeIndex;
+
+  /// Returns the content widget of the currently active tab.
+  /// Returns null if there are no tabs.
+  Widget? get activeContent =>
+      _activeIndex >= 0 && _activeIndex < _tabs.length
+          ? _tabs[_activeIndex].content
+          : null;
+
+  /// Returns the number of tabs.
+  int get tabCount => _tabs.length;
+
+  /// Returns a copy of the current tabs list.
+  List<TabDocument> get tabs => List.unmodifiable(_tabs);
+
+  /// Returns the tab at the given index.
+  TabDocument getTab(int index) {
+    assert(index >= 0 && index < _tabs.length, 'Invalid tab index');
+    return _tabs[index];
+  }
+
+  /// Adds a new tab.
+  ///
+  /// [autoActivate] - Whether to automatically activate the new tab.
+  void addTab(TabDocument tab, {bool autoActivate = true}) {
+    _tabs.add(tab);
+    if (autoActivate) _activeIndex = _tabs.length - 1;
+    notifyListeners();
+  }
+
+  /// Removes a tab at the specified index.
+  void removeTab(int index) {
+    if (index < 0 || index >= _tabs.length) return;
+    _tabs.removeAt(index);
+    if (_activeIndex >= _tabs.length && _tabs.isNotEmpty) {
+      _activeIndex = _tabs.length - 1;
+    } else if (_activeIndex > index && _activeIndex > 0) {
+      _activeIndex--;
+    }
+    if (_tabs.isEmpty) _activeIndex = 0;
+    notifyListeners();
+  }
+
+  /// Sets the active tab by index.
+  void setActiveIndex(int index) {
+    if (index >= 0 && index < _tabs.length) {
+      _activeIndex = index;
+      notifyListeners();
+    }
+  }
+
+  /// Reorders tabs by moving a tab from [oldIndex] to [newIndex].
+  void reorderTabs(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    if (newIndex > oldIndex) newIndex -= 1;
+
+    final item = _tabs.removeAt(oldIndex);
+    _tabs.insert(newIndex, item);
+
+    // Update active index
+    if (_activeIndex == oldIndex) {
+      _activeIndex = newIndex;
+    } else if (oldIndex < _activeIndex && newIndex >= _activeIndex) {
+      _activeIndex--;
+    } else if (oldIndex > _activeIndex && newIndex <= _activeIndex) {
+      _activeIndex++;
+    }
+
+    notifyListeners();
+  }
+}
+
 /// A TabView component for dynamic workspace management.
 ///
 /// Unlike HuxTabs which is for static section navigation, HuxTabView is
 /// designed for browser-like or IDE-like tab interfaces where users can
-/// open, close, and switch between multiple documents or views.
+/// open, close, switch, and reorder tabs.
 ///
 /// Features:
 /// - Open/close tabs dynamically
+/// - Drag-to-reorder with mouse and touch support
 /// - Close buttons on individual tabs
 /// - Optional "New Tab" button
 /// - Horizontal scrolling for many tabs
 /// - Keyboard shortcuts (Ctrl/Cmd+T to open, Ctrl/Cmd+W to close, Ctrl/Cmd+Tab to switch)
+/// - Optional external controller for programmatic control
 ///
 /// Example:
 /// ```dart
@@ -92,9 +187,10 @@ class HuxTabView extends StatefulWidget {
   /// Creates a HuxTabView widget.
   const HuxTabView({
     super.key,
+    this.controller,
     this.initialTabs,
     this.initialIndex = 0,
-    this.variant = HuxTabViewVariant.default_,
+    this.variant = HuxTabViewVariant.pill,
     this.size = HuxTabViewSize.medium,
     this.showNewTabButton = false,
     this.canCloseTabs = true,
@@ -104,17 +200,24 @@ class HuxTabView extends StatefulWidget {
     this.onNewTabRequested,
     this.expandContent = true,
     this.tabMaxWidth,
-    this.newTabTooltip = 'New Tab (Ctrl/Cmd+T)',
-    this.closeTabTooltip = 'Close tab (Ctrl/Cmd+W)',
+    this.newTabTooltip = 'New Tab',
+    this.closeTabTooltip = 'Close tab',
   });
 
-  /// Initial list of tabs to display
+  /// Optional external controller for managing tab state.
+  /// If provided, initialTabs and initialIndex are ignored.
+  final HuxTabViewController? controller;
+
+  /// Initial list of tabs to display.
+  /// Ignored if [controller] is provided.
   final List<TabDocument>? initialTabs;
 
-  /// Initial active tab index
+  /// Initial active tab index.
+  /// Ignored if [controller] is provided.
   final int initialIndex;
 
   /// Visual variant of the tabs
+  /// Use [HuxTabViewVariant.pill] for rounded pill-style tabs
   final HuxTabViewVariant variant;
 
   /// Size variant of the tabs
@@ -155,34 +258,140 @@ class HuxTabView extends StatefulWidget {
 }
 
 class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
-  late List<TabDocument> _tabs;
-  late int _activeIndex;
+  // Internal state (used when no external controller provided)
+  late List<TabDocument> _internalTabs;
+  late int _internalActiveIndex;
   int _untitledCount = 0;
+
   final ScrollController _scrollController = ScrollController();
   final Set<int> _hoveringTabs = <int>{};
+
+  /// Timer to detect mouse vs touch for drag behavior
+  /// Touch requires delay to distinguish drag from scroll
+  Timer _mouseTimer = Timer(Duration.zero, () {})..cancel();
+
+  /// Returns true if using external controller
+  bool get _usesController => widget.controller != null;
+
+  /// Returns the current tabs (from controller or internal state)
+  List<TabDocument> get _tabs => _usesController ? widget.controller!._tabs : _internalTabs;
+
+  /// Returns the current active index (from controller or internal state)
+  int get _activeIndex => _usesController ? widget.controller!.activeIndex : _internalActiveIndex;
+  // ignore: unused_element
+  set _activeIndex(int value) {
+    if (_usesController) {
+      // Controller manages its own state, just notify
+    } else {
+      _internalActiveIndex = value;
+    }
+  }
+
+  // ignore: unused_element
+  bool _usesSameController(HuxTabView oldWidget) {
+    return oldWidget.controller == widget.controller;
+  }
 
   @override
   void initState() {
     super.initState();
-    _tabs = List.from(widget.initialTabs ?? []);
-    _activeIndex =
-        widget.initialIndex.clamp(0, _tabs.isEmpty ? 0 : _tabs.length - 1);
+    _internalTabs = List.from(widget.initialTabs ?? []);
+    _internalActiveIndex =
+        widget.initialIndex.clamp(0, _internalTabs.isEmpty ? 0 : _internalTabs.length - 1);
+
+    // Listen to controller changes
+    widget.controller?.addListener(_onControllerChanged);
   }
 
   @override
   void didUpdateWidget(HuxTabView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!_hasSameIdentifierSequence(
-      oldWidget.initialTabs,
-      widget.initialTabs,
-    )) {
-      setState(() {
-        _tabs = List.from(widget.initialTabs ?? []);
-        _activeIndex = _activeIndex.clamp(0, _tabs.isEmpty ? 0 : _tabs.length - 1);
-        _hoveringTabs.removeWhere((index) => index >= _tabs.length);
-      });
+    // Handle controller change
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?.removeListener(_onControllerChanged);
+      widget.controller?.addListener(_onControllerChanged);
+      setState(() {});
     }
+
+    // Update internal state from props when not using controller and controller unchanged
+    // (i.e., both old and new have no controller)
+    if (!_usesController && oldWidget.controller == null && widget.controller == null) {
+      final reorderResult = _computeReorderIfSameTabs(
+        oldWidget.initialTabs,
+        widget.initialTabs,
+      );
+
+      if (reorderResult != null) {
+        // Same tabs, just reordered - update order but preserve TabDocument objects
+        // to maintain widget state
+        setState(() {
+          _internalTabs = reorderResult;
+          _internalActiveIndex = _internalActiveIndex.clamp(
+            0,
+            _internalTabs.isEmpty ? 0 : _internalTabs.length - 1,
+          );
+          _hoveringTabs.removeWhere((index) => index >= _internalTabs.length);
+        });
+      } else if (!_hasSameIdentifierSequence(
+        oldWidget.initialTabs,
+        widget.initialTabs,
+      )) {
+        // Different tabs - replace entirely
+        setState(() {
+          _internalTabs = List.from(widget.initialTabs ?? []);
+          _internalActiveIndex = _internalActiveIndex.clamp(
+            0,
+            _internalTabs.isEmpty ? 0 : _internalTabs.length - 1,
+          );
+          _hoveringTabs.removeWhere((index) => index >= _internalTabs.length);
+        });
+      }
+    }
+  }
+
+  void _onControllerChanged() {
+    setState(() {
+      // Controller state changed, rebuild
+      _hoveringTabs.removeWhere((index) => index >= _tabs.length);
+    });
+  }
+
+  /// Returns reordered list if same tabs (by identifier) in different order.
+  /// Returns null if tabs are different (not just reordered).
+  List<TabDocument>? _computeReorderIfSameTabs(
+    List<TabDocument>? oldTabs,
+    List<TabDocument>? newTabs,
+  ) {
+    final previous = oldTabs ?? const <TabDocument>[];
+    final current = newTabs ?? const <TabDocument>[];
+
+    if (previous.length != current.length) return null;
+
+    // Build map of previous tabs by identifier
+    final previousById = <String?, TabDocument>{};
+    for (final tab in previous) {
+      previousById[tab.identifier] = tab;
+    }
+
+    // Check if all current tabs exist in previous (same identifiers)
+    final result = <TabDocument>[];
+    for (final tab in current) {
+      final matchingTab = previousById[tab.identifier];
+      if (matchingTab == null) return null; // New tab not in previous
+      result.add(matchingTab);
+    }
+
+    // Check if order actually changed
+    var orderChanged = false;
+    for (var i = 0; i < previous.length; i++) {
+      if (previous[i].identifier != current[i].identifier) {
+        orderChanged = true;
+        break;
+      }
+    }
+
+    return orderChanged ? result : null;
   }
 
   bool _hasSameIdentifierSequence(
@@ -205,8 +414,50 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    widget.controller?.removeListener(_onControllerChanged);
+    _mouseTimer.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Reorders tabs by moving a tab from [oldIndex] to [newIndex].
+  void _onReorder(int oldIndex, int newIndex) {
+    if (_usesController) {
+      // Delegate to controller
+      widget.controller!.reorderTabs(oldIndex, newIndex);
+    } else {
+      // Handle internally
+      if (oldIndex == newIndex) return;
+
+      setState(() {
+        if (newIndex > oldIndex) {
+          newIndex -= 1;
+        }
+
+        final item = _internalTabs.removeAt(oldIndex);
+        _internalTabs.insert(newIndex, item);
+
+        // Update active index
+        if (_internalActiveIndex == oldIndex) {
+          _internalActiveIndex = newIndex;
+        } else if (oldIndex < _internalActiveIndex && newIndex >= _internalActiveIndex) {
+          _internalActiveIndex--;
+        } else if (oldIndex > _internalActiveIndex && newIndex <= _internalActiveIndex) {
+          _internalActiveIndex++;
+        }
+
+        // Update hovering indices
+        final newHoveringTabs = _hoveringTabs.map((index) {
+          if (index == oldIndex) return newIndex;
+          if (oldIndex < index && index <= newIndex) return index - 1;
+          if (newIndex <= index && index < oldIndex) return index + 1;
+          return index;
+        }).toSet();
+        _hoveringTabs
+          ..clear()
+          ..addAll(newHoveringTabs);
+      });
+    }
   }
 
   void _closeTab(int index) {
@@ -215,25 +466,32 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
     final closedTab = _tabs[index];
 
-    setState(() {
-      _tabs.removeAt(index);
-      final remainingHoveringTabs = _hoveringTabs
-          .where((hoveredIndex) => hoveredIndex != index)
-          .map((hoveredIndex) => hoveredIndex > index ? hoveredIndex - 1 : hoveredIndex)
-          .toSet();
-      _hoveringTabs
-        ..clear()
-        ..addAll(remainingHoveringTabs);
+    if (_usesController) {
+      // Delegate to controller
+      widget.controller!.removeTab(index);
+      _hoveringTabs.removeWhere((hoveredIndex) => hoveredIndex == index);
+    } else {
+      // Handle internally
+      setState(() {
+        _internalTabs.removeAt(index);
+        final remainingHoveringTabs = _hoveringTabs
+            .where((hoveredIndex) => hoveredIndex != index)
+            .map((hoveredIndex) => hoveredIndex > index ? hoveredIndex - 1 : hoveredIndex)
+            .toSet();
+        _hoveringTabs
+          ..clear()
+          ..addAll(remainingHoveringTabs);
 
-      // Adjust active index
-      if (_tabs.isEmpty) {
-        _activeIndex = 0;
-      } else if (_activeIndex >= _tabs.length) {
-        _activeIndex = _tabs.length - 1;
-      } else if (_activeIndex > index) {
-        _activeIndex--;
-      }
-    });
+        // Adjust active index
+        if (_internalTabs.isEmpty) {
+          _internalActiveIndex = 0;
+        } else if (_internalActiveIndex >= _internalTabs.length) {
+          _internalActiveIndex = _internalTabs.length - 1;
+        } else if (_internalActiveIndex > index) {
+          _internalActiveIndex--;
+        }
+      });
+    }
 
     widget.onTabClosed?.call(index, closedTab);
     if (_tabs.isNotEmpty) {
@@ -244,9 +502,13 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   void _switchToTab(int index) {
     if (index < 0 || index >= _tabs.length || index == _activeIndex) return;
 
-    setState(() {
-      _activeIndex = index;
-    });
+    if (_usesController) {
+      widget.controller!.setActiveIndex(index);
+    } else {
+      setState(() {
+        _internalActiveIndex = index;
+      });
+    }
     widget.onTabChanged?.call(index);
     _scrollToActiveTab();
   }
@@ -352,24 +614,75 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
           ),
         ),
       ),
-      child: ListView.builder(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
-        itemCount: _tabs.length + (widget.showNewTabButton ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index < _tabs.length) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: _buildTab(context, index),
-            );
-          }
-          // Last item is the + button
-          return Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: _buildNewTabButton(context),
-          );
+      child: Listener(
+        onPointerHover: (_) {
+          final wasInactive = !_mouseTimer.isActive;
+          _mouseTimer.cancel();
+          _mouseTimer = Timer(const Duration(milliseconds: 500), () {
+            setState(() {}); // _mouseTimer.isActive = false;
+          });
+          if (wasInactive) setState(() {}); // isActive = true;
         },
+        child: ReorderableListView.builder(
+          scrollController: _scrollController,
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.only(
+            left: 8,
+            right: 8,
+            top: 8,
+            bottom: widget.variant == HuxTabViewVariant.pill ? 4 : 0,
+          ),
+          buildDefaultDragHandles: false,
+          onReorder: _onReorder,
+          onReorderStart: (index) {
+            if (index >= 0 && index < _tabs.length) {
+              _switchToTab(index);
+            }
+          },
+          proxyDecorator: (child, index, animation) {
+            return Material(
+              color: Colors.transparent,
+              child: child,
+            );
+          },
+          itemCount: _tabs.length + (widget.showNewTabButton ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index < _tabs.length) {
+              final tab = _tabs[index];
+              final key = ValueKey(tab.identifier ?? 'tab-$index-${tab.title}');
+
+              // Touch requires delay to distinguish drag from scroll
+              final tabGap = widget.variant == HuxTabViewVariant.chrome
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.symmetric(horizontal: 4);
+              if (_mouseTimer.isActive) {
+                return ReorderableDragStartListener(
+                  key: key,
+                  index: index,
+                  child: Padding(
+                    padding: tabGap,
+                    child: _buildTab(context, index),
+                  ),
+                );
+              } else {
+                return ReorderableDelayedDragStartListener(
+                  key: key,
+                  index: index,
+                  child: Padding(
+                    padding: tabGap,
+                    child: _buildTab(context, index),
+                  ),
+                );
+              }
+            }
+            // Last item is the + button (non-draggable)
+            return Container(
+              key: const ValueKey('new-tab-button'),
+              padding: const EdgeInsets.only(left: 8),
+              child: _buildNewTabButton(context),
+            );
+          },
+        ),
       ),
     );
   }
@@ -379,6 +692,42 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
     final isActive = index == _activeIndex;
     final fixedWidth = _getRenderedTabWidth();
     final isHovering = _hoveringTabs.contains(index);
+
+    final tabContent = Container(
+      padding: _getTabPadding(isActive),
+      decoration: widget.variant != HuxTabViewVariant.chrome
+          ? _getTabDecoration(context, isActive, isHovered: isHovering)
+          : null,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (tab.icon != null) ...[
+            Icon(
+              tab.icon,
+              size: _getIconSize(),
+              color: isActive
+                  ? HuxTokens.tabActiveText(context)
+                  : HuxTokens.tabInactiveText(context),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Text(
+              tab.title,
+              style: _getTabTextStyle(context, isActive),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          if (widget.canCloseTabs && tab.isClosable) ...[
+            const SizedBox(width: 4),
+            _buildCloseButton(context, index),
+            if (widget.variant == HuxTabViewVariant.chrome) const SizedBox(width: 2),
+          ],
+        ],
+      ),
+    );
 
     return MouseRegion(
       onEnter: (_) {
@@ -411,38 +760,36 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
             hoverColor: Colors.transparent,
             highlightColor: Colors.transparent,
             splashColor: Colors.transparent,
-            child: Container(
-              padding: _getTabPadding(isActive),
-              decoration: _getTabDecoration(context, isActive, isHovered: isHovering),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (tab.icon != null) ...[
-                    Icon(
-                      tab.icon,
-                      size: _getIconSize(),
-                      color: isActive
-                          ? HuxTokens.tabActiveText(context)
-                          : HuxTokens.tabInactiveText(context),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Expanded(
-                    child: Text(
-                      tab.title,
-                      style: _getTabTextStyle(context, isActive),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+            child: widget.variant == HuxTabViewVariant.chrome
+                ? Stack(
+                    children: [
+                      CustomPaint(
+                        painter: _ChromeTabPainter(
+                          isActive: isActive,
+                          backgroundColor: isActive
+                              ? HuxTokens.surfaceElevated(context)
+                              : isHovering
+                                  ? HuxTokens.tabHoverBackground(context)
+                                  : Colors.transparent,
+                          borderColor: HuxTokens.tabBorder(context),
+                        ),
+                        child: const SizedBox(
+                          height: double.infinity,
+                          width: double.infinity,
+                        ),
+                      ),
+                      tabContent,
+                    ],
+                  )
+                : ClipRRect(
+                    borderRadius: widget.variant == HuxTabViewVariant.pill
+                        ? BorderRadius.circular(16)
+                        : const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                    child: tabContent,
                   ),
-                  if (widget.canCloseTabs && tab.isClosable) ...[
-                    const SizedBox(width: 4),
-                    _buildCloseButton(context, index),
-                  ],
-                ],
-              ),
-            ),
           ),
         ),
       ),
@@ -451,18 +798,21 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
   void _addNewTab() {
     final newContent = _buildEmptyState(context);
-    late TabDocument newTab;
+    _untitledCount++;
+    final newTab = TabDocument(
+      title: 'Untitled $_untitledCount',
+      icon: LucideIcons.file,
+      content: newContent,
+    );
 
-    setState(() {
-      _untitledCount++;
-      newTab = TabDocument(
-        title: 'Untitled $_untitledCount',
-        icon: LucideIcons.file,
-        content: newContent,
-      );
-      _tabs = [..._tabs, newTab];
-      _activeIndex = _tabs.length - 1;
-    });
+    if (_usesController) {
+      widget.controller!.addTab(newTab);
+    } else {
+      setState(() {
+        _internalTabs.add(newTab);
+        _internalActiveIndex = _internalTabs.length - 1;
+      });
+    }
 
     widget.onTabAdded?.call(newTab);
     widget.onTabChanged?.call(_activeIndex);
@@ -478,7 +828,7 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
         child: HuxButton(
           onPressed: () => _closeTab(index),
           variant: HuxButtonVariant.ghost,
-          size: HuxButtonSize.small,
+          size: HuxButtonSize.medium,
           icon: LucideIcons.x,
           child: const SizedBox.shrink(),
         ),
@@ -545,8 +895,10 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
           ),
           if (widget.showNewTabButton && widget.onNewTabRequested != null) ...[
             const SizedBox(height: 16),
-            TextButton(
+            HuxButton(
               onPressed: widget.onNewTabRequested,
+              variant: HuxButtonVariant.secondary,
+              size: HuxButtonSize.small,
               child: const Text('Open a new tab'),
             ),
           ],
@@ -557,7 +909,29 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
   Decoration? _getTabDecoration(BuildContext context, bool isActive,
       {bool isHovered = false}) {
-    if (widget.variant == HuxTabViewVariant.minimal) return null;
+
+    if (widget.variant == HuxTabViewVariant.chrome) {
+      // Chrome variant uses custom painter for curved edges
+      return null; // Handled by _ChromeTabPainter in _buildTab
+    }
+
+    if (widget.variant == HuxTabViewVariant.pill) {
+      // Pill variant: rounded corners, smaller padding, no bottom border
+      return BoxDecoration(
+        color: isActive
+            ? HuxTokens.surfaceElevated(context)
+            : isHovered
+                ? HuxTokens.tabHoverBackground(context)
+                : Colors.transparent,
+        borderRadius: BorderRadius.circular(16), // Softer rounded corners
+        border: Border.all(
+          color: isActive
+              ? HuxTokens.tabBorder(context)
+              : Colors.transparent,
+          width: 1,
+        ),
+      );
+    }
 
     // Chrome-style tabs: active tab covers the divider line
     return BoxDecoration(
@@ -627,6 +1001,28 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   }
 
   EdgeInsets _getTabPadding(bool isActive) {
+    // Pill variant uses asymmetric padding with less on right for close button
+    if (widget.variant == HuxTabViewVariant.pill) {
+      switch (widget.size) {
+        case HuxTabViewSize.small:
+          return const EdgeInsets.only(left: 12, right: 4, top: 4, bottom: 4);
+        case HuxTabViewSize.medium:
+          return const EdgeInsets.only(left: 16, right: 6, top: 6, bottom: 6);
+        case HuxTabViewSize.large:
+          return const EdgeInsets.only(left: 20, right: 8, top: 8, bottom: 8);
+      }
+    }
+    // Chrome variant uses increased horizontal padding for the curved shape
+    if (widget.variant == HuxTabViewVariant.chrome) {
+      switch (widget.size) {
+        case HuxTabViewSize.small:
+          return const EdgeInsets.only(left: 20, right: 14, top: 4, bottom: 4);
+        case HuxTabViewSize.medium:
+          return const EdgeInsets.only(left: 24, right: 18, top: 6, bottom: 6);
+        case HuxTabViewSize.large:
+          return const EdgeInsets.only(left: 28, right: 22, top: 8, bottom: 8);
+      }
+    }
     switch (widget.size) {
       case HuxTabViewSize.small:
         return isActive
@@ -671,5 +1067,85 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
       case HuxTabViewSize.large:
         return 18;
     }
+  }
+}
+
+/// Custom painter for Chrome-style tab with curved bottom edges.
+/// Used by the [HuxTabViewVariant.chrome] variant.
+class _ChromeTabPainter extends CustomPainter {
+  _ChromeTabPainter({
+    required this.isActive,
+    required this.backgroundColor,
+    required this.borderColor,
+  });
+
+  final bool isActive;
+  final Color backgroundColor;
+  final Color borderColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!isActive) return;
+
+    const curveRadius = 16.0;
+
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final paint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.fill;
+    final path = Path();
+
+    // Bottom-left quarter circle
+    path.moveTo(0, size.height);
+    path.quadraticBezierTo(
+      curveRadius,
+      size.height,
+      curveRadius,
+      size.height - curveRadius,
+    );
+    path.lineTo(curveRadius, curveRadius);
+
+    // Top-left corner arc
+    path.quadraticBezierTo(
+      curveRadius,
+      0,
+      curveRadius * 2,
+      0,
+    );
+
+    // Top edge
+    path.lineTo(size.width - curveRadius * 2, 0);
+
+    // Top-right corner arc
+    path.quadraticBezierTo(
+      size.width - curveRadius,
+      0,
+      size.width - curveRadius,
+      curveRadius,
+    );
+
+    // Right edge downward
+    path.lineTo(size.width - curveRadius, size.height - curveRadius);
+
+    // Bottom-right quarter circle (concave upward)
+    path.quadraticBezierTo(
+      size.width - curveRadius,
+      size.height,
+      size.width,
+      size.height,
+    );
+
+    canvas.drawPath(path, paint);
+    canvas.drawPath(path, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(_ChromeTabPainter oldDelegate) {
+    return oldDelegate.isActive != isActive ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.borderColor != borderColor;
   }
 }

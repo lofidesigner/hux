@@ -21,6 +21,8 @@ funding:
 # Screenshots displayed on pub.dev
 screenshots:
   - description: 'Hux UI - Modern Flutter component library'
+    path: screenshots/cover.png
+  - description: 'Hux UI - Dark theme showcase'
     path: screenshots/hux-ui.png
   - description: 'Hux UI - Light theme showcase'
     path: screenshots/hux-ui-light.png
@@ -38,8 +40,6 @@ screenshots:
     path: screenshots/hux-context-menu.png
   - description: 'HuxTooltip with contextual help and information'
     path: screenshots/hux-tooltip.png
-  - description: 'HuxDropdown component with variants and states'
-    path: screenshots/hux-dropdown.png
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -48,7 +48,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cristalyse: ^1.17.5
+  cristalyse: ^1.17.6
   lucide_icons: ^0.257.0
 
 dev_dependencies:

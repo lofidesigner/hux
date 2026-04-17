@@ -10,27 +10,157 @@ class TabViewSection extends StatefulWidget {
 }
 
 class _TabViewSectionState extends State<TabViewSection> {
-  late List<TabDocument> _tabs;
-  int _untitledCount = 0;
+  HuxTabViewVariant _selectedVariant = HuxTabViewVariant.pill;
+  late HuxTabViewController _controller;
 
   @override
   void initState() {
     super.initState();
-    _tabs = [
-      TabDocument(
-        title: 'document.md',
-        icon: LucideIcons.fileText,
-        content: Builder(builder: (context) => _buildMarkdownPreview(context)),
-      ),
-      TabDocument(
-        title: 'main.dart',
-        icon: LucideIcons.code,
-        content: _buildCodePreview(),
-      ),
-    ];
+    // Don't create content that depends on context here - use Builder to defer
+    _controller = HuxTabViewController(
+      initialTabs: [
+        TabDocument(
+          title: 'document.md',
+          icon: LucideIcons.fileText,
+          identifier: 'doc',
+          content: _DeferredMarkdownPreview(),
+        ),
+        TabDocument(
+          title: 'main.dart',
+          icon: LucideIcons.code,
+          identifier: 'code',
+          content: const _CodePreview(),
+        ),
+        TabDocument(
+          title: 'README.md',
+          icon: LucideIcons.bookOpen,
+          identifier: 'readme',
+          content: const _ReadmePreview(),
+        ),
+      ],
+      initialIndex: 0,
+    );
   }
 
-  Widget _buildMarkdownPreview(BuildContext context) {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SectionWithDocumentation(
+      componentName: 'tab-view',
+      child: HuxCard(
+        size: HuxCardSize.large,
+        backgroundColor: HuxColors.white5,
+        borderColor: HuxTokens.borderSecondary(context),
+        title: 'TabView',
+        subtitle: 'Dynamic workspace with drag-to-reorder, 2 variants (default, chrome), controller support',
+        action: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            HuxButton(
+              onPressed: () {
+                final oldController = _controller;
+                setState(() {
+                  _controller = HuxTabViewController(
+                    initialTabs: [
+                      TabDocument(
+                        title: 'document.md',
+                        icon: LucideIcons.fileText,
+                        identifier: 'doc',
+                        content: _DeferredMarkdownPreview(),
+                      ),
+                      TabDocument(
+                        title: 'main.dart',
+                        icon: LucideIcons.code,
+                        identifier: 'code',
+                        content: const _CodePreview(),
+                      ),
+                      TabDocument(
+                        title: 'README.md',
+                        icon: LucideIcons.bookOpen,
+                        identifier: 'readme',
+                        content: const _ReadmePreview(),
+                      ),
+                    ],
+                    initialIndex: 0,
+                  );
+                });
+                // Dispose old controller after frame to avoid widget tree issues
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  oldController.dispose();
+                });
+              },
+              variant: HuxButtonVariant.ghost,
+              size: HuxButtonSize.small,
+              icon: LucideIcons.rotateCcw,
+              child: const Text('Reset'),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              'Variant:',
+              style: TextStyle(
+                color: HuxTokens.textSecondary(context),
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 140,
+              child: HuxDropdown<HuxTabViewVariant>(
+                items: const [
+                  HuxDropdownItem(
+                    value: HuxTabViewVariant.pill,
+                    child: Text('Default'),
+                  ),
+                  HuxDropdownItem(
+                    value: HuxTabViewVariant.chrome,
+                    child: Text('Chrome'),
+                  ),
+                ],
+                value: _selectedVariant,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedVariant = value;
+                  });
+                },
+                placeholder: 'Select variant',
+                variant: HuxButtonVariant.outline,
+                size: HuxButtonSize.small,
+              ),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          height: 300,
+          child: HuxTabView(
+            controller: _controller,
+            variant: _selectedVariant,
+            showNewTabButton: true,
+            onTabClosed: (index, doc) {
+              context.showHuxSnackbar(
+                message: 'Closed: ${doc.title}',
+                variant: HuxSnackbarVariant.info,
+              );
+            },
+            onTabChanged: (index) {
+              // Tab changed callback
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Widget classes that defer context access until build time
+
+class _DeferredMarkdownPreview extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -73,10 +203,10 @@ class _TabViewSectionState extends State<TabViewSection> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildFeatureItem('Dynamic tab management'),
-                _buildFeatureItem('Closable tabs with hover effects'),
-                _buildFeatureItem('New tab button with tooltip'),
-                _buildFeatureItem('Keyboard shortcuts support'),
+                _buildFeatureItem(context, 'Dynamic tab management'),
+                _buildFeatureItem(context, 'Closable tabs with hover effects'),
+                _buildFeatureItem(context, 'New tab button with tooltip'),
+                _buildFeatureItem(context, 'Keyboard shortcuts support'),
               ],
             ),
           ),
@@ -85,7 +215,7 @@ class _TabViewSectionState extends State<TabViewSection> {
     );
   }
 
-  Widget _buildFeatureItem(String text) {
+  Widget _buildFeatureItem(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -104,8 +234,13 @@ class _TabViewSectionState extends State<TabViewSection> {
       ),
     );
   }
+}
 
-  static Widget _buildCodePreview() {
+class _CodePreview extends StatelessWidget {
+  const _CodePreview();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFF1E1E1E),
       child: SingleChildScrollView(
@@ -113,15 +248,14 @@ class _TabViewSectionState extends State<TabViewSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCodeLine(
-                'import \'package:flutter/material.dart\';', 'import'),
-            _buildCodeLine('import \'package:hux/hux.dart\';', 'import'),
+            _buildCodeLine("import 'package:flutter/material.dart';", 'import'),
+            _buildCodeLine("import 'package:hux/hux.dart';", 'import'),
             const SizedBox(height: 16),
             _buildCodeLine('class MyApp extends StatelessWidget {', 'class'),
             _buildCodeLine('  @override', 'meta'),
             _buildCodeLine('  Widget build(BuildContext context) {', 'method'),
             _buildCodeLine('    return MaterialApp(', 'widget'),
-            _buildCodeLine('      title: \'Hux Demo\',', 'string'),
+            _buildCodeLine("      title: 'Hux Demo',", 'string'),
             _buildCodeLine('      theme: ThemeData(', 'method'),
             _buildCodeLine('        primarySwatch: Colors.blue,', 'prop'),
             _buildCodeLine('      ),', 'method'),
@@ -135,7 +269,7 @@ class _TabViewSectionState extends State<TabViewSection> {
     );
   }
 
-  static Widget _buildCodeLine(String code, String type) {
+  Widget _buildCodeLine(String code, String type) {
     final colors = {
       'import': const Color(0xFFC586C0),
       'class': const Color(0xFF569CD6),
@@ -157,39 +291,60 @@ class _TabViewSectionState extends State<TabViewSection> {
       ),
     );
   }
+}
 
-  void _addNewTab() {
-    setState(() {
-      _untitledCount++;
-      _tabs = [
-        ..._tabs,
-        TabDocument(
-          title: 'Untitled $_untitledCount',
-          icon: LucideIcons.file,
-          content: Builder(builder: (context) => _buildEmptyState(context)),
-        ),
-      ];
-    });
-  }
+class _ReadmePreview extends StatelessWidget {
+  const _ReadmePreview();
 
-  static Widget _buildEmptyState(BuildContext context) {
-    return Container(
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            LucideIcons.fileText,
-            size: 48,
-            color: HuxTokens.iconSecondary(context),
+          Text(
+            'README',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: HuxTokens.textPrimary(context),
+            ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Empty document',
+            'Drag-to-reorder: Long press and drag tabs to reorder them. Mouse users can drag immediately, touch users need a brief hold.',
             style: TextStyle(
               fontSize: 14,
-              color: HuxTokens.textPrimary(context),
+              color: HuxTokens.textSecondary(context),
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: HuxTokens.surfaceElevated(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: HuxTokens.borderSecondary(context)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Features',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: HuxTokens.textPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildFeatureItem(context, 'Drag-to-reorder support'),
+                _buildFeatureItem(context, 'Three visual variants'),
+                _buildFeatureItem(context, 'External controller support'),
+                _buildFeatureItem(context, 'Keyboard shortcuts (Ctrl+T, Ctrl+W)'),
+              ],
             ),
           ),
         ],
@@ -197,32 +352,22 @@ class _TabViewSectionState extends State<TabViewSection> {
     );
   }
 
-  void _closeTab(int index, TabDocument doc) {
-    setState(() {
-      // Create NEW list so TabView detects the change
-      _tabs = [..._tabs]..removeAt(index);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SectionWithDocumentation(
-      componentName: 'tab-view',
-      child: HuxCard(
-        size: HuxCardSize.large,
-        backgroundColor: HuxColors.white5,
-        borderColor: HuxTokens.borderSecondary(context),
-        title: 'TabView',
-        subtitle: 'Dynamic workspace management with closable tabs',
-        child: SizedBox(
-          height: 300,
-          child: HuxTabView(
-            initialTabs: _tabs,
-            showNewTabButton: true,
-            onNewTabRequested: _addNewTab,
-            onTabClosed: _closeTab,
+  Widget _buildFeatureItem(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(LucideIcons.check, size: 16, color: HuxTokens.primary(context)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                  fontSize: 13, color: HuxTokens.textSecondary(context)),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

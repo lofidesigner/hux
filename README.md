@@ -3,7 +3,7 @@
 A modern Flutter UI package with beautiful, customizable components designed for clean and consistent user interfaces.
 
 [![Flutter support](https://img.shields.io/badge/Flutter-3.16%2B-white?style=flat&labelColor=black&logo=flutter&logoColor=WHITE)](https://flutter.dev/)
-[![Figma](https://img.shields.io/badge/Figma-77-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
+[![Figma](https://img.shields.io/badge/Figma-82-white?style=flat&labelColor=black&logo=figma&logoColor=white)](https://www.figma.com/community/file/1541197128732135637/the-hux-ui)
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsor-Hux%20UI-white?style=flat&labelColor=black&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/lofidesigner)
 
 [![pub package](https://img.shields.io/pub/v/hux?style=flat&color=white&labelColor=black)](https://pub.dev/packages/hux)
@@ -53,15 +53,19 @@ flutter pub add hux
 ### Buttons
 - `HuxButton` - Customizable button with multiple variants (primary, secondary, outline, ghost)
 
-![HuxButton Variants](screenshots/hux-buttons.png)
+![HuxButton Variants](screenshots/buttons.png)
 
 ### Cards
 - `HuxCard` - Flexible card component with optional header, title, and actions
 
-![HuxCard Examples](screenshots/hux-cards.png)
+![HuxCard Examples](screenshots/cards.png)
 
 ### Tabs
 - `HuxTabs` - Organize content into multiple panels with tab navigation
+- `HuxTabBar` - Chrome-style tab bar with drag-to-reorder and dynamic tab management
+- `HuxTabView` - Full tab workspace with drag-to-reorder, close buttons, and multiple visual variants
+
+![HuxTabs and HuxTabView](screenshots/tabs.png)
 
 ### Inputs
 - `HuxInput` - Enhanced text input with consistent styling (renamed from HuxTextField)
@@ -69,20 +73,20 @@ flutter pub add hux
 - `HuxDateInput` - Date input with automatic formatting and integrated calendar picker
 - `HuxOtpInput` - One-Time Password input with automatic focus management and paste support
 
-![HuxInput Component](screenshots/hux-input.png)
+![HuxInput Component](screenshots/input.png)
 
 - `HuxCheckbox` - Interactive checkbox with custom styling and labels  
 
-![HuxCheckbox Component](screenshots/hux-checkbox.png)
+![HuxCheckbox Component](screenshots/checkbox.png)
 
 - `HuxRadio` - Radio button controls for single selection from groups
 
-![HuxRadio Component](screenshots/hux-radio.png)
+![HuxRadio Component](screenshots/radio-buttons.png)
 
 ### Dialogs
 - `HuxDialog` - General-purpose dialog with modern design and multiple size variants
 
-![HuxDialog Component](screenshots/hux-dialog.png)
+![HuxDialog Component](screenshots/dialog.png)
 
 ### Date & Time Pickers
 - `showHuxDatePickerDialog` - Modern date picker with month/year selection
@@ -92,62 +96,71 @@ flutter pub add hux
 - `HuxLoading` - Customizable loading indicators
 - `HuxLoadingOverlay` - Full-screen loading overlay
 
-![HuxLoading Indicators](screenshots/hux-loading.png)
+![HuxLoading Indicators](screenshots/progress.png)
 
 - `HuxChart` - Beautiful data visualization with line and bar charts
 
-![HuxChart Visualization](screenshots/hux-charts.png)
+![HuxChart Visualization](screenshots/charts.png)
 
 ### Context Menu
 - `HuxContextMenu` - Right-click context menus with smart positioning
 - `HuxContextMenuItem` - Individual menu items with icons and states  
 - `HuxContextMenuDivider` - Visual separators for menu groups
 
-![HuxContextMenu Component](screenshots/hux-context-menu.png)
+![HuxContextMenu Component](screenshots/context-menu.png)
 
 *Right-click the example app components to see context menus in action!*
 
 ### Switch
 - `HuxSwitch` - Toggle switch with smooth animations between on/off states
 
-![HuxSwitch Component](screenshots/hux-switch.png)
+![HuxSwitch Component](screenshots/switch.png)
 
 ### Dropdown
 - `HuxDropdown` - Dropdown select component with overlay-based options list
 - `HuxDropdownItem` - Individual dropdown items with custom content support
 
+![HuxDropdown Component](screenshots/dropdown.png)
+
 ### Slider
 - `HuxSlider` - Interactive slider control for selecting numeric values within a range
 
+![HuxSlider Component](screenshots/slider.png)
+
 ### Toggle
 - `HuxToggle` - Two-state button toggle for binary controls
+
+![HuxToggle Component](screenshots/toggle.png)
+
 ### Progress
 - `HuxProgress` - Linear progress indicator for task completion and status tracking
+
+![HuxProgress Component](screenshots/progress.png)
 
 ### Tooltip
 - `HuxTooltip` - Contextual help and information with optional icon support
 
-![HuxTooltip Component](screenshots/hux-tooltip.png)
+![HuxTooltip Component](screenshots/tooltip.png)
 
 ### Feedback & Status
 - `HuxBadge` - Status indicators and notification counters with semantic variants
 
-![HuxBadge Component](screenshots/hux-badge.png)
+![HuxBadge Component](screenshots/badge.png)
 
 - `HuxSnackbar` - Temporary notification messages with semantic variants (previously HuxAlert)
 
-![HuxAlert Component](screenshots/hux-alerts.png)
+![HuxAlert Component](screenshots/snackbar.png)
 
 ### Avatar
 - `HuxAvatar` - Circular user images with initials fallback, custom colors, and beautiful gradient variants
 - `HuxAvatarGroup` - Display multiple avatars with overlapping or spaced layouts
 
-![HuxAvatar Component](screenshots/hux-avatar.png)
+![HuxAvatar Component](screenshots/avatar.png)
 
 ### Pagination
 - `HuxPagination` - Navigate through pages with intelligent ellipsis handling (originally contributed by @Kingsley-EZE)
 
-![HuxPagination Component](screenshots/hux-pagination.png)
+![HuxPagination Component](screenshots/pagination.png)
 
 ### Sidebar
 - `HuxSidebar` - Complete navigation sidebar component for app-wide navigation
@@ -156,6 +169,8 @@ flutter pub add hux
 ### Breadcrumbs
 - `HuxBreadcrumbs` - Navigation breadcrumbs showing page hierarchy
 - `HuxBreadcrumbItem` - Individual breadcrumb with label, icon, and tap handler
+
+![HuxBreadcrumbs Component](screenshots/breadcrumbs.png)
 
 ### Command & Keys
 - `HuxCommand` - Powerful command palette for quick access to actions and navigation

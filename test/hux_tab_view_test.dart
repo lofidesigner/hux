@@ -448,13 +448,13 @@ void main() {
     });
 
     group('Variants', () {
-      testWidgets('renders default variant with underline indicator',
+      testWidgets('renders pill variant with rounded corners',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: HuxTabView(
-                variant: HuxTabViewVariant.default_,
+                variant: HuxTabViewVariant.pill,
                 initialTabs: [
                   TabDocument(title: 'Tab', content: const Text('Content')),
                 ],
@@ -466,12 +466,12 @@ void main() {
         expect(find.text('Tab'), findsOneWidget);
       });
 
-      testWidgets('renders minimal variant', (WidgetTester tester) async {
+      testWidgets('renders pill variant', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: HuxTabView(
-                variant: HuxTabViewVariant.minimal,
+                variant: HuxTabViewVariant.pill,
                 initialTabs: [
                   TabDocument(title: 'Tab', content: const Text('Content')),
                 ],
