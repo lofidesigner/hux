@@ -214,7 +214,8 @@ class _HuxInputState extends State<HuxInput> {
             height: 1.4,
           ),
           decoration: InputDecoration(
-            visualDensity: VisualDensity.compact,
+            isDense: true,
+            visualDensity: VisualDensity.comfortable,
             hintText: widget.hint,
             prefixIcon: widget.prefixIcon != null
                 ? _buildIcon(widget.prefixIcon!,
