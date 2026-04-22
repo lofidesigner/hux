@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../theme/hux_tokens.dart';
-import '../../widgets/hux_date_picker.dart';
-import '../../components/buttons/hux_button.dart';
+import 'package:hux/hux.dart';
 
 /// HuxDateInput is a specialized text input component for date input
 /// with automatic formatting, validation, and calendar picker integration.
@@ -287,96 +285,24 @@ class _HuxDateInputState extends State<HuxDateInput> {
     final effectiveErrorText = _errorText ?? widget.errorText;
     final effectiveHelperText = effectiveErrorText ?? widget.helperText;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: TextStyle(
-              fontSize: Theme.of(context).textTheme.labelMedium?.fontSize ?? 12,
-              fontWeight: FontWeight.w400,
-              color: HuxTokens.textSecondary(context),
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        SizedBox(
-          width: widget.width,
-          child: TextFormField(
-            controller: _controller,
-            enabled: widget.enabled && widget.allowManualInput,
-            onChanged: _handleTextChanged,
-            onFieldSubmitted: _handleSubmitted,
-            validator: (_) => _validateDate(_selectedDate),
-            autovalidateMode: widget.autovalidateMode,
-            inputFormatters: [
-              if (widget.format != null)
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9/\-\.]')),
-            ],
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.4,
-            ),
-            // Force fixed height
-            minLines: 1,
-            maxLines: 1,
-            decoration: InputDecoration(
-              hintText: widget.hint ?? widget.placeholder ?? 'MM/DD/YYYY',
-              errorText: effectiveErrorText,
-              helperText:
-                  effectiveErrorText == null ? effectiveHelperText : null,
-              suffixIcon:
-                  widget.showCalendarIcon ? _buildCalendarIcon(context) : null,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: HuxTokens.borderPrimary(context),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: HuxTokens.borderPrimary(context),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: HuxTokens.primary(context).withValues(alpha: 0.5),
-                  width: 1,
-                ),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: HuxTokens.borderPrimary(context),
-                ),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: HuxTokens.textDestructive(context),
-                  width: 2,
-                ),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: HuxTokens.borderSecondary(context),
-                ),
-              ),
-              filled: true,
-              fillColor: widget.enabled
-                  ? HuxTokens.surfacePrimary(context)
-                  : HuxTokens.surfaceSecondary(context),
-            ),
-          ),
-        ),
+    return HuxInput(
+      controller: _controller,
+      label: widget.label,
+      width: widget.width,
+      hint: widget.hint ?? widget.placeholder ?? 'MM/DD/YYYY',
+      errorText: effectiveErrorText,
+      helperText: effectiveErrorText == null ? effectiveHelperText : null,
+      suffixIcon: widget.showCalendarIcon ? _buildCalendarIcon(context) : null,
+      maxLines: 1,
+      minLines: 1,
+      enabled: widget.enabled && widget.allowManualInput,
+      onChanged: _handleTextChanged,
+      onSubmitted: _handleSubmitted,
+      validator: (_) => _validateDate(_selectedDate),
+      autoValidateMode: widget.autovalidateMode,
+      inputFormatters: [
+        if (widget.format != null)
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9/\-\.]')),
       ],
     );
   }
