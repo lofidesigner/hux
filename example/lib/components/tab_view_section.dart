@@ -13,11 +13,8 @@ class _TabViewSectionState extends State<TabViewSection> {
   HuxTabViewVariant _selectedVariant = HuxTabViewVariant.pill;
   late HuxTabViewController _controller;
 
-  @override
-  void initState() {
-    super.initState();
-    // Don't create content that depends on context here - use Builder to defer
-    _controller = HuxTabViewController(
+  HuxTabViewController _createController() {
+    return HuxTabViewController(
       initialTabs: [
         TabDocument(
           title: 'document.md',
@@ -43,6 +40,12 @@ class _TabViewSectionState extends State<TabViewSection> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _controller = _createController();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -65,29 +68,7 @@ class _TabViewSectionState extends State<TabViewSection> {
               onPressed: () {
                 final oldController = _controller;
                 setState(() {
-                  _controller = HuxTabViewController(
-                    initialTabs: [
-                      TabDocument(
-                        title: 'document.md',
-                        icon: LucideIcons.fileText,
-                        identifier: 'doc',
-                        content: _DeferredMarkdownPreview(),
-                      ),
-                      TabDocument(
-                        title: 'main.dart',
-                        icon: LucideIcons.code,
-                        identifier: 'code',
-                        content: const _CodePreview(),
-                      ),
-                      TabDocument(
-                        title: 'README.md',
-                        icon: LucideIcons.bookOpen,
-                        identifier: 'readme',
-                        content: const _ReadmePreview(),
-                      ),
-                    ],
-                    initialIndex: 0,
-                  );
+                  _controller = _createController();
                 });
                 // Dispose old controller after frame to avoid widget tree issues
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -147,7 +128,9 @@ class _TabViewSectionState extends State<TabViewSection> {
               );
             },
             onTabChanged: (index) {
-              // Tab changed callback
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Switched to tab $index')),
+              );
             },
           ),
         ),
@@ -341,7 +324,7 @@ class _ReadmePreview extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(context, 'Drag-to-reorder support'),
-                _buildFeatureItem(context, 'Three visual variants'),
+                _buildFeatureItem(context, 'Two visual variants (pill, chrome)'),
                 _buildFeatureItem(context, 'External controller support'),
                 _buildFeatureItem(context, 'Keyboard shortcuts (Ctrl+T, Ctrl+W)'),
               ],

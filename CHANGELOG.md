@@ -1,20 +1,28 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.0] - 2026-04-20
 
 ### Added
-- **HuxTabBar**: Chrome-style tab bar component with drag-to-reorder support
-  - Dynamic tab addition and removal via `HuxTabBarController`
+
+- **HuxTabView**: Chrome-style tab bar component with drag-to-reorder support (renamed from HuxTabBar)
+  - Dynamic tab addition and removal via `HuxTabViewController`
   - Touch-friendly drag behavior with long-press detection
   - Curved tab transitions for visual continuity
   - Support for icons and closable/non-closable tabs
   - Three size variants: small, medium, and large
-  - Comprehensive callbacks: `onActiveChanged`, `onTabsReordered`, `onTabClosed`, `onAddTab`
+  - Comprehensive callbacks: `onTabChanged`, `onTabClosed`, `onNewTabRequested`
   - Configurable width constraints with intrinsic sizing option
 
 ## [1.1.0] - 2026-03-23
 
 ### Added
+- **HuxTabView**: New tabbed navigation component for dynamic workspace management
+  - Browser-like or IDE-like tab interface with open, close, switch, and reorder capabilities
+  - Drag-to-reorder support with mouse and touch handling
+  - Keyboard shortcuts (Ctrl/Cmd+T to open, Ctrl/Cmd+W to close, Ctrl/Cmd+Tab to switch)
+  - Optional external controller for programmatic tab management
+  - Configurable closable tabs, new tab button, and visual variants (pill, chrome)
+  - Comprehensive test coverage and documentation
 - **HuxSnackbar actions**: Support for action buttons via `actions: List<HuxSnackbarAction>`
   - Actions render as primary `HuxButton`s for clear affordance
   - Tapping an action dismisses the snackbar automatically

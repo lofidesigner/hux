@@ -466,12 +466,12 @@ void main() {
         expect(find.text('Tab'), findsOneWidget);
       });
 
-      testWidgets('renders pill variant', (WidgetTester tester) async {
+      testWidgets('renders chrome variant', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: HuxTabView(
-                variant: HuxTabViewVariant.pill,
+                variant: HuxTabViewVariant.chrome,
                 initialTabs: [
                   TabDocument(title: 'Tab', content: const Text('Content')),
                 ],

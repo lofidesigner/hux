@@ -267,6 +267,7 @@ class HuxSnackbar {
       if (action != null)
         HuxSnackbarAction(
           label: action!.label,
+          textColor: actionTextColor ?? action!.textColor,
           onPressed: () {
             action!.onPressed();
           },
@@ -572,6 +573,7 @@ class HuxSnackbarStackController {
   }
 
   /// Resets the controller state for testing purposes.
+  @visibleForTesting
   static void resetForTest() {
     for (final item in _items.value) {
       item.timer?.cancel();

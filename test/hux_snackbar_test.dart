@@ -162,7 +162,7 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      final overlayPadding = tester.widget<Padding>(
+      expect(
         find.byWidgetPredicate(
           (widget) =>
               widget is Padding &&
@@ -174,10 +174,9 @@ void main() {
                     bottom: 90,
                   ),
         ),
+        findsOneWidget,
       );
 
-      expect(overlayPadding.padding,
-          const EdgeInsets.only(left: 10, top: 20, right: 30, bottom: 90));
       expect(find.text('Inset aware'), findsOneWidget);
     });
 

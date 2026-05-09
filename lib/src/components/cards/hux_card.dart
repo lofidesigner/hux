@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
 
@@ -364,7 +365,8 @@ class _AdaptiveActionLayoutState extends State<_AdaptiveActionLayout> {
   @override
   void didUpdateWidget(covariant _AdaptiveActionLayout oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.row != widget.row) {
+    if (oldWidget.row != widget.row ||
+        !listEquals(oldWidget.row.children, widget.row.children)) {
       _intrinsicWidth = null;
     }
   }

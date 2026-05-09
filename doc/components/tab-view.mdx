@@ -77,11 +77,11 @@ HuxTabView(
 
 ## Variants
 
-### Default (with underline indicator)
+### Pill (default)
 
 ```dart
 HuxTabView(
-  variant: HuxTabViewVariant.default_,
+  variant: HuxTabViewVariant.pill,
   initialTabs: [
     TabDocument(title: 'Tab 1', content: Content1()),
     TabDocument(title: 'Tab 2', content: Content2()),
@@ -89,11 +89,11 @@ HuxTabView(
 )
 ```
 
-### Minimal (text color only)
+### Chrome
 
 ```dart
 HuxTabView(
-  variant: HuxTabViewVariant.minimal,
+  variant: HuxTabViewVariant.chrome,
   initialTabs: [
     TabDocument(title: 'Tab 1', content: Content1()),
     TabDocument(title: 'Tab 2', content: Content2()),
@@ -298,7 +298,7 @@ HuxTabView(
 |----------|------|---------|-------------|
 | `initialTabs` | `List<TabDocument>?` | `null` | Initial list of tabs to display |
 | `initialIndex` | `int` | `0` | Index of the initially active tab |
-| `variant` | `HuxTabViewVariant` | `HuxTabViewVariant.default_` | Visual variant of the tabs |
+| `variant` | `HuxTabViewVariant` | `HuxTabViewVariant.pill` | Visual variant of the tabs |
 | `size` | `HuxTabViewSize` | `HuxTabViewSize.medium` | Size variant of the tabs |
 | `showNewTabButton` | `bool` | `false` | Whether to show a new tab button |
 | `canCloseTabs` | `bool` | `true` | Whether tabs can be closed globally |
@@ -323,8 +323,8 @@ HuxTabView(
 
 ### HuxTabViewVariant
 
-- `HuxTabViewVariant.default_` — Tabs with underline indicator and close buttons
-- `HuxTabViewVariant.minimal` — Minimal tabs with text color changes only
+- `HuxTabViewVariant.pill` — Pill-style tabs with rounded corners and subtle background (default)
+- `HuxTabViewVariant.chrome` — Chrome-style tabs with curved edges
 
 ### HuxTabViewSize
 
