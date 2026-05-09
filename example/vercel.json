@@ -1,0 +1,5 @@
+{
+  "installCommand": "if cd flutter; then git checkout stable && git pull && cd ..; else git clone --branch stable https://github.com/flutter/flutter.git; fi && flutter/bin/flutter doctor && flutter/bin/flutter clean && flutter/bin/flutter config --enable-web",
+  "buildCommand": "flutter/bin/flutter build web --release",
+  "outputDirectory": "build/web"
+}

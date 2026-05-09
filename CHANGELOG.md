@@ -4,14 +4,15 @@
 
 ### Added
 
-- **HuxTabView**: Chrome-style tab bar component with drag-to-reorder support (renamed from HuxTabBar)
+- **HuxTabView**: Dynamic browser/IDE-style tab workspace (based on HuxTabBar contributed by [@qinshah](https://github.com/qinshah))
   - Dynamic tab addition and removal via `HuxTabViewController`
-  - Touch-friendly drag behavior with long-press detection
-  - Curved tab transitions for visual continuity
-  - Support for icons and closable/non-closable tabs
-  - Three size variants: small, medium, and large
-  - Comprehensive callbacks: `onTabChanged`, `onTabClosed`, `onNewTabRequested`
-  - Configurable width constraints with intrinsic sizing option
+  - Drag-to-reorder with immediate mouse drag and long-press for touch
+  - Chrome and pill visual variants
+  - Keyboard shortcuts: `Ctrl/Cmd+T` (new tab), `Ctrl/Cmd+W` (close), `Ctrl/Cmd+Tab` / `Ctrl/Cmd+Shift+Tab` (cycle tabs)
+  - Per-tab `isClosable` flag and global `canCloseTabs` toggle
+  - Three size variants: small, medium, large
+  - Empty state with optional new-tab button
+  - Full test coverage and documentation
 
 ## [1.1.0] - 2026-03-23
 

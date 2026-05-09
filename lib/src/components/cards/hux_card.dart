@@ -376,7 +376,8 @@ class _AdaptiveActionLayoutState extends State<_AdaptiveActionLayout> {
     if (_intrinsicWidth == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        final box = _measureKey.currentContext?.findRenderObject() as RenderBox?;
+        final box =
+            _measureKey.currentContext?.findRenderObject() as RenderBox?;
         final width = box?.size.width;
         if (width != null && width > 0 && width != _intrinsicWidth) {
           setState(() {

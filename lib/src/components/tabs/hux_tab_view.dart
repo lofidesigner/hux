@@ -94,10 +94,9 @@ class HuxTabViewController extends ChangeNotifier {
 
   /// Returns the content widget of the currently active tab.
   /// Returns null if there are no tabs.
-  Widget? get activeContent =>
-      _activeIndex >= 0 && _activeIndex < _tabs.length
-          ? _tabs[_activeIndex].content
-          : null;
+  Widget? get activeContent => _activeIndex >= 0 && _activeIndex < _tabs.length
+      ? _tabs[_activeIndex].content
+      : null;
 
   /// Returns the number of tabs.
   int get tabCount => _tabs.length;
@@ -281,17 +280,19 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
   bool get _usesController => widget.controller != null;
 
   /// Returns the current tabs (from controller or internal state)
-  List<TabDocument> get _tabs => _usesController ? widget.controller!.tabs : _internalTabs;
+  List<TabDocument> get _tabs =>
+      _usesController ? widget.controller!.tabs : _internalTabs;
 
   /// Returns the current active index (from controller or internal state)
-  int get _activeIndex => _usesController ? widget.controller!.activeIndex : _internalActiveIndex;
+  int get _activeIndex =>
+      _usesController ? widget.controller!.activeIndex : _internalActiveIndex;
 
   @override
   void initState() {
     super.initState();
     _internalTabs = List.from(widget.initialTabs ?? []);
-    _internalActiveIndex =
-        widget.initialIndex.clamp(0, _internalTabs.isEmpty ? 0 : _internalTabs.length - 1);
+    _internalActiveIndex = widget.initialIndex
+        .clamp(0, _internalTabs.isEmpty ? 0 : _internalTabs.length - 1);
 
     // Listen to controller changes
     widget.controller?.addListener(_onControllerChanged);
@@ -310,13 +311,16 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
     // Update internal state from props when not using controller and controller unchanged
     // (i.e., both old and new have no controller)
-    if (!_usesController && oldWidget.controller == null && widget.controller == null) {
+    if (!_usesController &&
+        oldWidget.controller == null &&
+        widget.controller == null) {
       final reorderResult = _computeReorderIfSameTabs(
         oldWidget.initialTabs,
         widget.initialTabs,
       );
 
-      if (reorderResult != null && _hasSameTabs(oldWidget.initialTabs, widget.initialTabs)) {
+      if (reorderResult != null &&
+          _hasSameTabs(oldWidget.initialTabs, widget.initialTabs)) {
         // Same tabs with same properties, just reordered - update order but preserve
         // TabDocument objects to maintain widget state
         setState(() {
@@ -367,7 +371,9 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
       return null;
     }
     final previousIds = previous.map((t) => t.identifier).toSet();
-    if (previousIds.length != previous.length) return null; // duplicate identifiers
+    if (previousIds.length != previous.length) {
+      return null; // duplicate identifiers
+    }
 
     // Build map of previous tabs by identifier
     final previousById = <String, TabDocument>{};
@@ -449,9 +455,11 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
         // Update active index
         if (_internalActiveIndex == oldIndex) {
           _internalActiveIndex = newIndex;
-        } else if (oldIndex < _internalActiveIndex && newIndex >= _internalActiveIndex) {
+        } else if (oldIndex < _internalActiveIndex &&
+            newIndex >= _internalActiveIndex) {
           _internalActiveIndex--;
-        } else if (oldIndex > _internalActiveIndex && newIndex <= _internalActiveIndex) {
+        } else if (oldIndex > _internalActiveIndex &&
+            newIndex <= _internalActiveIndex) {
           _internalActiveIndex++;
         }
 
@@ -488,7 +496,8 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
         _internalTabs.removeAt(index);
         final remainingHoveringTabs = _hoveringTabs
             .where((hoveredIndex) => hoveredIndex != index)
-            .map((hoveredIndex) => hoveredIndex > index ? hoveredIndex - 1 : hoveredIndex)
+            .map((hoveredIndex) =>
+                hoveredIndex > index ? hoveredIndex - 1 : hoveredIndex)
             .toSet();
         _hoveringTabs
           ..clear()
@@ -510,7 +519,8 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
     // Only fire onTabChanged if active tab actually changed
     if (_tabs.isNotEmpty) {
       final currentActiveDoc = _tabs[_activeIndex];
-      if (previousActiveIndex != _activeIndex || previousActiveDoc != currentActiveDoc) {
+      if (previousActiveIndex != _activeIndex ||
+          previousActiveDoc != currentActiveDoc) {
         widget.onTabChanged?.call(_activeIndex);
       }
     }
@@ -555,8 +565,6 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
     _switchToTab((_activeIndex - 1 + _tabs.length) % _tabs.length);
   }
 
-
-
   void _scrollToActiveTab() {
     if (!_scrollController.hasClients) return;
 
@@ -576,18 +584,25 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final content = _tabs.isEmpty
-        ? _buildEmptyState(context)
-        : _buildTabContent(context);
+    final content =
+        _tabs.isEmpty ? _buildEmptyState(context) : _buildTabContent(context);
     final shortcuts = <ShortcutActivator, Intent>{
-      SingleActivator(LogicalKeyboardKey.keyT, control: true): const _OpenNewTabIntent(),
-      SingleActivator(LogicalKeyboardKey.keyT, meta: true): const _OpenNewTabIntent(),
-      SingleActivator(LogicalKeyboardKey.keyW, control: true): const _CloseCurrentTabIntent(),
-      SingleActivator(LogicalKeyboardKey.keyW, meta: true): const _CloseCurrentTabIntent(),
-      SingleActivator(LogicalKeyboardKey.tab, control: true): const _SwitchToNextTabIntent(),
-      SingleActivator(LogicalKeyboardKey.tab, meta: true): const _SwitchToNextTabIntent(),
-      SingleActivator(LogicalKeyboardKey.tab, control: true, shift: true): const _SwitchToPreviousTabIntent(),
-      SingleActivator(LogicalKeyboardKey.tab, meta: true, shift: true): const _SwitchToPreviousTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyT, control: true):
+          const _OpenNewTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyT, meta: true):
+          const _OpenNewTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyW, control: true):
+          const _CloseCurrentTabIntent(),
+      SingleActivator(LogicalKeyboardKey.keyW, meta: true):
+          const _CloseCurrentTabIntent(),
+      SingleActivator(LogicalKeyboardKey.tab, control: true):
+          const _SwitchToNextTabIntent(),
+      SingleActivator(LogicalKeyboardKey.tab, meta: true):
+          const _SwitchToNextTabIntent(),
+      SingleActivator(LogicalKeyboardKey.tab, control: true, shift: true):
+          const _SwitchToPreviousTabIntent(),
+      SingleActivator(LogicalKeyboardKey.tab, meta: true, shift: true):
+          const _SwitchToPreviousTabIntent(),
     };
 
     return Shortcuts(
@@ -612,7 +627,8 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
               return null;
             },
           ),
-          _SwitchToPreviousTabIntent: CallbackAction<_SwitchToPreviousTabIntent>(
+          _SwitchToPreviousTabIntent:
+              CallbackAction<_SwitchToPreviousTabIntent>(
             onInvoke: (_) {
               _switchToPreviousTab();
               return null;
@@ -650,7 +666,8 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
           final timeSinceLastHover = now.difference(_lastHoverTime);
           _lastHoverTime = now;
 
-          final shouldRecreateTimer = !_mouseTimer.isActive || timeSinceLastHover > _mouseHoverThreshold;
+          final shouldRecreateTimer = !_mouseTimer.isActive ||
+              timeSinceLastHover > _mouseHoverThreshold;
           final wasMouseInactive = !_isMouseActive;
 
           if (shouldRecreateTimer) {
@@ -769,7 +786,8 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
           if (widget.canCloseTabs && tab.isClosable) ...[
             const SizedBox(width: 4),
             _buildCloseButton(context, index),
-            if (widget.variant == HuxTabViewVariant.chrome) const SizedBox(width: 2),
+            if (widget.variant == HuxTabViewVariant.chrome)
+              const SizedBox(width: 2),
           ],
         ],
       ),
@@ -1047,7 +1065,6 @@ class _HuxTabViewState extends State<HuxTabView> with TickerProviderStateMixin {
             : const EdgeInsets.only(left: 20, right: 10, top: 8, bottom: 8);
     }
   }
-
 
   double _getTabBarHeight() {
     switch (widget.size) {

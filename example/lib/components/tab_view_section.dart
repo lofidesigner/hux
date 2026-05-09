@@ -60,7 +60,8 @@ class _TabViewSectionState extends State<TabViewSection> {
         backgroundColor: HuxColors.white5,
         borderColor: HuxTokens.borderSecondary(context),
         title: 'TabView',
-        subtitle: 'Dynamic workspace with drag-to-reorder, 2 variants (default, chrome), controller support',
+        subtitle:
+            'Dynamic workspace with drag-to-reorder, 2 variants (default, chrome), controller support',
         action: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -324,9 +325,11 @@ class _ReadmePreview extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(context, 'Drag-to-reorder support'),
-                _buildFeatureItem(context, 'Two visual variants (pill, chrome)'),
+                _buildFeatureItem(
+                    context, 'Two visual variants (pill, chrome)'),
                 _buildFeatureItem(context, 'External controller support'),
-                _buildFeatureItem(context, 'Keyboard shortcuts (Ctrl+T, Ctrl+W)'),
+                _buildFeatureItem(
+                    context, 'Keyboard shortcuts (Ctrl+T, Ctrl+W)'),
               ],
             ),
           ),

@@ -55,6 +55,7 @@
               "components/snackbar",
               "components/switch",
               "components/tabs",
+              "components/tab-view",
               "components/toggle",
               "components/tooltip"
             ]

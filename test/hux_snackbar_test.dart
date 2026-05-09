@@ -260,7 +260,8 @@ void main() {
         find.ancestor(
           of: find.byIcon(LucideIcons.x),
           matching: find.byWidgetPredicate(
-            (widget) => widget is SizedBox && widget.width == 48 && widget.height == 48,
+            (widget) =>
+                widget is SizedBox && widget.width == 48 && widget.height == 48,
           ),
         ),
       );
@@ -269,7 +270,8 @@ void main() {
       expect(dismissTarget.height, 48);
     });
 
-    testWidgets('legacy action closes once before user callback', (tester) async {
+    testWidgets('legacy action closes once before user callback',
+        (tester) async {
       final events = <String>[];
 
       await tester.pumpWidget(
