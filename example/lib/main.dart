@@ -77,6 +77,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
+  HuxVariant _variant = HuxVariant.defaultStyle;
 
   void _toggleTheme() {
     setState(() {
@@ -85,28 +86,38 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _setVariant(HuxVariant? variant) {
+    if (variant == null) return;
+    setState(() => _variant = variant);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return HuxCommandShortcuts.wrapper(
-      commands: GlobalCommands.getCommands(
-        context,
-        _toggleTheme,
-        () => GlobalCommands.showSettingsBottomSheet(context),
-        () => GlobalCommands.showActionSheet(context),
-      ),
-      onCommandSelected: (command) {
-        command.onExecute();
-      },
-      child: MaterialApp(
-        title: 'Hux UI Demo',
-        theme: HuxTheme.lightTheme,
-        darkTheme: HuxTheme.darkTheme,
-        themeMode: _themeMode,
-        home: MyHomePage(
-          themeMode: _themeMode,
-          onThemeToggle: _toggleTheme,
+    return HuxScope(
+      variant: _variant,
+      child: HuxCommandShortcuts.wrapper(
+        commands: GlobalCommands.getCommands(
+          context,
+          _toggleTheme,
+          () => GlobalCommands.showSettingsBottomSheet(context),
+          () => GlobalCommands.showActionSheet(context),
         ),
-        debugShowCheckedModeBanner: false,
+        onCommandSelected: (command) {
+          command.onExecute();
+        },
+        child: MaterialApp(
+          title: 'Hux UI Demo',
+          theme: HuxTheme.lightTheme,
+          darkTheme: HuxTheme.darkTheme,
+          themeMode: _themeMode,
+          home: MyHomePage(
+            themeMode: _themeMode,
+            onThemeToggle: _toggleTheme,
+            variant: _variant,
+            onVariantChanged: _setVariant,
+          ),
+          debugShowCheckedModeBanner: false,
+        ),
       ),
     );
   }
@@ -115,11 +126,15 @@ class _MyAppState extends State<MyApp> {
 class MyHomePage extends StatefulWidget {
   final ThemeMode themeMode;
   final VoidCallback onThemeToggle;
+  final HuxVariant variant;
+  final ValueChanged<HuxVariant?> onVariantChanged;
 
   const MyHomePage({
     super.key,
     required this.themeMode,
     required this.onThemeToggle,
+    required this.variant,
+    required this.onVariantChanged,
   });
 
   @override
@@ -377,6 +392,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             _selectedTheme = theme;
                           });
                         },
+                        variant: widget.variant,
+                        onVariantChanged: widget.onVariantChanged,
                       ),
                     ),
                   ),
@@ -434,6 +451,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               _selectedTheme = theme;
                             });
                           },
+                          variant: widget.variant,
+                          onVariantChanged: widget.onVariantChanged,
                         ),
                       ),
                     ),

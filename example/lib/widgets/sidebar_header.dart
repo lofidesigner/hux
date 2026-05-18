@@ -9,6 +9,8 @@ class SidebarHeader extends StatelessWidget {
   final VoidCallback onThemeToggle;
   final String selectedTheme;
   final ValueChanged<String> onThemeChanged;
+  final HuxVariant variant;
+  final ValueChanged<HuxVariant?> onVariantChanged;
 
   const SidebarHeader({
     super.key,
@@ -16,6 +18,8 @@ class SidebarHeader extends StatelessWidget {
     required this.onThemeToggle,
     required this.selectedTheme,
     required this.onThemeChanged,
+    required this.variant,
+    required this.onVariantChanged,
   });
 
   @override
@@ -117,6 +121,43 @@ class SidebarHeader extends StatelessWidget {
                   }
                 },
                 placeholder: 'Select theme',
+                variant: HuxButtonVariant.outline,
+                size: HuxButtonSize.small,
+              ),
+            ],
+          ),
+        ),
+
+        // Style Variant Selector
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Style',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? HuxColors.white80
+                          : HuxColors.black80,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              HuxDropdown<HuxVariant>(
+                value: variant,
+                items: const [
+                  HuxDropdownItem<HuxVariant>(
+                    value: HuxVariant.defaultStyle,
+                    child: Text('Default'),
+                  ),
+                  HuxDropdownItem<HuxVariant>(
+                    value: HuxVariant.brutalist,
+                    child: Text('Brutalist'),
+                  ),
+                ],
+                onChanged: onVariantChanged,
+                placeholder: 'Select style',
                 variant: HuxButtonVariant.outline,
                 size: HuxButtonSize.small,
               ),
