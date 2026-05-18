@@ -1,15 +1,10 @@
 # Changelog
 
-<<<<<<< HEAD
 ## [1.1.0] - 2026-03-23
-=======
-## [1.1.0] - 2026-03-17
->>>>>>> 331d93b (feat(snackbar): add actions + stacked overlay controller)
 
 ### Added
 - **HuxSnackbar actions**: Support for action buttons via `actions: List<HuxSnackbarAction>`
   - Actions render as primary `HuxButton`s for clear affordance
-<<<<<<< HEAD
   - Tapping an action dismisses the snackbar automatically
 - **Stacked snackbars (overlay)**: `HuxSnackbarStackController` for showing multiple snackbars simultaneously
   - Smooth enter/exit animations (slide from bottom + fade, 180ms/160ms)
@@ -23,14 +18,6 @@
 
 ### Changed
 - **Example app**: Updated Snackbar section with interactive toggles and stacked behavior demo
-=======
-  - Tapping an action dismisses the snackbar by default
-- **Stacked snackbars (overlay)**: `HuxSnackbarStackController` for showing multiple snackbars simultaneously
-  - Includes smooth enter/exit animations (slide from bottom + fade)
-
-### Changed
-- **Example app**: Updated Snackbar section to demonstrate snackbars with interactive toggles and stacked behavior
->>>>>>> 331d93b (feat(snackbar): add actions + stacked overlay controller)
 
 ## [1.0.2] - 2026-03-15
 
