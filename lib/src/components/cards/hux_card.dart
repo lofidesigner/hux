@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
+import '../../theme/hux_variant.dart';
 
 /// Size variants for HuxCard
 enum HuxCardSize {
@@ -112,8 +113,9 @@ class HuxCard extends StatelessWidget {
   }
 
   /// Gets the border radius value based on size variant
-  double _getBorderRadius() {
+  double _getBorderRadius(BuildContext context) {
     if (borderRadius != null) return borderRadius!;
+    if (HuxScope.of(context) == HuxVariant.brutalist) return 0;
     switch (size) {
       case null:
       case HuxCardSize.default_:
@@ -136,7 +138,7 @@ class HuxCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadiusValue = _getBorderRadius();
+    final borderRadiusValue = _getBorderRadius(context);
     final paddingValue = _getPadding();
 
     return Container(
@@ -153,7 +155,7 @@ class HuxCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadiusValue),
               border: Border.all(
                 color: borderColor ?? HuxTokens.borderPrimary(context),
-                width: borderWidth ?? 1.0,
+                width: borderWidth ?? HuxTokens.borderWidth(context),
               ),
             ),
             child: Column(

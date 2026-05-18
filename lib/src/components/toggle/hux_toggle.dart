@@ -95,9 +95,9 @@ class _HuxToggleState extends State<HuxToggle> {
       label: widget.label ?? widget.semanticLabel,
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
           onTap: isEnabled ? () => widget.onChanged?.call(!widget.value) : null,
           onFocusChange: (isFocused) {
             if (_isFocused != isFocused) {
@@ -135,7 +135,7 @@ class _HuxToggleState extends State<HuxToggle> {
               duration: const Duration(milliseconds: 120),
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
                 border: Border.all(
                   color: _isFocused
                       ? HuxTokens.primary(context).withValues(alpha: 0.6)
@@ -152,10 +152,10 @@ class _HuxToggleState extends State<HuxToggle> {
                 ),
                 decoration: BoxDecoration(
                   color: _getBackgroundColor(context),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                   border: Border.all(
                     color: _getBorderColor(context),
-                    width: 1,
+                    width: HuxTokens.borderWidth(context),
                   ),
                 ),
                 child: Row(

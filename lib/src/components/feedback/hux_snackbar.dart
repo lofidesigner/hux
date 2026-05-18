@@ -135,7 +135,7 @@ class HuxSnackbar {
     return Container(
       width: 400,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).brightness == Brightness.dark
@@ -147,7 +147,7 @@ class HuxSnackbar {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         child: BackdropFilter(
           filter: ImageFilter.blur(
             sigmaX: Theme.of(context).brightness == Brightness.dark ? 10 : 5,
@@ -158,10 +158,10 @@ class HuxSnackbar {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: _getContainerBackgroundColor(context),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
               border: Border.all(
                 color: _getBorderColor(context),
-                width: 1, // Consistent with Hux border width
+                width: HuxTokens.borderWidth(context),
               ),
             ),
             child: Row(
@@ -235,7 +235,7 @@ class HuxSnackbar {
                             close();
                             onDismiss?.call();
                           },
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                           child: SizedBox(
                             width: 48,
                             height: 48,

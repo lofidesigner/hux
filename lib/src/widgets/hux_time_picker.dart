@@ -200,7 +200,7 @@ class _HuxTimePickerDialogState extends State<HuxTimePickerDialog> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: HuxTokens.surfaceElevated(context),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         border: Border.all(
           color: HuxTokens.buttonSecondaryBorder(context),
           width: 1,
@@ -234,7 +234,7 @@ class _HuxTimePickerDialogState extends State<HuxTimePickerDialog> {
                           : _isHourHovered
                               ? HuxTokens.surfaceHover(context)
                               : Colors.transparent,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(HuxTokens.radiusSm(context)),
                     ),
                     child: Text(
                       _selectedTime.hour.toString().padLeft(2, '0'),
@@ -272,7 +272,7 @@ class _HuxTimePickerDialogState extends State<HuxTimePickerDialog> {
                           : _isMinuteHovered
                               ? HuxTokens.surfaceHover(context)
                               : Colors.transparent,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(HuxTokens.radiusSm(context)),
                     ),
                     child: Text(
                       _selectedTime.minute.toString().padLeft(2, '0'),
@@ -297,7 +297,7 @@ class _HuxTimePickerDialogState extends State<HuxTimePickerDialog> {
               height: 200,
               decoration: BoxDecoration(
                 color: HuxTokens.surfaceSecondary(context),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 border: Border.all(
                   color: HuxTokens.buttonSecondaryBorder(context),
                   width: 1,
@@ -325,7 +325,7 @@ class _HuxTimePickerDialogState extends State<HuxTimePickerDialog> {
               height: 200,
               decoration: BoxDecoration(
                 color: HuxTokens.surfaceSecondary(context),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 border: Border.all(
                   color: HuxTokens.buttonSecondaryBorder(context),
                   width: 1,
@@ -384,7 +384,7 @@ class _HourItemState extends State<_HourItem> {
                 : _isHovered
                     ? HuxTokens.surfaceHover(context)
                     : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(HuxTokens.radiusSm(context)),
           ),
           child: Text(
             widget.hour.toString().padLeft(2, '0'),
@@ -435,7 +435,7 @@ class _MinuteItemState extends State<_MinuteItem> {
                 : _isHovered
                     ? HuxTokens.surfaceHover(context)
                     : Colors.transparent,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(HuxTokens.radiusSm(context)),
           ),
           child: Text(
             widget.minute.toString().padLeft(2, '0'),

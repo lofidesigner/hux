@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
+import '../../theme/hux_variant.dart';
 import '../buttons/hux_button.dart';
 
 /// Visual variants for HuxDialog.
@@ -120,7 +121,7 @@ class HuxDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       clipBehavior: clipBehavior,
-      shape: shape ?? _getDefaultShape(),
+      shape: shape ?? _getDefaultShape(context),
       insetPadding: insetPadding,
       child: ConstrainedBox(
         constraints: _getDefaultConstraints(),
@@ -136,18 +137,12 @@ class HuxDialog extends StatelessWidget {
         DecoratedBox(
           decoration: BoxDecoration(
             color: HuxTokens.surfaceElevated(context),
-            borderRadius: BorderRadius.circular(_getBorderRadius()),
+            borderRadius: BorderRadius.circular(_getBorderRadius(context)),
             border: Border.all(
               color: HuxTokens.borderPrimary(context),
-              width: 1,
+              width: HuxTokens.borderWidth(context),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: HuxTokens.shadowColor(context).withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            boxShadow: HuxTokens.shadowElevated(context),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -244,9 +239,9 @@ class HuxDialog extends StatelessWidget {
   }
 
   /// Gets the default shape for the dialog
-  ShapeBorder _getDefaultShape() {
+  ShapeBorder _getDefaultShape(BuildContext context) {
     return RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(_getBorderRadius()),
+      borderRadius: BorderRadius.circular(_getBorderRadius(context)),
     );
   }
 
@@ -277,7 +272,8 @@ class HuxDialog extends StatelessWidget {
   }
 
   /// Gets the border radius based on the dialog size
-  double _getBorderRadius() {
+  double _getBorderRadius(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) return 0;
     switch (size) {
       case HuxDialogSize.small:
         return 12;

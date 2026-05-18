@@ -700,16 +700,12 @@ class _HuxDatePickerPanelState extends State<_HuxDatePickerPanel> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: HuxTokens.surfaceElevated(context),
-                borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: HuxTokens.buttonSecondaryBorder(context)),
-                boxShadow: [
-                  BoxShadow(
-                    color: HuxTokens.shadowColor(context),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
+                border: Border.all(
+                  color: HuxTokens.buttonSecondaryBorder(context),
+                  width: HuxTokens.borderWidth(context),
+                ),
+                boxShadow: HuxTokens.shadowElevated(context),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1310,7 +1306,7 @@ class _DayCellState extends State<_DayCell> {
           margin: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
             border: _getBorder(),
           ),
           child: Center(
@@ -1417,7 +1413,7 @@ class _NavigationButtonState extends State<_NavigationButton> {
               height: 32,
               decoration: BoxDecoration(
                 color: _getBackgroundColor(),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 border: Border.all(
                   color: _isFocused
                       ? HuxTokens.primary(context).withValues(alpha: 0.6)
@@ -1495,7 +1491,7 @@ class _PickerOptionButtonState extends State<_PickerOptionButton> {
         duration: const Duration(milliseconds: 120),
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
           border: Border.all(
             color: _isFocused
                 ? HuxTokens.primary(context).withValues(alpha: 0.6)

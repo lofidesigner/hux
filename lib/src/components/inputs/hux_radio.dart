@@ -98,7 +98,7 @@ class _HuxRadioState<T> extends State<HuxRadio<T>> {
                     duration: const Duration(milliseconds: 120),
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
+                      borderRadius: BorderRadius.circular(HuxTokens.radiusPill(context)),
                       border: Border.all(
                         color: _isFocused
                             ? HuxTokens.primary(context).withValues(alpha: 0.6)
@@ -114,7 +114,7 @@ class _HuxRadioState<T> extends State<HuxRadio<T>> {
                         color: _getBackgroundColor(context),
                         border: Border.all(
                           color: _getBorderColor(context),
-                          width: 1, // Consistent with Hux border width
+                          width: HuxTokens.borderWidth(context),
                         ),
                         shape: BoxShape.circle, // Radio buttons are circular
                       ),

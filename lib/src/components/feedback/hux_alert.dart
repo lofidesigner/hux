@@ -57,9 +57,9 @@ class HuxAlert extends StatelessWidget {
         color: _getBackgroundColor(context),
         border: Border.all(
           color: _getBorderColor(context),
-          width: 1, // Consistent with Hux border width
+          width: HuxTokens.borderWidth(context),
         ),
-        borderRadius: BorderRadius.circular(12), // Consistent with Hux cards
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,8 +81,7 @@ class HuxAlert extends StatelessWidget {
                   Text(
                     title!,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight:
-                              FontWeight.w600, // Consistent with Hux typography
+                          fontWeight: HuxTokens.fontWeightEmphasis(context),
                           color: _getTextColor(context),
                         ),
                   ),
@@ -103,7 +102,7 @@ class HuxAlert extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: onDismiss,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Icon(

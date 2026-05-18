@@ -333,39 +333,39 @@ class _HuxDateInputState extends State<HuxDateInput> {
                 vertical: 12,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 borderSide: BorderSide(
                   color: HuxTokens.borderPrimary(context),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 borderSide: BorderSide(
                   color: HuxTokens.borderPrimary(context),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 borderSide: BorderSide(
                   color: HuxTokens.primary(context).withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 borderSide: BorderSide(
                   color: HuxTokens.borderPrimary(context),
                 ),
               ),
               focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 borderSide: BorderSide(
                   color: HuxTokens.textDestructive(context),
                   width: 2,
                 ),
               ),
               disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                 borderSide: BorderSide(
                   color: HuxTokens.borderSecondary(context),
                 ),

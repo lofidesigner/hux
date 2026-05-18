@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
+import '../../theme/hux_variant.dart';
 
 /// Visual variants for HuxTabs.
 enum HuxTabVariant {
@@ -196,7 +197,7 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
       return DecoratedBox(
         decoration: BoxDecoration(
           color: HuxTokens.surfaceSecondary(context),
-          borderRadius: BorderRadius.circular(_getBorderRadius()),
+          borderRadius: BorderRadius.circular(_getBorderRadius(context)),
           border: Border.all(
             color: HuxTokens.tabBorder(context),
             width: 1,
@@ -231,7 +232,7 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
         child: InkWell(
           borderRadius: widget.variant == HuxTabVariant.pill
               ? null
-              : BorderRadius.circular(_getBorderRadius()),
+              : BorderRadius.circular(_getBorderRadius(context)),
           hoverColor: widget.variant == HuxTabVariant.pill
               ? Colors.transparent
               : HuxTokens.tabHoverBackground(context),
@@ -284,7 +285,7 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
       case HuxTabVariant.pill:
         return BoxDecoration(
           color: HuxTokens.tabActiveBackground(context),
-          borderRadius: BorderRadius.circular(_getBorderRadius()),
+          borderRadius: BorderRadius.circular(_getBorderRadius(context)),
         );
       case HuxTabVariant.minimal:
         return null;
@@ -342,7 +343,8 @@ class _HuxTabsState extends State<HuxTabs> with SingleTickerProviderStateMixin {
     }
   }
 
-  double _getBorderRadius() {
+  double _getBorderRadius(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) return 0;
     switch (widget.size) {
       case HuxTabSize.small:
         return 6;

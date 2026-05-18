@@ -364,7 +364,7 @@ class _HuxOtpInputState extends State<HuxOtpInput> {
     bool isFocused,
     Color borderColor,
   ) {
-    final borderRadius = BorderRadius.circular(8);
+    final borderRadius = BorderRadius.circular(HuxTokens.radiusMd(context));
     final errorColor = HuxTokens.textDestructive(context);
     final focusedErrorWidth = isFocused && hasError ? 2.0 : 1.0;
 

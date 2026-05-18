@@ -81,30 +81,24 @@ class HuxBottomSheet extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: HuxTokens.surfaceElevated(context),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(20),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(HuxTokens.radiusLg(context)),
         ),
         border: Border(
           top: BorderSide(
             color: HuxTokens.borderPrimary(context),
-            width: 1,
+            width: HuxTokens.borderWidth(context),
           ),
           left: BorderSide(
             color: HuxTokens.borderPrimary(context),
-            width: 1,
+            width: HuxTokens.borderWidth(context),
           ),
           right: BorderSide(
             color: HuxTokens.borderPrimary(context),
-            width: 1,
+            width: HuxTokens.borderWidth(context),
           ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: HuxTokens.shadowColor(context).withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        boxShadow: HuxTokens.shadowElevated(context),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -447,7 +441,7 @@ class _ActionSheetTile extends StatelessWidget {
                 Navigator.of(context).pop();
                 action.onTap();
               },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         splashColor: HuxTokens.surfaceHover(context),
         highlightColor: HuxTokens.surfaceHover(context),
         child: Padding(

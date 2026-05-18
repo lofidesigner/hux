@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
+import '../../theme/hux_variant.dart';
 
 /// HuxProgress is a customizable linear progress indicator that displays
 /// the completion status of a task or process.
@@ -107,13 +108,13 @@ class HuxProgress extends StatelessWidget {
         ],
         ClipRRect(
           borderRadius:
-              BorderRadius.circular(borderRadius ?? _getBorderRadius()),
+              BorderRadius.circular(borderRadius ?? _getBorderRadius(context)),
           child: Container(
             height: _getHeight(),
             decoration: BoxDecoration(
               color: backgroundColor ?? _getBackgroundColor(context),
               borderRadius:
-                  BorderRadius.circular(borderRadius ?? _getBorderRadius()),
+                  BorderRadius.circular(borderRadius ?? _getBorderRadius(context)),
             ),
             child: Stack(
               children: [
@@ -129,7 +130,7 @@ class HuxProgress extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: color ?? _getProgressColor(context),
                         borderRadius: BorderRadius.circular(
-                          borderRadius ?? _getBorderRadius(),
+                          borderRadius ?? _getBorderRadius(context),
                         ),
                       ),
                     ),
@@ -186,7 +187,8 @@ class HuxProgress extends StatelessWidget {
     }
   }
 
-  double _getBorderRadius() {
+  double _getBorderRadius(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) return 0;
     switch (size) {
       case HuxProgressSize.small:
         return 2.0;

@@ -91,7 +91,7 @@ class _HuxSwitchState extends State<HuxSwitch> {
                   width: 2,
                   strokeAlign: BorderSide.strokeAlignOutside,
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(HuxTokens.radiusPill(context)),
               ),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -99,12 +99,11 @@ class _HuxSwitchState extends State<HuxSwitch> {
                 height: _getSwitchHeight(),
                 padding: EdgeInsets.all(_getPadding()),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                      10), // Consistent with Hux border radius
+                  borderRadius: BorderRadius.circular(HuxTokens.radiusPill(context)),
                   color: _getBackgroundColor(context),
                   border: Border.all(
                     color: _getBorderColor(context),
-                    width: 1, // Consistent with Hux border width
+                    width: HuxTokens.borderWidth(context),
                   ),
                 ),
                 child: AnimatedAlign(
@@ -117,12 +116,12 @@ class _HuxSwitchState extends State<HuxSwitch> {
                     width: _getHandleSize(),
                     height: _getHandleSize(),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(
-                          8), // Consistent rounded corners
+                      borderRadius:
+                          BorderRadius.circular(HuxTokens.radiusPill(context)),
                       color: _getHandleColor(context),
                       border: Border.all(
                         color: _getHandleBorderColor(context),
-                        width: 1,
+                        width: HuxTokens.borderWidth(context),
                       ),
                     ),
                   ),

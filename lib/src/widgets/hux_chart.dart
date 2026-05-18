@@ -85,9 +85,10 @@ class HuxChart extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         border: Border.all(
           color: HuxTokens.borderPrimary(context),
+          width: HuxTokens.borderWidth(context),
         ),
       ),
       child: Column(
@@ -205,7 +206,7 @@ class HuxChart extends StatelessWidget {
       }
 
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
         child: chart.build(),
       );
     } catch (e) {

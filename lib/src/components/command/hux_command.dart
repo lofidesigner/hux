@@ -174,19 +174,12 @@ class _HuxCommandState extends State<HuxCommand> {
                       width: 600,
                       decoration: BoxDecoration(
                         color: HuxTokens.surfaceElevated(context),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
                         border: Border.all(
                           color: HuxTokens.borderPrimary(context),
-                          width: 1,
+                          width: HuxTokens.borderWidth(context),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: HuxTokens.shadowColor(context)
-                                .withValues(alpha: 0.15),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                        boxShadow: HuxTokens.shadowElevated(context),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -257,10 +250,10 @@ class _HuxCommandState extends State<HuxCommand> {
       BuildContext context, HuxCommandItem command, bool isSelected) {
     return Material(
       color: isSelected ? HuxTokens.surfaceHover(context) : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
       child: InkWell(
         onTap: () => _executeCommand(command),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         splashFactory: NoSplash.splashFactory,
         overlayColor: WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> states) {

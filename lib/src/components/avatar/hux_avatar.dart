@@ -72,7 +72,7 @@ class HuxAvatar extends StatelessWidget {
             : (backgroundColor ?? HuxTokens.surfaceSecondary(context)),
         border: Border.all(
           color: HuxTokens.borderSecondary(context),
-          width: 1, // Consistent with Hux borders
+          width: HuxTokens.borderWidth(context),
         ),
       ),
       child: useGradient
@@ -98,7 +98,7 @@ class HuxAvatar extends StatelessWidget {
           initials,
           style: TextStyle(
             fontSize: _getFontSize(),
-            fontWeight: FontWeight.w600,
+            fontWeight: HuxTokens.fontWeightEmphasis(context),
             color: _getTextColor(context),
             height: 1.0,
           ),

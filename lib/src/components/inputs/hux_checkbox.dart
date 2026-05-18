@@ -95,7 +95,7 @@ class _HuxCheckboxState extends State<HuxCheckbox> {
                     duration: const Duration(milliseconds: 120),
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                       border: Border.all(
                         color: _isFocused
                             ? HuxTokens.primary(context).withValues(alpha: 0.6)
@@ -111,10 +111,10 @@ class _HuxCheckboxState extends State<HuxCheckbox> {
                         color: _getBackgroundColor(context),
                         border: Border.all(
                           color: _getBorderColor(context),
-                          width: 1, // Consistent with Hux border width
+                          width: HuxTokens.borderWidth(context),
                         ),
-                        borderRadius: BorderRadius.circular(
-                            6), // Slightly rounded like cards
+                        borderRadius:
+                            BorderRadius.circular(HuxTokens.radiusSm(context)),
                       ),
                       child: widget.value
                           ? Icon(

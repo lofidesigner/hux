@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
+import '../../theme/hux_variant.dart';
 
 /// Visual variants for HuxBreadcrumbs.
 enum HuxBreadcrumbVariant {
@@ -318,7 +319,7 @@ class _BreadcrumbItemWidget extends StatelessWidget {
       BuildContext context, TextStyle textStyle, double iconSize) {
     return InkWell(
       onTap: item.onTap,
-      borderRadius: BorderRadius.circular(_getBorderRadius()),
+      borderRadius: BorderRadius.circular(_getBorderRadius(context)),
       hoverColor: HuxTokens.surfaceHover(context),
       splashFactory: NoSplash.splashFactory,
       child: Container(
@@ -381,7 +382,8 @@ class _BreadcrumbItemWidget extends StatelessWidget {
     }
   }
 
-  double _getBorderRadius() {
+  double _getBorderRadius(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) return 0;
     switch (size) {
       case HuxBreadcrumbSize.small:
         return 4;

@@ -157,18 +157,12 @@ class _HuxContextMenuContent extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: HuxTokens.surfacePrimary(context),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusLg(context)),
         border: Border.all(
           color: HuxTokens.borderPrimary(context),
-          width: 1,
+          width: HuxTokens.borderWidth(context),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: HuxTokens.shadowColor(context),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: HuxTokens.shadowElevated(context),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -216,7 +210,7 @@ class _HuxContextMenuItemWrapper extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: item.isDisabled ? null : onItemTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
         hoverColor: HuxTokens.surfaceHover(context),
         splashFactory: NoSplash.splashFactory, // Remove ripple effect
         child: Container(
