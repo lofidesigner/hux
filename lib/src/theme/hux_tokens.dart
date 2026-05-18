@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'hux_colors.dart';
+import 'hux_variant.dart';
 
 /// HuxTokens provides semantic design tokens that adapt to light and dark themes.
 ///
@@ -274,4 +275,99 @@ class HuxTokens {
   static Color tabIndicator(BuildContext context) {
     return primary(context);
   }
+
+  // ─── STYLE / SHAPE TOKENS ──────────────────────────────────────────────
+  //
+  // These tokens swap based on the active [HuxVariant] (from [HuxScope]).
+  // Components should read shape, border, shadow and weight values from
+  // these tokens instead of hardcoding them so the brutalist variant can
+  // override them in one place.
+
+  /// Small corner radius (e.g. badges, kbd, compact pills).
+  static double radiusSm(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist ? 0.0 : 6.0;
+
+  /// Medium corner radius (buttons, inputs, dropdowns).
+  static double radiusMd(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist ? 0.0 : 8.0;
+
+  /// Large corner radius (cards, dialogs, sheets, popovers).
+  static double radiusLg(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist ? 0.0 : 12.0;
+
+  /// Pill radius (avatars, switches, fully-rounded elements).
+  ///
+  /// In brutalist mode this returns 0 so "round" shapes become square.
+  static double radiusPill(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist ? 0.0 : 999.0;
+
+  /// Standard border width for component outlines.
+  static double borderWidth(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist ? 2.0 : 1.0;
+
+  /// Border width for focused / emphasized states.
+  static double borderWidthStrong(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist ? 3.0 : 2.0;
+
+  /// Border color tuned to the active variant. Brutalist uses a hard,
+  /// fully-opaque edge; default keeps the subtle neutral border.
+  static Color borderStrong(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) {
+      return Theme.of(context).brightness == Brightness.dark
+          ? HuxColors.white
+          : HuxColors.black;
+    }
+    return borderPrimary(context);
+  }
+
+  /// Box shadows for elevated surfaces (cards, popovers, dialogs).
+  ///
+  /// Default: soft, low-opacity drop shadow.
+  /// Brutalist: hard, offset, fully-opaque shadow (no blur).
+  static List<BoxShadow> shadowElevated(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return [
+        BoxShadow(
+          color: isDark ? HuxColors.white : HuxColors.black,
+          offset: const Offset(4, 4),
+          blurRadius: 0,
+        ),
+      ];
+    }
+    return [
+      BoxShadow(
+        color: shadowColor(context),
+        offset: const Offset(0, 2),
+        blurRadius: 8,
+      ),
+    ];
+  }
+
+  /// Smaller shadow for buttons / inline raised elements.
+  static List<BoxShadow> shadowSm(BuildContext context) {
+    if (HuxScope.of(context) == HuxVariant.brutalist) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return [
+        BoxShadow(
+          color: isDark ? HuxColors.white : HuxColors.black,
+          offset: const Offset(2, 2),
+          blurRadius: 0,
+        ),
+      ];
+    }
+    return const [];
+  }
+
+  /// Font weight for emphasized labels (buttons, headings, badges).
+  static FontWeight fontWeightEmphasis(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist
+          ? FontWeight.w800
+          : FontWeight.w600;
+
+  /// Font weight for default body / control labels.
+  static FontWeight fontWeightDefault(BuildContext context) =>
+      HuxScope.of(context) == HuxVariant.brutalist
+          ? FontWeight.w600
+          : FontWeight.w500;
 }
