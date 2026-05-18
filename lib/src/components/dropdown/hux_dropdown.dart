@@ -123,17 +123,12 @@ class _HuxDropdownState<T> extends State<HuxDropdown<T>> {
                   ),
                   decoration: BoxDecoration(
                     color: HuxTokens.surfaceElevated(context),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
                     border: Border.all(
                       color: HuxTokens.borderPrimary(context),
+                      width: HuxTokens.borderWidth(context),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(26),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: HuxTokens.shadowElevated(context),
                   ),
                   child: ListView.builder(
                     padding: const EdgeInsets.all(4),
@@ -155,7 +150,7 @@ class _HuxDropdownState<T> extends State<HuxDropdown<T>> {
                               return null;
                             },
                           ),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(HuxTokens.radiusSm(context)),
                           onTap: () => Navigator.pop(context, item.value),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -163,7 +158,7 @@ class _HuxDropdownState<T> extends State<HuxDropdown<T>> {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(HuxTokens.radiusSm(context)),
                               color: isSelected
                                   ? HuxTokens.primary(context).withAlpha(26)
                                   : null,

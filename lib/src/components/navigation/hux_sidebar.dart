@@ -76,7 +76,7 @@ class HuxSidebar extends StatelessWidget {
           border: Border(
             right: BorderSide(
               color: HuxTokens.borderSecondary(context),
-              width: 1,
+              width: HuxTokens.borderWidth(context),
             ),
           ),
         ),

@@ -177,10 +177,10 @@ class _HuxTooltipState extends State<HuxTooltip> {
       decoration: widget.decoration ??
           BoxDecoration(
             color: effectiveBackgroundColor,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
             border: Border.all(
               color: HuxTokens.borderPrimary(context),
-              width: 1,
+              width: HuxTokens.borderWidth(context),
             ),
             boxShadow: [
               BoxShadow(

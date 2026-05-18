@@ -50,10 +50,10 @@ class _HuxSidebarItemState extends State<HuxSidebarItem> {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
       child: InkWell(
         onTap: widget.isDisabled ? null : widget.onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
         splashFactory: NoSplash.splashFactory,
         // Custom hover effect only (no press effect) - same as buttons
         overlayColor: WidgetStateProperty.resolveWith<Color?>(
@@ -69,7 +69,7 @@ class _HuxSidebarItemState extends State<HuxSidebarItem> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: _getBackgroundColor(context),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
           ),
           child: Row(
             children: [

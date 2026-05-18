@@ -163,7 +163,7 @@ class HuxButton extends StatelessWidget {
         (Set<WidgetState> states) {
           final isFocused = states.contains(WidgetState.focused);
           return RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
             side: isFocused
                 ? BorderSide(
                     color: focusColor,

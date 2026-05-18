@@ -48,10 +48,10 @@ class HuxBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: customColor ?? _getBackgroundColor(context),
-        borderRadius: BorderRadius.circular(10), // Consistent with Hux design
+        borderRadius: BorderRadius.circular(HuxTokens.radiusMd(context)),
         border: Border.all(
           color: _getBorderColor(context),
-          width: 1,
+          width: HuxTokens.borderWidth(context),
         ),
       ),
       child: Text(
@@ -59,7 +59,7 @@ class HuxBadge extends StatelessWidget {
         style: TextStyle(
           color: _getTextColor(context),
           fontSize: _getFontSize(),
-          fontWeight: FontWeight.w600, // Consistent with Hux typography
+          fontWeight: HuxTokens.fontWeightEmphasis(context),
           height: 1.0,
         ),
       ),
