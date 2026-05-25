@@ -49,7 +49,7 @@ dependencies:
   flutter:
     sdk: flutter
   cristalyse: ^1.17.6
-  lucide_icons: ^0.257.0
+  lucide_icons_flutter: ^3.1.14+1
 
 dev_dependencies:
   flutter_test:
