@@ -19,6 +19,18 @@ HuxInput(
 )
 ```
 
+### Input with Managed Focus
+
+```dart
+final inputFocusNode = FocusNode();
+
+HuxInput(
+  focusNode: inputFocusNode,
+  label: 'Search',
+  hint: 'Start typing...',
+)
+```
+
 ### Input with Icon
 ![Input with icon](/images/input/input-icon.png)
 
@@ -69,6 +81,7 @@ HuxInput(
 - `label` - Optional field label text displayed above the input
 - `hint` - Placeholder text displayed inside the input when empty
 - `controller` - TextEditingController for managing input state
+- `focusNode` - FocusNode for managing input focus, useful with widgets such as `RawAutocomplete`
 - `onChanged` - Callback triggered when the input value changes
 - `onSubmitted` - Callback triggered when the user submits the input
 

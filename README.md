@@ -14,13 +14,13 @@ A modern Flutter UI package with beautiful, customizable components designed for
 [![License: MIT](https://img.shields.io/badge/License-MIT-white?style=flat&labelColor=black)](https://opensource.org/licenses/MIT)
 
 
-## Latest Release: 1.1.0
+## Latest Release: 1.2.1
 
-**Snackbar Actions & Stacked Overlay**
-  - New `actions: List<HuxSnackbarAction>` parameter for adding Undo/Retry/View buttons to any snackbar
-  - New `HuxSnackbarStackController` for showing multiple snackbars simultaneously via the overlay system
-  - Fixed double-dismiss bug on legacy action callbacks
-  - Improved action styling, accessibility semantics, and test reliability
+**Dart 3+ Compatibility & Input Focus**
+  - Added `focusNode` support to `HuxInput` for integrations such as `RawAutocomplete`
+  - Replaced `lucide_icons` with `lucide_icons_flutter`
+  - Fixed Flutter web builds on newer Dart SDKs where `IconData` is final
+  - Removed the example app's stale direct `lucide_icons` dependency
 
 [![Changelog](https://img.shields.io/badge/Changelog-View-black?style=for-the-badge&labelColor=white&logo=github&logoColor=black)](CHANGELOG.md)
 [![Docs](https://img.shields.io/badge/Docs-Browse-black?style=for-the-badge&labelColor=white&logo=readthedocs&logoColor=black)](https://docs.thehuxdesign.com)
