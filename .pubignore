@@ -6,6 +6,7 @@ example/pubspec.lock
 build/
 .dart_tool/
 .packages
+coverage/
 
 # Ignore IDE files
 .vscode/
