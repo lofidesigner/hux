@@ -28,6 +28,7 @@ class HuxInput extends StatefulWidget {
   /// Creates a HuxInput widget.
   const HuxInput({
     super.key,
+    this.focusNode,
     this.controller,
     this.label,
     this.hint,
@@ -47,6 +48,8 @@ class HuxInput extends StatefulWidget {
     this.width,
   });
 
+  /// Focus node for managing focus state of the text field
+  final FocusNode? focusNode;
   /// Controller for the text field
   final TextEditingController? controller;
 
@@ -182,6 +185,7 @@ class _HuxInputState extends State<HuxInput> {
           child: SizedBox(
             height: _getHeight(),
             child: TextFormField(
+              focusNode: widget.focusNode,
               controller: widget.controller,
               obscureText: _obscureText,
               enabled: widget.enabled,
