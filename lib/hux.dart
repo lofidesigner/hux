@@ -64,6 +64,7 @@ export 'src/components/feedback/hux_snackbar.dart';
 export 'src/components/avatar/hux_avatar.dart';
 export 'src/components/avatar/hux_avatar_group.dart';
 export 'src/components/tabs/hux_tabs.dart';
+export 'src/components/tabs/hux_tab_view.dart';
 export 'src/components/tooltip/hux_tooltip.dart';
 export 'src/theme/hux_theme.dart';
 export 'src/theme/hux_colors.dart';
@@ -101,4 +102,4 @@ export 'src/components/bottom_sheet/hux_bottom_sheet.dart';
 /// Icon(LucideIcons.heart)
 /// Icon(LucideIcons.user)
 /// ```
-export 'package:lucide_icons/lucide_icons.dart';
+export 'package:lucide_icons_flutter/lucide_icons.dart';

@@ -33,7 +33,7 @@ class HuxOtpInput extends StatefulWidget {
     this.validator,
     this.autofocus = false,
     this.width,
-  });
+  }) : assert(length > 0, 'length must be > 0');
 
   /// Number of OTP digits (default: 6)
   final int length;
@@ -233,9 +233,14 @@ class _HuxOtpInputState extends State<HuxOtpInput> {
             ),
             const SizedBox(height: 6),
           ],
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _buildDigitFields(context, hasError),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final fieldWidth = _getFieldWidth(constraints.maxWidth);
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _buildDigitFields(context, hasError, fieldWidth),
+              );
+            },
           ),
           if (widget.helperText != null && !hasError) ...[
             const SizedBox(height: 6),
@@ -264,7 +269,11 @@ class _HuxOtpInputState extends State<HuxOtpInput> {
     );
   }
 
-  List<Widget> _buildDigitFields(BuildContext context, bool hasError) {
+  List<Widget> _buildDigitFields(
+    BuildContext context,
+    bool hasError,
+    double fieldWidth,
+  ) {
     final children = <Widget>[];
 
     for (int i = 0; i < widget.length; i++) {
@@ -290,7 +299,7 @@ class _HuxOtpInputState extends State<HuxOtpInput> {
             left: i == 0 ? 0 : 4,
             right: i == widget.length - 1 ? 0 : 4,
           ),
-          child: _buildDigitField(context, i, hasError),
+          child: _buildDigitField(context, i, hasError, fieldWidth),
         ),
       );
     }
@@ -298,13 +307,34 @@ class _HuxOtpInputState extends State<HuxOtpInput> {
     return children;
   }
 
-  Widget _buildDigitField(BuildContext context, int index, bool hasError) {
+  double _getFieldWidth(double maxWidth) {
+    if (widget.length <= 0) {
+      return 48;
+    }
+
+    if (!maxWidth.isFinite || maxWidth <= 0) {
+      return 48;
+    }
+
+    final totalSpacing = widget.length == 6
+        ? ((widget.length - 1) * 8) + 20
+        : (widget.length - 1) * 8;
+    final availableWidth = maxWidth - totalSpacing;
+    return (availableWidth / widget.length).clamp(36, 48).toDouble();
+  }
+
+  Widget _buildDigitField(
+    BuildContext context,
+    int index,
+    bool hasError,
+    double fieldWidth,
+  ) {
     final canFocus = _canFocusField(index);
     final isFocused = _focusNodes[index].hasFocus;
     final borderColor = _getBorderColor(context, hasError, isFocused);
 
     return SizedBox(
-      width: 48,
+      width: fieldWidth,
       height: 48,
       child: AbsorbPointer(
         absorbing: !canFocus,

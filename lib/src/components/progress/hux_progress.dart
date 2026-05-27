@@ -82,15 +82,20 @@ class HuxProgress extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (label != null)
-                Text(
-                  label!,
-                  style: TextStyle(
-                    fontSize:
-                        Theme.of(context).textTheme.labelMedium?.fontSize ?? 12,
-                    fontWeight: FontWeight.w400,
-                    color: HuxTokens.textSecondary(context),
+                Expanded(
+                  child: Text(
+                    label!,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize:
+                          Theme.of(context).textTheme.labelMedium?.fontSize ??
+                              12,
+                      fontWeight: FontWeight.w400,
+                      color: HuxTokens.textSecondary(context),
+                    ),
                   ),
                 ),
+              if (label != null && showValue) const SizedBox(width: 8),
               if (showValue)
                 Text(
                   _formatValue(progressValue),

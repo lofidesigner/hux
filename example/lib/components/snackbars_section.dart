@@ -25,8 +25,6 @@ class _SnackbarsSectionState extends State<SnackbarsSection> {
     ];
   }
 
-  // Returning null hides the dismiss button when actions are shown,
-  // and returning an empty closure provides a no-op dismiss when actions are hidden.
   VoidCallback? _dismissForDemo() => _showActions ? null : () {};
 
   void _showDemoSnackbar({

@@ -1,4 +1,4 @@
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hux/src/components/buttons/hux_button.dart';
 import 'package:hux/src/theme/hux_tokens.dart';
 import 'package:hux/src/utils/hux_wcag.dart';

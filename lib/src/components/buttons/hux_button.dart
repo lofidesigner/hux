@@ -233,7 +233,7 @@ class HuxButton extends StatelessWidget {
             child: Icon(icon, size: _getIconSize()),
           ),
           const SizedBox(width: 8),
-          child,
+          Flexible(child: child),
         ],
       );
     }

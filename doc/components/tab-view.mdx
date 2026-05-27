@@ -1,0 +1,348 @@
+---
+title: "TabView"
+description: "Dynamic tab interface for browser-like workspace management"
+---
+
+import { Callout } from "mintlify";
+
+# HuxTabView
+
+The HuxTabView component provides a dynamic tab interface for managing multiple documents or views, similar to web browsers or IDEs. Unlike `HuxTabs` which is designed for static section navigation, `HuxTabView` allows users to open, close, and switch between multiple tabs at runtime.
+
+## When to use
+
+- **HuxTabs**: Use for static navigation where all sections are always visible (settings panels, product details)
+- **HuxTabView**: Use for dynamic workspace management where users open/close documents (browsers, IDEs, file managers, email clients)
+
+## Basic Usage
+
+```dart
+import 'package:hux/hux.dart';
+
+HuxTabView(
+  initialTabs: [
+    TabDocument(
+      title: 'Home',
+      content: HomePage(),
+    ),
+  ],
+  onTabChanged: (index) => print('Switched to tab $index'),
+)
+```
+
+## With New Tab Button
+
+Enable the new tab button and handle tab creation:
+
+```dart
+HuxTabView(
+  showNewTabButton: true,
+  initialTabs: [
+    TabDocument(title: 'Document 1', content: EditorPage()),
+  ],
+  onNewTabRequested: () {
+    // Trigger your app's tab creation flow here.
+    // See the Programmatic Control section for a complete state-managed example.
+  },
+)
+```
+
+<Callout type="info">
+For a complete example of managing tabs dynamically, see the Programmatic Control section.
+</Callout>
+
+## Handling Tab Lifecycle
+
+Listen to tab open and close events:
+
+```dart
+HuxTabView(
+  initialTabs: [
+    TabDocument(title: 'README.md', content: MarkdownEditor()),
+    TabDocument(title: 'main.dart', content: CodeEditor()),
+  ],
+  onTabAdded: (document) {
+    print('Opened: ${document.title}');
+    _trackOpenFile(document.title);
+  },
+  onTabClosed: (index, document) {
+    print('Closed: ${document.title} at index $index');
+    _trackCloseFile(document.title);
+  },
+  onTabChanged: (index) {
+    print('Active tab: $index');
+  },
+)
+```
+
+## Variants
+
+### Pill (default)
+
+```dart
+HuxTabView(
+  variant: HuxTabViewVariant.pill,
+  initialTabs: [
+    TabDocument(title: 'Tab 1', content: Content1()),
+    TabDocument(title: 'Tab 2', content: Content2()),
+  ],
+)
+```
+
+### Chrome
+
+```dart
+HuxTabView(
+  variant: HuxTabViewVariant.chrome,
+  initialTabs: [
+    TabDocument(title: 'Tab 1', content: Content1()),
+    TabDocument(title: 'Tab 2', content: Content2()),
+  ],
+)
+```
+
+## Sizes
+
+### Small
+
+```dart
+HuxTabView(
+  size: HuxTabViewSize.small,
+  initialTabs: [
+    TabDocument(title: 'Compact', content: Content()),
+  ],
+)
+```
+
+### Medium (Default)
+
+```dart
+HuxTabView(
+  size: HuxTabViewSize.medium,
+  initialTabs: [
+    TabDocument(title: 'Standard', content: Content()),
+  ],
+)
+```
+
+### Large
+
+```dart
+HuxTabView(
+  size: HuxTabViewSize.large,
+  initialTabs: [
+    TabDocument(title: 'Prominent', content: Content()),
+  ],
+)
+```
+
+## With Icons
+
+Add icons to identify tab content types:
+
+```dart
+HuxTabView(
+  initialTabs: [
+    TabDocument(
+      title: 'document.md',
+      icon: Icons.description,
+      content: MarkdownEditor(),
+    ),
+    TabDocument(
+      title: 'main.dart',
+      icon: Icons.code,
+      content: CodeEditor(),
+    ),
+    TabDocument(
+      title: 'preview.html',
+      icon: Icons.web,
+      content: WebPreview(),
+    ),
+  ],
+)
+```
+
+## Non-Closable Tabs
+
+Prevent specific tabs from being closed:
+
+```dart
+HuxTabView(
+  initialTabs: [
+    TabDocument(
+      title: 'Dashboard',
+      content: DashboardPage(),
+      isClosable: false, // This tab cannot be closed
+    ),
+    TabDocument(
+      title: 'Settings',
+      content: SettingsPage(),
+      isClosable: true,
+    ),
+  ],
+)
+```
+
+## Disable Closing
+
+Remove close buttons from all tabs:
+
+```dart
+HuxTabView(
+  canCloseTabs: false,
+  initialTabs: [
+    TabDocument(title: 'Tab 1', content: Content1()),
+    TabDocument(title: 'Tab 2', content: Content2()),
+  ],
+)
+```
+
+## Fixed Tab Width
+
+Set a maximum width for tabs to create a consistent layout:
+
+```dart
+HuxTabView(
+  tabMaxWidth: 200,
+  initialTabs: [
+    TabDocument(title: 'Very Long Document Name', content: Content()),
+    TabDocument(title: 'Another Document', content: Content()),
+  ],
+)
+```
+
+## Programmatic Control
+
+Control tabs programmatically using a custom state management approach:
+
+```dart
+import 'dart:math' as math;
+
+class MyEditor extends StatefulWidget {
+  @override
+  _MyEditorState createState() => _MyEditorState();
+}
+
+class _MyEditorState extends State<MyEditor> {
+  final List<TabDocument> _tabs = [];
+  int _activeTab = 0;
+
+  void _openFile(String filename) {
+    setState(() {
+      _tabs.add(TabDocument(
+        title: filename,
+        content: FileEditor(filename: filename),
+      ));
+      _activeTab = _tabs.length - 1;
+    });
+  }
+
+  void _closeFile(int index) {
+    setState(() {
+      _tabs.removeAt(index);
+      if (_activeTab >= _tabs.length) {
+        _activeTab = math.max(0, _tabs.length - 1);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return HuxTabView(
+      initialTabs: _tabs,
+      initialIndex: _activeTab,
+      showNewTabButton: true,
+      onNewTabRequested: () => _openFile('Untitled'),
+      onTabClosed: (index, doc) => _closeFile(index),
+      onTabChanged: (index) => setState(() => _activeTab = index),
+    );
+  }
+}
+```
+
+## Keyboard Shortcuts
+
+HuxTabView supports common keyboard shortcuts:
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + W` | Close active tab |
+| `Ctrl/Cmd + T` | Request new tab (when `showNewTabButton` is true) |
+| `Ctrl/Cmd + Tab` | Switch to next tab |
+| `Ctrl/Cmd + Shift + Tab` | Switch to previous tab |
+
+<Callout type="info">
+Keyboard shortcuts require the TabView to have focus. The component automatically handles focus within its subtree.
+</Callout>
+
+## Empty State
+
+When all tabs are closed, an empty state is displayed:
+
+```dart
+HuxTabView(
+  initialTabs: [], // No initial tabs
+  showNewTabButton: true,
+  onNewTabRequested: () {
+    // This button will appear in the empty state
+    _createNewDocument();
+  },
+)
+```
+
+## API Reference
+
+### HuxTabView
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `initialTabs` | `List<TabDocument>?` | `null` | Initial list of tabs to display |
+| `initialIndex` | `int` | `0` | Index of the initially active tab |
+| `variant` | `HuxTabViewVariant` | `HuxTabViewVariant.pill` | Visual variant of the tabs |
+| `size` | `HuxTabViewSize` | `HuxTabViewSize.medium` | Size variant of the tabs |
+| `showNewTabButton` | `bool` | `false` | Whether to show a new tab button |
+| `canCloseTabs` | `bool` | `true` | Whether tabs can be closed globally |
+| `onTabChanged` | `ValueChanged<int>?` | `null` | Callback when active tab changes |
+| `onTabAdded` | `ValueChanged<TabDocument>?` | `null` | Callback when a tab is added |
+| `onTabClosed` | `void Function(int, TabDocument)?` | `null` | Callback when a tab is closed |
+| `onNewTabRequested` | `VoidCallback?` | `null` | Callback when new tab button is pressed |
+| `expandContent` | `bool` | `true` | Whether content fills available space |
+| `tabMaxWidth` | `double?` | `null` | Maximum width for individual tabs |
+| `newTabTooltip` | `String` | `'New Tab (Ctrl+T)'` | Tooltip for new tab button |
+| `closeTabTooltip` | `String` | `'Close Tab (Ctrl+W)'` | Tooltip for close buttons |
+
+### TabDocument
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `title` | `String` | **required** | The title displayed on the tab |
+| `content` | `Widget` | **required** | The content widget for this tab |
+| `icon` | `IconData?` | `null` | Optional icon displayed before title |
+| `isClosable` | `bool` | `true` | Whether this specific tab can be closed |
+| `identifier` | `String?` | `null` | Optional unique identifier |
+
+### HuxTabViewVariant
+
+- `HuxTabViewVariant.pill` — Pill-style tabs with rounded corners and subtle background (default)
+- `HuxTabViewVariant.chrome` — Chrome-style tabs with curved edges
+
+### HuxTabViewSize
+
+- `HuxTabViewSize.small` — Compact tabs (36 logical pixels)
+- `HuxTabViewSize.medium` — Standard tabs (44 logical pixels)
+- `HuxTabViewSize.large` — Prominent tabs (52 logical pixels)
+
+## Theming
+
+HuxTabView uses the same design tokens as HuxTabs:
+
+- `HuxTokens.tabActiveBackground` — Background color for active tab
+- `HuxTokens.tabActiveText` — Text color for active tab
+- `HuxTokens.tabInactiveText` — Text color for inactive tabs
+- `HuxTokens.tabHoverBackground` — Hover background color
+- `HuxTokens.tabBorder` — Border color for tab container
+- `HuxTokens.tabIndicator` — Indicator color for active tab
+
+<Callout type="tip">
+For consistent UX across your app, use HuxTabView for document/workspace management and HuxTabs for static section navigation within a page.
+</Callout>

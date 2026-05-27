@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../theme/hux_tokens.dart';
 
@@ -53,6 +54,8 @@ class HuxCard extends StatelessWidget {
     this.borderColor,
     this.borderWidth,
     this.onTap,
+    this.wrapSpacing,
+    this.wrapRunSpacing,
   });
 
   /// The main content widget to display inside the card
@@ -98,6 +101,16 @@ class HuxCard extends StatelessWidget {
 
   /// Callback triggered when the card is tapped. If null, the card is not interactive
   final VoidCallback? onTap;
+
+  /// Horizontal spacing used when row actions wrap in constrained layouts.
+  ///
+  /// If null, wrapped actions keep the existing 8px spacing.
+  final double? wrapSpacing;
+
+  /// Vertical spacing used between wrapped action rows in constrained layouts.
+  ///
+  /// If null, wrapped actions keep the existing 8px run spacing.
+  final double? wrapRunSpacing;
 
   /// Gets the padding value based on size variant
   EdgeInsetsGeometry _getPadding() {
@@ -238,18 +251,16 @@ class HuxCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    // If action is a Row, extract its children and wrap them
                     if (action is Row) {
                       final row = action as Row;
-                      return Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        alignment: WrapAlignment.start,
-                        children: row.children,
+                      return _AdaptiveActionLayout(
+                        row: row,
+                        constraints: constraints,
+                        wrapAlignment: WrapAlignment.start,
+                        wrapSpacing: wrapSpacing,
+                        wrapRunSpacing: wrapRunSpacing,
                       );
                     }
-                    // Otherwise, just show the action as-is (it should handle its own wrapping)
                     return action!;
                   },
                 ),
@@ -307,25 +318,14 @@ class HuxCard extends StatelessWidget {
                       alignment: Alignment.topRight,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          // If action is a Row and might overflow, wrap it
                           if (action is Row) {
                             final row = action as Row;
-                            // Check if we have enough space - if not, wrap
-                            // Use a simple heuristic: if available width is less than 300px, wrap
-                            if (constraints.maxWidth < 300) {
-                              return Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                alignment: WrapAlignment.end,
-                                children: row.children,
-                              );
-                            }
-                            // Otherwise, keep the original Row but ensure it's right-aligned
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: row.children,
+                            return _AdaptiveActionLayout(
+                              row: row,
+                              constraints: constraints,
+                              wrapAlignment: WrapAlignment.end,
+                              wrapSpacing: wrapSpacing,
+                              wrapRunSpacing: wrapRunSpacing,
                             );
                           }
                           return action!;
@@ -335,6 +335,98 @@ class HuxCard extends StatelessWidget {
                   ),
               ],
             ),
+    );
+  }
+}
+
+class _AdaptiveActionLayout extends StatefulWidget {
+  const _AdaptiveActionLayout({
+    required this.row,
+    required this.constraints,
+    required this.wrapAlignment,
+    this.wrapSpacing,
+    this.wrapRunSpacing,
+  });
+
+  final Row row;
+  final BoxConstraints constraints;
+  final WrapAlignment wrapAlignment;
+  final double? wrapSpacing;
+  final double? wrapRunSpacing;
+
+  @override
+  State<_AdaptiveActionLayout> createState() => _AdaptiveActionLayoutState();
+}
+
+class _AdaptiveActionLayoutState extends State<_AdaptiveActionLayout> {
+  final GlobalKey _measureKey = GlobalKey();
+  double? _intrinsicWidth;
+
+  @override
+  void didUpdateWidget(covariant _AdaptiveActionLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.row != widget.row ||
+        !listEquals(oldWidget.row.children, widget.row.children)) {
+      _intrinsicWidth = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_intrinsicWidth == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final box = _measureKey.currentContext?.findRenderObject() as RenderBox?;
+        final width = box?.size.width;
+        if (width != null && width > 0 && width != _intrinsicWidth) {
+          setState(() {
+            _intrinsicWidth = width;
+          });
+        }
+      });
+
+      return Stack(
+        children: [
+          ClipRect(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: widget.wrapAlignment == WrapAlignment.end,
+              physics: const NeverScrollableScrollPhysics(),
+              child: widget.row,
+            ),
+          ),
+          Offstage(
+            offstage: true,
+            child: UnconstrainedBox(
+              alignment: Alignment.topLeft,
+              constrainedAxis: Axis.vertical,
+              child: IntrinsicWidth(
+                key: _measureKey,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: widget.row.children,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final maxWidth = widget.constraints.maxWidth;
+    if (!maxWidth.isFinite || _intrinsicWidth! <= maxWidth) {
+      return widget.row;
+    }
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Wrap(
+        spacing: widget.wrapSpacing ?? 8,
+        runSpacing: widget.wrapRunSpacing ?? 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        alignment: widget.wrapAlignment,
+        children: widget.row.children,
+      ),
     );
   }
 }
